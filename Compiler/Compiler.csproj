@@ -1,0 +1,182 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{5EE86D6A-2292-41F4-9A61-031A7BB20AC6}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>SharpNative.Compiler</RootNamespace>
+    <AssemblyName>SharpNative</AssemblyName>
+    <TargetFrameworkVersion>v4.5.3</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.CodeAnalysis">
+      <HintPath>..\packages\Microsoft.CodeAnalysis.Common.1.0.0-beta1-20141031-01\lib\net45\Microsoft.CodeAnalysis.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CodeAnalysis.CSharp">
+      <HintPath>..\packages\Microsoft.CodeAnalysis.CSharp.1.0.0-beta1-20141031-01\lib\net45\Microsoft.CodeAnalysis.CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CodeAnalysis.CSharp.Desktop">
+      <HintPath>..\packages\Microsoft.CodeAnalysis.CSharp.1.0.0-beta1-20141031-01\lib\net45\Microsoft.CodeAnalysis.CSharp.Desktop.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CodeAnalysis.CSharp.Workspaces">
+      <HintPath>..\packages\Microsoft.CodeAnalysis.CSharp.Workspaces.1.0.0-beta1-20141031-01\lib\net45\Microsoft.CodeAnalysis.CSharp.Workspaces.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CodeAnalysis.CSharp.Workspaces.Desktop">
+      <HintPath>..\packages\Microsoft.CodeAnalysis.CSharp.Workspaces.1.0.0-beta1-20141031-01\lib\net45\Microsoft.CodeAnalysis.CSharp.Workspaces.Desktop.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CodeAnalysis.Desktop">
+      <HintPath>..\packages\Microsoft.CodeAnalysis.Common.1.0.0-beta1-20141031-01\lib\net45\Microsoft.CodeAnalysis.Desktop.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CodeAnalysis.VisualBasic">
+      <HintPath>..\packages\Microsoft.CodeAnalysis.VisualBasic.1.0.0-beta1-20141031-01\lib\net45\Microsoft.CodeAnalysis.VisualBasic.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CodeAnalysis.VisualBasic.Desktop">
+      <HintPath>..\packages\Microsoft.CodeAnalysis.VisualBasic.1.0.0-beta1-20141031-01\lib\net45\Microsoft.CodeAnalysis.VisualBasic.Desktop.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CodeAnalysis.VisualBasic.Workspaces">
+      <HintPath>..\packages\Microsoft.CodeAnalysis.VisualBasic.Workspaces.1.0.0-beta1-20141031-01\lib\net45\Microsoft.CodeAnalysis.VisualBasic.Workspaces.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.CodeAnalysis.VisualBasic.Workspaces.Desktop">
+      <HintPath>..\packages\Microsoft.CodeAnalysis.VisualBasic.Workspaces.1.0.0-beta1-20141031-01\lib\net45\Microsoft.CodeAnalysis.VisualBasic.Workspaces.Desktop.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CodeAnalysis.Workspaces">
+      <HintPath>..\packages\Microsoft.CodeAnalysis.Workspaces.Common.1.0.0-beta1-20141031-01\lib\net45\Microsoft.CodeAnalysis.Workspaces.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CodeAnalysis.Workspaces.Desktop">
+      <HintPath>..\packages\Microsoft.CodeAnalysis.Workspaces.Common.1.0.0-beta1-20141031-01\lib\net45\Microsoft.CodeAnalysis.Workspaces.Desktop.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Collections.Immutable, Version=1.1.32.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <Private>True</Private>
+      <HintPath>..\packages\System.Collections.Immutable.1.1.32-beta\lib\portable-net45+win8+wp8+wpa81\System.Collections.Immutable.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Core" />
+    <Reference Include="System.Reflection.Metadata">
+      <HintPath>..\packages\System.Reflection.Metadata.1.0.17-beta\lib\portable-net45+win8\System.Reflection.Metadata.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ConcurrentHashSet.cs" />
+    <Compile Include="Context.cs" />
+    <Compile Include="ConversionExtensions.cs" />
+    <Compile Include="Core.cs" />
+    <Compile Include="DlangAst\InvocationRewriter.cs" />
+    <Compile Include="InternalNames.cs" />
+    <Compile Include="OutputWriter.cs" />
+    <Compile Include="DlangAst\CSharpToDlangRewriter.cs" />
+    <Compile Include="RoslynExtensions.cs" />
+    <Compile Include="Driver.cs" />
+    <Compile Include="IdentifierRenamer.cs" />
+    <Compile Include="LoopInfo.cs" />
+    <Compile Include="NativeCompilationUtils.cs" />
+    <Compile Include="OverloadResolver.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SymbolNameMap.cs" />
+    <Compile Include="TempWriter.cs" />
+    <Compile Include="TransformedArgument.cs" />
+    <Compile Include="TriviaProcessor.cs" />
+    <Compile Include="TypeProcessor.cs" />
+    <Compile Include="Utility.cs" />
+    <Compile Include="WriteAnonymousObjectCreationExpression.cs" />
+    <Compile Include="WriteArrayCreationExpression.cs" />
+    <Compile Include="WriteAssignmentExpression.cs" />
+    <Compile Include="WriteBaseExpression.cs" />
+    <Compile Include="WriteBcl.cs" />
+    <Compile Include="WriteBinaryExpression.cs" />
+    <Compile Include="WriteBreakStatement.cs" />
+    <Compile Include="WriteCastExpression.cs" />
+    <Compile Include="WriteChecked.cs" />
+    <Compile Include="WriteConditionalExpression.cs" />
+    <Compile Include="WriteConstructor.cs" />
+    <Compile Include="WriteConstructorInitializer.cs" />
+    <Compile Include="WriteContinueStatement.cs" />
+    <Compile Include="WriteConversionOperatorDeclaration.cs" />
+    <Compile Include="WriteDefaultExpression.cs" />
+    <Compile Include="WriteDelegate.cs" />
+    <Compile Include="WriteDoStatement.cs" />
+    <Compile Include="WriteElementAccessExpression.cs" />
+    <Compile Include="WriteEnum.cs" />
+    <Compile Include="WriteEqualsValueClause.cs" />
+    <Compile Include="WriteEvent.cs" />
+    <Compile Include="WriteField.cs" />
+    <Compile Include="WriteForEachStatement.cs" />
+    <Compile Include="WriteForStatement.cs" />
+    <Compile Include="WriteGenericName.cs" />
+    <Compile Include="WriteGoto.cs" />
+    <Compile Include="WriteIdentifierName.cs" />
+    <Compile Include="WriteIfStatement.cs" />
+    <Compile Include="WriteIndexer.cs" />
+    <Compile Include="WriteInitializer.cs" />
+    <Compile Include="WriteInvocationExpression.cs" />
+    <Compile Include="WriteLabel.cs" />
+    <Compile Include="WriteLambdaExpression.cs" />
+    <Compile Include="WriteLiteralExpression.cs" />
+    <Compile Include="WriteLocalDeclaration.cs" />
+    <Compile Include="WriteLockStatement.cs" />
+    <Compile Include="WriteMemberAccessExpression.cs" />
+    <Compile Include="WriteMethod.cs" />
+    <Compile Include="WriteObjectCreationExpression.cs" />
+    <Compile Include="WriteOperatorDeclaration.cs" />
+    <Compile Include="WriteParenthesizedExpression.cs" />
+    <Compile Include="WritePInvokeMethodBody.cs" />
+    <Compile Include="WriteProperty.cs" />
+    <Compile Include="WriteReturnStatement.cs" />
+    <Compile Include="WriteSizeOfExpression.cs" />
+    <Compile Include="WriteStandardIncludes.cs" />
+    <Compile Include="WriteSwitchStatement.cs" />
+    <Compile Include="WriteThisExpression.cs" />
+    <Compile Include="WriteThrowStatement.cs" />
+    <Compile Include="WriteTryStatement.cs" />
+    <Compile Include="WriteType.cs" />
+    <Compile Include="WriteTypeOfExpression.cs" />
+    <Compile Include="WriteUnaryExpression.cs" />
+    <Compile Include="WriteUsingStatement.cs" />
+    <Compile Include="WriteVariableDeclaration.cs" />
+    <Compile Include="WriteWhileStatement.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
