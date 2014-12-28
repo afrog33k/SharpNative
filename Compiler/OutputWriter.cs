@@ -25,9 +25,9 @@ namespace SharpNative.Compiler
         private readonly StringBuilder _builder = new StringBuilder(5000);
 
 
-        public readonly List<string> Imports = new List<string>();
+        public readonly List<ITypeSymbol> Imports = new List<ITypeSymbol>();
 
-        public void AddInclude(string import)
+        public void AddInclude(ITypeSymbol import)
         {
             if (Imports.All(o => o != import))
                 Imports.Add(import);
@@ -114,7 +114,7 @@ namespace SharpNative.Compiler
                 case "short":
                     return "Int16";
 
-                case "char":
+                case "wchar":
                     return "Char";
 
                 case "System.Namespace.Array":
@@ -128,6 +128,10 @@ namespace SharpNative.Compiler
 
         public void Dispose()
         {
+            try
+            {
+
+            
             if (_path == null)
                 return;
 
@@ -166,52 +170,56 @@ namespace SharpNative.Compiler
                         if (usedType.TypeKind == TypeKind.PointerType) //No need to import pointer types
                             continue;
 
-                        var importName = usedType.GetFullNameD();
+                        //                        var importName = usedType.GetFullNameD();
+                        //
+                        //                        importName = ConvertBasicType(importName);
+                        //
+                        //                        if (usedType is IArrayTypeSymbol)
+                        //                            importName = ("System.Namespace.Array_T");
+                        //
+                        //                        //Remove Specializations
+                        //                        importName = Regex.Replace(importName, @" ?!\(.*?\)", string.Empty)
+                        //                            .Replace("(", "")
+                        //                            .Replace(")", "");
 
-                        importName = ConvertBasicType(importName);
+                        //                        if (!Imports.Contains(importName))
+                        //                            Imports.Add(importName);
 
-                        if (usedType is IArrayTypeSymbol)
-                            importName = ("System.Namespace.Array_T");
-
-                        //Remove Specializations
-                        importName = Regex.Replace(importName, @" ?!\(.*?\)", string.Empty)
-                            .Replace("(", "")
-                            .Replace(")", "");
-
-                        if (!Imports.Contains(importName))
-                            Imports.Add(importName);
+                        //if (!Imports.Any(k=>k.GetFullNameD() == usedType.GetFullNameD()))
+                        if(!Imports.Contains(usedType))  //TODO: change this when "Assemblies" are implemented
+                            Imports.Add(usedType);
                     }
 
-                    if (!Imports.Contains("System.Namespace"))
-                        Imports.Add("System.Namespace");
+                                        if (!Imports.Contains(Context.Object))
+//                    if (!Imports.Any(k => k.GetFullNameD() == Context.Object.GetFullNameD()))
+                        Imports.Add(Context.Object);//TODO: change this when "Assemblies" are implemented
 
                     var @namespace =
                         Context.Instance.Type.ContainingNamespace.FullName().RemoveFromEndOfString(".Namespace");
-                    var fullModuleName = Context.Instance.Type.ContainingNamespace.FullName() + "." +
-                                         Context.Instance.TypeName;
+                   // var fullModuleName = FullModuleName();
                     var moduleName = @namespace + "." + Context.Instance.TypeName;
                     finalBuilder.Append("module " + moduleName + ";\n\n");
 
-                    Imports.Add(fullModuleName);
+                    Imports.Add(Context.Instance.Type);
 
-                    if (Context.Instance.Type.TypeKind == TypeKind.Struct)
-                    {
-                        Imports.Add(Context.Instance.Type.ContainingNamespace.FullName() + "." + "__Boxed_" +
-                                    Context.Instance.TypeName); //Starting to reach the limit of mere strings
-                    }
+//                    if (Context.Instance.Type.TypeKind == TypeKind.Struct)
+//                    {
+//                        Imports.Add(Context.Instance.Type.ContainingNamespace.FullName() + "." + "__Boxed_" +
+//                                    Context.Instance.TypeName); //Starting to reach the limit of mere strings
+//                    }
 
                     if (Imports != null)
                     {
                         finalBuilder.Append("\n");
-                        IEnumerable<string> imports = Imports;
+                        IEnumerable<ITypeSymbol> imports = Imports;
 
                         var importGroups =
-                            imports.Where(k => k.LastIndexOf('.') != -1)
-                                .GroupBy(j => j.EndsWith("Namespace") ? j : j.Substring(0, j.LastIndexOf('.')));
-
+                            imports.GroupBy(k => k.ContainingNamespace).Where(j=>j.Key!=null);//.Where(k => k.LastIndexOf('.') != -1)
+                               // .GroupBy(j => j.EndsWith("Namespace") ? j : j.Substring(0, j.LastIndexOf('.')));
+                               List<string> currentImports = new List<string>();
                         foreach (var import in importGroups)
                         {
-                            if (import.Key.EndsWith("Namespace", StringComparison.Ordinal))
+                            //if (import.Key.EndsWith("Namespace", StringComparison.Ordinal))
                             {
                                 if (Context.Namespaces.ContainsKey(import.Key))
                                 {
@@ -221,8 +229,19 @@ namespace SharpNative.Compiler
                                 else
                                     Context.Namespaces[import.Key] = import.Distinct().ToArray();
 
-                                if (import.Key != fullModuleName)
-                                    finalBuilder.Append("import " + import.Key + ";\n");
+                                if (import.Key != Context.Instance.Type)
+                                {
+                                    var name = import.Key.GetModuleName();
+
+                                    if (!currentImports.Contains(name))
+                                    {
+                                        finalBuilder.Append("import " + name + ";\n");
+                                        currentImports.Add(name);
+                                    }
+                                    
+
+                                }
+                                    
                             }
                         }
                     }
@@ -248,6 +267,21 @@ namespace SharpNative.Compiler
                 File.SetAttributes(_path, FileAttributes.ReadOnly);
             }
             _writer.Dispose();
+            }
+            catch (Exception ex)
+            {
+
+                Console.WriteLine("Failed with exception: " + ex.Message + ex.StackTrace +
+                                ((ex.InnerException != null)
+                                    ? ex.InnerException.Message + ex.InnerException.StackTrace
+                                    : ""));
+            }
+        }
+
+        private static string FullModuleName(ITypeSymbol module)
+        {
+            return module.ContainingNamespace.FullName() + "." +
+                   module.Name;
         }
 
         public void OpenBrace()

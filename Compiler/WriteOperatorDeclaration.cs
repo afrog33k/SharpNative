@@ -194,12 +194,6 @@ namespace SharpNative.Compiler
         }
 
 
-        public static string TypeParameter(TypeParameterSyntax prm, IMethodSymbol methodSymbol,
-            MethodDeclarationSyntax methodSyntax)
-        {
-            var identifier = Utility.TypeConstraints(prm, methodSyntax.ConstraintClauses);
-
-            return identifier;
-        }
+     
     }
 }

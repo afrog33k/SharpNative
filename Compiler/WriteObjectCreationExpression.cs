@@ -40,6 +40,7 @@ namespace SharpNative.Compiler
                 }
                 writer.Write("(");
                 Core.Write(writer, expression.Initializer);
+                writer.Write(")");
             }
 
             if (type.SpecialType == SpecialType.System_Object)
@@ -58,12 +59,14 @@ namespace SharpNative.Compiler
             }
             else
             {
-                var methodSymbol = TypeProcessor.GetSymbolInfo(expression).Symbol.As<IMethodSymbol>();
+//                var methodSymbol = TypeProcessor.GetSymbolInfo(expression).Symbol.As<IMethodSymbol>();
 
                 var typeString = TypeProcessor.ConvertType(expression.Type);
 
+
                 WriteNewOperator(writer, type, typeString);
 
+                writer.Write("(");
                 if (expression.ArgumentList != null)
                 {
                     bool first = true;

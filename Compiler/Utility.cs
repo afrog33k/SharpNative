@@ -11,6 +11,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Xml.Linq;
 using Microsoft.CodeAnalysis;
@@ -339,14 +340,71 @@ namespace SharpNative.Compiler
 
         public static string NamespaceModuleName = "Namespace";
 
+        public static string GlobalNamespaceName = "CsRoot";
+
+        public static string BoxedPrefix = "__Boxed_";
+
+
+        public static string GetModuleName(this INamespaceSymbol typeSymbol)
+        {
+            var fullName = typeSymbol.FullName();
+
+//            if (typeSymbol.IsGlobalNamespace)
+//            {
+//                fullName = GlobalNamespaceName;
+//            }
+//            string result = fullName +"."+ NamespaceModuleName;
+            return fullName;
+        }
+
+        
+
+        public static string GetModuleName(this ITypeSymbol type)
+        {
+
+//            var namespaceName = "";
+//
+//            if (type.ContainingNamespace.IsGlobalNamespace)
+//                namespaceName = GlobalNamespaceName;
+
+            return type.ContainingNamespace.FullName(false) + "." + type.GetNameD() + "." + type.GetNameD();
+
+//            var fullName = typeSymbol.GetFullName();
+//
+//            if (typeSymbol.IsGlobalNamespace)
+//            {
+//                fullName = GlobalNamespaceName;
+//            }
+//            string result = fullName + "." + NamespaceModuleName;
+//            return result;
+        }
+
+        public static string GetBoxedModuleName(this ITypeSymbol type)
+        {
+
+          
+
+          //Better use typeprocessor as this is leading to many issues
+
+            return type.ContainingNamespace.FullName(false) + "."  + type.GetNameD() + "." + BoxedPrefix + type.GetNameD();
+
+        
+        }
+
+        public static string GetNameD(this ITypeSymbol type, bool removeGenerics=true)
+        {
+            var name=
+             TypeProcessor.ConvertType(type,true,false).RemoveFromStartOfString(type.ContainingNamespace.FullName(true)+".");
+
+            return removeGenerics? Regex.Replace(name, @" ?!\(.*?\)", string.Empty) : name;
+
+        }
+
+
         public static string GetFullNameD(this ITypeSymbol typeInfo, bool includeNamespace = true)
         {
             return TypeProcessor.ConvertType(typeInfo, false);
-//                (typeInfo.ContainingNamespace != null && includeNamespace ? (typeInfo.ContainingNamespace.FullName() + ".") : "") +
-//                   (typeInfo.ContainingType != null ? (typeInfo.ContainingType.FullName() + "_") : "") + (((typeInfo as INamedTypeSymbol) != null) ?
-//                   string.Join("_",
-//                                (new string[] {  typeInfo.Name }).Union<string>(
-//                                    ((INamedTypeSymbol)typeInfo).TypeParameters.Select(o => o.ToString()))) : typeInfo.Name);
+//         
         }
 
         public static string GetFullNameCSharp(this ITypeSymbol typeInfo, bool includeNamespace = true)
@@ -369,7 +427,7 @@ namespace SharpNative.Compiler
                 return name + typeInfo.Name;
 
             name += name + typeInfo.Name + "<" +
-                    string.Join(",",
+                    String.Join(",",
                         ((INamedTypeSymbol) typeInfo).TypeArguments.Select(o => o.ToString())) + ">";
 
             return name;
@@ -421,24 +479,24 @@ namespace SharpNative.Compiler
             return name;
         }
 
-        public static string FullName(this INamespaceSymbol ns)
+        public static string FullName(this INamespaceSymbol ns, bool namespacesuffix=true)
         {
             if (ns == null)
                 return "";
             if (ns.IsGlobalNamespace)
-                return "CsRoot" + "." + NamespaceModuleName;
+                return "CsRoot" +  (namespacesuffix? ("."+NamespaceModuleName) :"");
             else
-                return ns.ToString() + "." + NamespaceModuleName;
+                return ns.ToString() + (namespacesuffix ? ("." + NamespaceModuleName) : "");
         }
 
-        public static string FullNameWithDot(this INamespaceSymbol ns)
+        public static string FullNameWithDot(this INamespaceSymbol ns, bool namespacesuffix = true)
         {
             if (ns == null)
                 return "";
             if (ns.IsGlobalNamespace)
-                return "CsRoot" + "." + NamespaceModuleName + ".";
+                return "CsRoot" + (namespacesuffix ? ("." + NamespaceModuleName) : "") + ".";
             else
-                return ns.ToString() + "." + NamespaceModuleName + ".";
+                return ns.ToString() + (namespacesuffix ? ("." + NamespaceModuleName) : "") + ".";
         }
 
         public static string AttributeOrNull(this XElement element, string attrName)
@@ -626,33 +684,9 @@ namespace SharpNative.Compiler
             return null;
         }
 
-        internal static string TypeConstraints(TypeParameterSyntax prm,
-            IEnumerable<TypeParameterConstraintClauseSyntax> constraints)
-        {
-            var identifier = prm.Identifier.ValueText;
+       
 
-            var constraint = constraints.SingleOrDefault(o => o.Name.Identifier.ValueText == identifier);
-
-            if (constraint != null)
-                return identifier + string.Join("", constraint.Constraints.Select(TransformTypeConstraint));
-
-            return identifier;
-        }
-
-        private static string TransformTypeConstraint(TypeParameterConstraintSyntax constraint)
-        {
-            if (constraint is TypeConstraintSyntax)
-                return " <% " + TypeProcessor.ConvertType(constraint.As<TypeConstraintSyntax>().Type);
-            else if (constraint is ClassOrStructConstraintSyntax)
-            {
-                if (constraint.As<ClassOrStructConstraintSyntax>().ClassOrStructKeyword.IsKind(SyntaxKind.ClassKeyword))
-                    return " >: Null";
-                else
-                    throw new Exception("struct type constraint not supported " + Descriptor(constraint));
-            }
-            else
-                throw new Exception(constraint.GetType().Name);
-        }
+       
 
         public static string Name(this AnonymousObjectMemberDeclaratorSyntax member)
         {

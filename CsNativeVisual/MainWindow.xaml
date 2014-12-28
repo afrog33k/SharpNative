@@ -97,7 +97,7 @@
 
             <StackPanel Grid.Column="2" Grid.Row="0" Orientation="Horizontal" Margin="106.545,-8,60.183,7.759">
 
-                <Label Style="{StaticResource HeaderStyle}" Content="C++" Margin="5,5,5,4.759"/>
+                <Label Style="{StaticResource HeaderStyle}" Content="D" Margin="5,5,5,4.759"/>
 
                 <Button BorderThickness="0"  Height="30" Background="Transparent" HorizontalAlignment="Right" x:Name="RunCPPButton" Click="RunCPPButton_Click" >
                     <Image Source="Icons/run.png" HorizontalAlignment="Right" />

@@ -25,7 +25,7 @@ namespace SharpNative.Compiler
 
         public UsingDirectiveSyntax[] UsingDeclarations;
 
-        public static Dictionary<string, string[]> Namespaces = new Dictionary<string, string[]>();
+        public static Dictionary<INamespaceSymbol, ITypeSymbol[]> Namespaces = new Dictionary<INamespaceSymbol, ITypeSymbol[]>();
 
         [ThreadStatic] public static Context Instance;
 
@@ -72,12 +72,12 @@ namespace SharpNative.Compiler
         public static INamedTypeSymbol DllImport { get; set; }
 
 
-        public INamedTypeSymbol IEnumeratorT { get; set; }
+        public static INamedTypeSymbol IEnumeratorT { get; set; }
 
-        public INamedTypeSymbol IEnumerator { get; set; }
+        public static INamedTypeSymbol IEnumerator { get; set; }
 
-
-        public static void Update( Compilation compilation)
+        public static INamedTypeSymbol Object { get; set; }
+    public static void Update( Compilation compilation)
         {
             Instance = new Context();
             if (compilation != null)
@@ -87,11 +87,20 @@ namespace SharpNative.Compiler
 
         private void UpdateContext( Compilation compilation)
         {
+           Object = compilation.FindType("System.Object");
             IEnumeratorT = compilation.FindType("System.Collections.Generic.IEnumerator`1");
             IEnumerator = compilation.FindType("System.Collections.IEnumerator");
-            StructLayout = compilation.FindType("System.Runtime.InteropServices.StructLayoutAttribute");
+              try
+            {
+                StructLayout = compilation.FindType("System.Runtime.InteropServices.StructLayoutAttribute");
             DllImport = compilation.FindType("System.Runtime.InteropServices.DllImportAttribute");
             FieldOffset = compilation.FindType("System.Runtime.InteropServices.FieldOffsetAttribute");
+            }
+            catch (Exception ex)
+            {
+                
+                //These are not always included
+            }
         }
     }
 }

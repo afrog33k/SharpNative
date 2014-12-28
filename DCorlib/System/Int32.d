@@ -18,7 +18,7 @@ class Int32 : NObject
 
 	public static String ToString(int value)
 	{
-		return new String(to!string(value));
+		return new String(to!wstring(value));
 	}
 
 }

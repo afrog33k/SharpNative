@@ -152,10 +152,9 @@ namespace CsNativeVisual
         }
 
 
-        private readonly string[] ILKeywords =
+        private readonly string[] DlangKeywords =
         {
-            "LoadFunction","Call","Return","Assignment","BranchOperator","NewObject",
-            "SetField","AlwaysBranch", "Label", "BinaryOperator","GetField", "CallVirtual"
+           "import","version", "module"
 
         };
 

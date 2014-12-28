@@ -46,24 +46,28 @@ namespace SharpNative.Compiler
             if (type != null && symbolInfo.Symbol != null)
                 //if type is null, then we're just a namespace.  We can ignore these.
             {
-                var directInvocationOnBasics = symbolInfo.Symbol.ContainingType.IsBasicType();
+                var directInvocationOnBasics = symbolInfo.Symbol.ContainingType.IsBasicType() && symbolInfo.Symbol.IsStatic;
 
                 if (directInvocationOnBasics)
                 {
-//						var extensionNamespace =  symbolInfo.Symbol.ContainingNamespace.FullNameWithDot() + symbolInfo.Symbol.ContainingType.FullName(); //null means it's not an extension method, non-null means it is
+                    //						var extensionNamespace =  symbolInfo.Symbol.ContainingNamespace.FullNameWithDot() + symbolInfo.Symbol.ContainingType.FullName(); //null means it's not an extension method, non-null means it is
 
                     //Extension methods in Dlang are straightforward, although this could lead to clashes without qualification
+                    if (symbolInfo.Symbol.ContainingType != Context.Instance.Type)
+                    {
+                        var extensionNamespace = TypeProcessor.ConvertType(type, true, false);
+                            // type.ContainingNamespace.FullName() + "." + type.Name;
+                        //memberType.ContainingNamespace.FullName() +"."+ memberType.Name;
 
-                    var extensionNamespace = type.ContainingNamespace.FullName() + "." + type.Name;
-                    //memberType.ContainingNamespace.FullName() +"."+ memberType.Name;
-
-                    writer.Write(extensionNamespace);
+                        writer.Write(extensionNamespace);
+                    }
                 }
                 else
                     WriteMember(writer, expression.Expression);
 
                 if (isLiteral && !isStringLiteral)
                     writer.Write(")"); //Not needed for strings at all
+//                if(symbolInfo.Symbol.ContainingType!=Context.Instance.Type)
                 writer.Write(".");
                 // Ideally Escape analysis should take care of this, but for now all value types are on heap and ref types on stack
             }

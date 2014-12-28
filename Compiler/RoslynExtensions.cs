@@ -28,48 +28,25 @@ namespace SharpNative.Compiler
             return IsSubclassOf(type.BaseType, baseTypeSymbol);
         }
 
-//       
+        //       
 
-        public static string GetFullName(this INamespaceSymbol namespaceSymbol)
-        {
-            string result = namespaceSymbol.MetadataName;
-            if (!namespaceSymbol.IsGlobalNamespace && !namespaceSymbol.ContainingNamespace.IsGlobalNamespace)
-            {
-                result =
-                    Context.Instance.SymbolNames[
-                        namespaceSymbol.ContainingNamespace, namespaceSymbol.ContainingNamespace.GetFullName()] + "." +
-                    result;
-            }
-            return result;
-        }
+        
 
-//        public static string GetFullName(this ITypeSymbol type)
+
+      
+//        public static string GetFullName(this INamespaceSymbol namespaceSymbol)
 //        {
-//            if (type.IsAnonymousType)
+//            string result = namespaceSymbol.MetadataName;
+//            if (!namespaceSymbol.IsGlobalNamespace && !namespaceSymbol.ContainingNamespace.IsGlobalNamespace)
 //            {
-//                return type.GetTypeName();
+//                result =
+//                    Context.Instance.SymbolNames[
+//                        namespaceSymbol.ContainingNamespace, namespaceSymbol.ContainingNamespace.GetFullName()] + "." +
+//                    result;
 //            }
-//            if (type is IArrayTypeSymbol)
-//            {
-//                var arrayType = (IArrayTypeSymbol)type;
-//                return arrayType.ElementType.GetFullName() + "[]";
-//            }
-//
-//            var typeParameter = type as ITypeParameterSymbol;
-//            if (typeParameter != null)
-//            {
-//                return typeParameter.Name;
-//            }
-//            else
-//            {
-//                string result = type.MetadataName;
-//                if (type.ContainingType != null)
-//                    result = type.ContainingType.GetFullName() + "." + result;
-//                else if (!type.ContainingNamespace.IsGlobalNamespace)
-//                    result = type.ContainingNamespace.GetFullName() + "." + result;
-//                return result;
-//            }
+//            return result;
 //        }
+
 
         public static bool IsAssignableFrom(this ITypeSymbol baseType, ITypeSymbol type)
         {
@@ -313,7 +290,7 @@ namespace SharpNative.Compiler
             var classDeclaration = node.FirstAncestorOrSelf<ClassDeclarationSyntax>(x => true);
             if (classDeclaration == null)
                 return null;
-            return Context.Compilation.GetSemanticModel(classDeclaration.SyntaxTree).GetDeclaredSymbol(classDeclaration);
+            return (ITypeSymbol) ModelExtensions.GetDeclaredSymbol(Context.Compilation.GetSemanticModel(classDeclaration.SyntaxTree), classDeclaration);
         }
 
         public static IMethodSymbol GetContainingMethod(this SyntaxNode node)
@@ -326,12 +303,10 @@ namespace SharpNative.Compiler
             if (method is ConstructorDeclarationSyntax)
             {
                 return
-                    Context.Compilation.GetSemanticModel(method.SyntaxTree)
-                        .GetDeclaredSymbol((ConstructorDeclarationSyntax) method);
+                    (IMethodSymbol) ModelExtensions.GetDeclaredSymbol(Context.Compilation.GetSemanticModel(method.SyntaxTree), (ConstructorDeclarationSyntax) method);
             }
             return
-                Context.Compilation.GetSemanticModel(method.SyntaxTree)
-                    .GetDeclaredSymbol((MethodDeclarationSyntax) method);
+                (IMethodSymbol) ModelExtensions.GetDeclaredSymbol(Context.Compilation.GetSemanticModel(method.SyntaxTree), (MethodDeclarationSyntax) method);
         }
 
         public static IMethodSymbol GetRootOverride(this IMethodSymbol method)
@@ -601,6 +576,7 @@ namespace SharpNative.Compiler
                 case SpecialType.System_UInt16:
                 case SpecialType.System_UInt32:
                 case SpecialType.System_UInt64:
+                case SpecialType.System_Void:
                     return true;
                 default:
                     return false;

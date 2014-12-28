@@ -5,6 +5,8 @@
 
 #region Imports
 
+using System;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -17,6 +19,13 @@ namespace SharpNative.Compiler
         public static void Go(OutputWriter writer, LiteralExpressionSyntax expression, bool isConst)
         {
             var str = expression.ToString();
+
+
+            if (str.Trim() == "null")
+            {
+                writer.Write("null");
+                return;
+            }
 
             if (str.StartsWith("@"))
             {
@@ -33,10 +42,36 @@ namespace SharpNative.Compiler
             if (type == null)
                 type = typeInfo.ConvertedType;
 
+         
+
             if (type != null && type.SpecialType == SpecialType.System_String)
-                writer.Write("_S(" + str + ")");
+            {
+                if (str != "null")
+                    writer.Write("_S(" + str + ")");
+                else
+                {
+                    writer.Write("null");
+                }
+            }
             else
-                writer.Write(str);
+            {
+                if(type.SpecialType==SpecialType.System_Boolean)
+                    writer.Write(str);
+                else
+                {
+
+                    //Number literals //TODO: make these convert to D Literal Suffixes
+                    var suffix = realTypeSuffixes.Where(j => str.EndsWith(j)).FirstOrDefault();
+                    if (suffix != null)
+                        str = str.RemoveFromEndOfString(suffix);
+
+                     suffix = integerTypeSuffixes.Where(j => str.EndsWith(j)).FirstOrDefault();
+                    if (suffix != null)
+                        str = str.RemoveFromEndOfString(suffix);
+
+                    writer.Write(str);
+                }
+            }
 
             //TODO: will handle these separately
 //            if (typeInfo.Type != null && typeInfo.ConvertedType != null)
@@ -45,5 +80,9 @@ namespace SharpNative.Compiler
 //                    writer.Write(".toByte");
 //            }
         }
+
+        static string[] realTypeSuffixes =  { "F", "f","D", "d", "M", "m"};
+        static string[] integerTypeSuffixes = { "U", "u", "L" ,"l", "UL", "Ul", "uL", "ul", "LU", "Lu", "lU", "lu" };
+
     }
 }

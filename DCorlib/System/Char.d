@@ -6,16 +6,16 @@ class Char : NObject
 {
 
 // Note that this array must be ordered, because binary searching is used on it.
-		 static const char[] WhiteChars = [
-			cast(char) 0x9, cast(char) 0xA, cast(char) 0xB, cast(char) 0xC, cast(char) 0xD,
-			cast(char) 0x85, cast(char) 0x1680, cast(char) 0x2028, cast(char) 0x2029,
-			cast(char) 0x20, cast(char) 0xA0, cast(char) 0x2000, cast(char) 0x2001,
-			cast(char) 0x2002, cast(char) 0x2003, cast(char) 0x2004, cast(char) 0x2005,
-			cast(char) 0x2006, cast(char) 0x2007, cast(char) 0x2008, cast(char) 0x2009,
-			cast(char) 0x200A, cast(char) 0x200B, cast(char) 0x3000, cast(char) 0xFEFF ];
+		 static const wchar[] WhiteChars = [
+			cast(wchar) 0x9, cast(wchar) 0xA, cast(wchar) 0xB, cast(wchar) 0xC, cast(wchar) 0xD,
+			cast(wchar) 0x85, cast(wchar) 0x1680, cast(wchar) 0x2028, cast(wchar) 0x2029,
+			cast(wchar) 0x20, cast(wchar) 0xA0, cast(wchar) 0x2000, cast(wchar) 0x2001,
+			cast(wchar) 0x2002, cast(wchar) 0x2003, cast(wchar) 0x2004, cast(wchar) 0x2005,
+			cast(wchar) 0x2006, cast(wchar) 0x2007, cast(wchar) 0x2008, cast(wchar) 0x2009,
+			cast(wchar) 0x200A, cast(wchar) 0x200B, cast(wchar) 0x3000, cast(wchar) 0xFEFF ];
 
 
-public static bool IsWhiteSpace(char c) {
+public static bool IsWhiteSpace(wchar c) {
 			// TODO: Make this use Array.BinarySearch() when implemented
 			for (int i = 0; i < WhiteChars.length; i++) {
 				if (WhiteChars[i] == c) {
@@ -35,7 +35,7 @@ public static bool IsWhiteSpace(String str, int index) {
 			return IsWhiteSpace(str[index]);
 		}
 
-		public static bool IsDigit(char c)
+		public static bool IsDigit(wchar c)
 		{
 			return isDigit(c);
 		}
@@ -50,9 +50,9 @@ public static bool IsWhiteSpace(String str, int index) {
 		return "";
 	}
 
-	public static String ToString(char value)
+	public static String ToString(wchar value)
 	{
-		return new String(to!string(value));
+		return new String(to!wstring(value));
 	}
 
 	static this()

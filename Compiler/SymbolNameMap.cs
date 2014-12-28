@@ -30,7 +30,7 @@ namespace SharpNative.Compiler
                     return fallbackName;
 
                 if (symbol is INamespaceSymbol && !symbol.ContainingNamespace.IsGlobalNamespace)
-                    result = this[symbol.ContainingNamespace, symbol.ContainingNamespace.GetFullName()] + "." + result;
+                    result = this[symbol.ContainingNamespace, symbol.ContainingNamespace.FullName()] + "." + result;
 
                 return result;
             }

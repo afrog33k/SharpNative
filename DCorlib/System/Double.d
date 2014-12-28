@@ -25,7 +25,7 @@ class Double : NObject
 
 	public static String ToString(double value)
 	{
-		return new String(to!string(value));
+		return new String(to!wstring(value));
 	}
 
 }

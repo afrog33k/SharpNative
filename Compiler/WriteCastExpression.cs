@@ -20,11 +20,11 @@ namespace SharpNative.Compiler
             var castingFrom = TypeProcessor.GetTypeInfo(expression.Expression).Type ??
                               TypeProcessor.GetTypeInfo(expression).Type;
 
-            var srcTypeCpp = TypeProcessor.ConvertType(castingFrom);
+            var srcTypeDlang = TypeProcessor.ConvertType(castingFrom);
             var destType = TypeProcessor.GetTypeInfo(expression.Type).Type;
             var destTypeDlang = TypeProcessor.TryConvertType(expression.Type);
 
-            if (destTypeDlang == srcTypeCpp)
+            if (destTypeDlang == srcTypeDlang)
                 Core.Write(writer, expression.Expression);
             else
                 //if (symbol.Symbol != null)// && srcTypeCpp != "int" && srcTypeCpp != "System.String" && srcTypeCpp != "bool")
@@ -98,7 +98,7 @@ namespace SharpNative.Compiler
                     return;
                 }
 
-                if (TypeProcessor.IsPrimitiveType(srcTypeCpp) && TypeProcessor.IsPrimitiveType(destTypeDlang))
+                if (TypeProcessor.IsPrimitiveType(srcTypeDlang) && TypeProcessor.IsPrimitiveType(destTypeDlang))
                 {
                     writer.Write("(cast(" + destTypeDlang + (destType.IsValueType ? "" : "") + ")");
                     Core.Write(writer, expression.Expression);

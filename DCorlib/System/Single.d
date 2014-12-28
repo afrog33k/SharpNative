@@ -15,7 +15,7 @@ class Single : NObject
 
 	public static String ToString(float value)
 	{
-		return new String(to!string(value));
+		return new String(to!wstring(value));
 	}
 
 }

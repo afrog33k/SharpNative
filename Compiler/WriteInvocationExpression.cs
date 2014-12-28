@@ -38,47 +38,14 @@ namespace SharpNative.Compiler
             string typeParameters = null;
             ExpressionSyntax subExpressionOpt;
 
-            if (methodSymbol.ContainingType.FullName() == "Enum")
-            {
-                if (methodSymbol.Name == "Parse")
-                {
-                    WriteEnumParse(writer, invocationExpression);
-                    return;
-                }
-
-                if (methodSymbol.Name == "GetValues")
-                {
-                    WriteEnumGetValues(writer, invocationExpression);
-                    return;
-                }
-            }
+          
 
             if (expressionSymbol.Symbol is IEventSymbol)
             {
                 methodName = "Invoke";
-                    //Would need to append the number of arguments to this to support events.  However, events are not currently supported
+                   
             }
-                //            else if (memberReferenceExpressionOpt != null && memberReferenceExpressionOpt.Expression is PredefinedTypeSyntax)
-                //            {
-                //                switch (methodSymbol.Name)
-                //                {
-                //                    case "Parse":
-                //                        Core.Write(writer, invocationExpression.ArgumentList.Arguments.Single().Expression);
-                //
-                //                        writer.Write(".to");
-                //                        writer.Write(TypeProcessor.ConvertType(methodSymbol.ReturnType));
-                //
-                //                        return;
-                //                    case "TryParse":
-                //                        methodName = "TryParse" + TypeProcessor.ConvertType(methodSymbol.Parameters[1].Type);
-                //                        extensionNamespace = "SharpNative";
-                //                        break;
-                //                    default:
-                //                        methodName = methodSymbol.Name;
-                //                        extensionNamespace = "SharpNative";
-                //                        break;
-                //                }
-                //            }
+               
 
             else if (methodSymbol.MethodKind == MethodKind.DelegateInvoke)
                 methodName = null;
@@ -128,7 +95,9 @@ namespace SharpNative.Compiler
             //				methodName = "toString";
             //			}
 
-            var directInvocationOnBasics = methodSymbol.ContainingType.IsBasicType();
+                //Invocation on basics should come from boxing the basic then calling on the boxed type, unless static
+            var directInvocationOnBasics = methodSymbol.ContainingType.IsBasicType() && methodSymbol.IsStatic;
+            //&& methodSymbol.ContainingType!=Context.Instance.Type; //If we are currently working on a basic type e.g. in corlib, don't alter the code
 
             //Extension methods in Dlang are straightforward, although this could lead to clashes without qualification
 
@@ -136,15 +105,17 @@ namespace SharpNative.Compiler
             {
                 if (extensionNamespace == null)
                 {
-                    extensionNamespace = memberType.ContainingNamespace.FullName() + "." + memberType.Name;
-                        //memberType.ContainingNamespace.FullName() +"."+ memberType.Name;
+                    extensionNamespace = TypeProcessor.ConvertType(methodSymbol.ContainingType,true,false);
+                        // methodSymbol.ContainingNamespace.FullName() + "." + methodSymbol.ContainingType.Name;
+                    //memberType.ContainingNamespace.FullName() +"."+ memberType.Name;
                 }
 
                 writer.Write(extensionNamespace);
 
                 if (methodName != null)
                 {
-                    writer.Write(".");
+//                    if (symbolInfo.Symbol.ContainingType != Context.Instance.Type)
+                        writer.Write(".");
                     writer.Write(methodName);
                 }
 
@@ -162,49 +133,10 @@ namespace SharpNative.Compiler
             {
                 if (memberReferenceExpressionOpt != null)
                 {
-                    //Check against lowercase toString since it gets replaced with the lowered version before we get here
-                    if (methodName == "toString")
-                    {
-                        if (memberType.TypeKind == TypeKind.Enum || isNullableEnum)
-                        {
-                            var enumType = memberType.TypeKind == TypeKind.Enum
-                                ? memberType
-                                : memberType.As<INamedTypeSymbol>().TypeArguments.Single();
+                   
 
-                            //calling ToString() on an enum forwards to our enum's special ToString method
-                            writer.Write(enumType.ContainingNamespace.FullNameWithDot());
-                            writer.Write(WriteType.TypeName((INamedTypeSymbol) enumType));
-                            writer.Write(".ToString(");
-                            Core.Write(writer, memberReferenceExpressionOpt.Expression);
-                            writer.Write(")");
-
-                            if (invocationExpression.ArgumentList.Arguments.Count > 0)
-                            {
-                                throw new Exception(
-                                    "Enum's ToString detected with parameters.  These are not supported " +
-                                    Utility.Descriptor(invocationExpression));
-                            }
-
-                            return;
-                        }
-
-                        if (memberType.SpecialType == SpecialType.System_Byte)
-                        {
-                            //Calling ToString on a byte needs to take special care since it's signed in the JVM
-                            writer.Write("System.SharpNative.ByteToString(");
-                            Core.Write(writer, memberReferenceExpressionOpt.Expression);
-                            writer.Write(")");
-
-                            if (invocationExpression.ArgumentList.Arguments.Count > 0)
-                            {
-                                throw new Exception(
-                                    "Byte's ToString detected with parameters.  These are not supported " +
-                                    Utility.Descriptor(invocationExpression));
-                            }
-
-                            return;
-                        }
-                    }
+                       
+                    
                 }
 
                 if (subExpressionOpt != null)
@@ -225,15 +157,18 @@ namespace SharpNative.Compiler
                 }
                 else if (methodSymbol.IsStatic && extensionNamespace == null)
                 {
-                    var str = TypeProcessor.ConvertType(methodSymbol.ContainingType);
-                    if (str == "Array_T")
-                        // Array is the only special case, otherwise generics have to be specialized to access static members
-                        str = "Array";
+                    if (methodSymbol.ContainingType != Context.Instance.Type)
+                    {
+                        var str = TypeProcessor.ConvertType(methodSymbol.ContainingType);
+                        if (str == "Array_T")
+                            // Array is the only special case, otherwise generics have to be specialized to access static members
+                            str = "Array";
 
-                    writer.Write(str);
-                    //                    writer.Write(methodSymbol.ContainingNamespace.FullNameWithDot());
-                    //                    writer.Write(WriteType.TypeName(methodSymbol.ContainingType));
-                    writer.Write(".");
+                        writer.Write(str);
+                        //                    writer.Write(methodSymbol.ContainingNamespace.FullNameWithDot());
+                        //                    writer.Write(WriteType.TypeName(methodSymbol.ContainingType));
+                        writer.Write(".");
+                    }
                 }
 
                 if (methodSymbol.MethodKind != MethodKind.DelegateInvoke)
@@ -256,7 +191,10 @@ namespace SharpNative.Compiler
                         declaringSyntaxReferences.FirstOrDefault()
                             .As<MethodDeclarationSyntax>()
                             .Modifiers.Any(SyntaxKind.NewKeyword))
-                        writer.Write(TypeProcessor.ConvertType(methodSymbol.ContainingType) + ".");
+                    {
+//                        if (symbolInfo.Symbol.ContainingType != Context.Instance.Type)
+                            writer.Write(TypeProcessor.ConvertType(methodSymbol.ContainingType) + ".");
+                    }
 
                     //TODO: fix this for abstract too or whatever other combination
                     //TODO: create a better fix fot this
@@ -628,56 +566,8 @@ namespace SharpNative.Compiler
             return methodSymbol.Parameters.ElementAt(i).IsParams;
         }
 
-        /// <summary>
-        ///     calls to Enum.Parse get re-written as calls to our special Parse methods on each enum.  We assume the first
-        ///     parameter to Enum.Parse is a a typeof()
-        /// </summary>
-        private static void WriteEnumParse(OutputWriter writer, InvocationExpressionSyntax invocationExpression)
-        {
-            var args = invocationExpression.ArgumentList.Arguments;
+       
 
-            if (args.Count < 2 || args.Count > 3)
-                throw new Exception("Expected 2-3 args to Enum.Parse");
-
-            if (args.Count == 3 &&
-                (!(args[2].Expression is LiteralExpressionSyntax) ||
-                 args[2].Expression.As<LiteralExpressionSyntax>().ToString() != "false"))
-            {
-                throw new NotImplementedException("Case-insensitive Enum.Parse is not supported " +
-                                                  Utility.Descriptor(invocationExpression));
-            }
-
-            if (!(args[0].Expression is TypeOfExpressionSyntax))
-            {
-                throw new Exception("Expected a typeof() expression as the first parameter of Enum.Parse " +
-                                    Utility.Descriptor(invocationExpression));
-            }
-
-            var type = TypeProcessor.GetTypeInfo(args[0].Expression.As<TypeOfExpressionSyntax>().Type).Type;
-            //ModelExtensions.GetTypeInfo(Program.GetModel(invocationExpression), args[0].Expression.As<TypeOfExpressionSyntax>().Type).Type;
-            writer.Write(type.ContainingNamespace.FullNameWithDot());
-            writer.Write(WriteType.TypeName((INamedTypeSymbol) type));
-            writer.Write(".Parse(");
-            Core.Write(writer, args[1].Expression);
-            writer.Write(")");
-        }
-
-        private static void WriteEnumGetValues(OutputWriter writer, InvocationExpressionSyntax invocationExpression)
-        {
-            if (!(invocationExpression.ArgumentList.Arguments[0].Expression is TypeOfExpressionSyntax))
-            {
-                throw new Exception("Expected a typeof() expression as the first parameter of Enum.GetValues " +
-                                    Utility.Descriptor(invocationExpression));
-            }
-
-            //            var type = ModelExtensions.GetTypeInfo(Program.GetModel(invocationExpression), invocationExpression.ArgumentList.Arguments[0].Expression.As<TypeOfExpressionSyntax>().Type).Type;
-            var type =
-                TypeProcessor.GetTypeInfo(
-                    invocationExpression.ArgumentList.Arguments[0].Expression.As<TypeOfExpressionSyntax>().Type).Type;
-
-            writer.Write(type.ContainingNamespace.FullNameWithDot());
-            writer.Write(WriteType.TypeName((INamedTypeSymbol) type));
-            writer.Write(".Values");
-        }
+       
     }
 }

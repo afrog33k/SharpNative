@@ -54,7 +54,7 @@ namespace SharpNative.Compiler
             switch (dType)
             {
                 case "String":
-                    return "char *";
+                    return "char *"; //TODO: Should be dependent on the charset
                 case "Array_T!(String)":
                     return "char**";
             }
@@ -67,37 +67,52 @@ namespace SharpNative.Compiler
             //Do Pinvoke stuff
             //PInvokeFunction < int (int, double)> foo(library, "foo");
             //int i = foo(42, 2.0);
-            int dllImportId = -1;
-            AttributeSyntax import =
-                Context.Instance.DllImports.FirstOrDefault(
-                    d =>
-                        d.ArgumentList.Arguments.FirstOrDefault(
-                            k =>
-                                k.Expression != null &&
-                                k.Expression.ToString() ==
-                                pinvokeAttributes.ArgumentList.Arguments.FirstOrDefault(g => g.Expression != null)
-                                    .Expression.ToString()) != null);
-            if (import != null)
-                dllImportId = Context.Instance.DllImports.IndexOf(import);
-
-            if (dllImportId == -1)
-            {
-                Context.Instance.DllImports.Add(pinvokeAttributes);
-                dllImportId = Context.Instance.DllImports.IndexOf(pinvokeAttributes);
-            }
+           
 //			var methodParams = methodSymbol.Parameters.Any () ? methodSymbol.Parameters.Select (h => ConvertPInvokeType (h.Type)).Aggregate ((k, y) => (k) + " ," + y) : "";
             var returnString = ConvertPInvokeType(methodSymbol.ReturnType);
 
-            var functionCall = String.Format("extern (C) {0} function ({1})", returnString,
-                GetParameterList(methodSymbol.Parameters));
-            writer.WriteLine("alias " + functionCall + " " + methodName + "_func_alias;");
-            var convertedParameters = ConvertParameters(methodSymbol.Parameters);
-            writer.WriteLine(String.Format("auto {1} = cast({2}) LoadLibraryFunc(__DllImportMap[{0}], \"{1}\");",
-                dllImportId, methodName, methodName + "_func_alias"));
-            writer.WriteLine(String.Format((returnString != "void" ? "return " : "") + "{0}({1});", methodName,
-                convertedParameters.Count > 0
-                    ? convertedParameters.Select(h => h).Aggregate((k, y) => (k) + " ," + y)
-                    : ""));
+            if (pinvokeAttributes != null)
+            {
+                int dllImportId = -1;
+                AttributeSyntax import =
+                    Context.Instance.DllImports.FirstOrDefault(
+                        d =>
+                            d.ArgumentList.Arguments.FirstOrDefault(
+                                k =>
+                                    k.Expression != null &&
+                                    k.Expression.ToString() ==
+                                    pinvokeAttributes.ArgumentList.Arguments.FirstOrDefault(g => g.Expression != null)
+                                        .Expression.ToString()) != null);
+                if (import != null)
+                    dllImportId = Context.Instance.DllImports.IndexOf(import);
+
+                if (dllImportId == -1)
+                {
+                    Context.Instance.DllImports.Add(pinvokeAttributes);
+                    dllImportId = Context.Instance.DllImports.IndexOf(pinvokeAttributes);
+                }
+
+                var functionCall = String.Format("extern (C) {0} function ({1})", returnString,
+                    GetParameterList(methodSymbol.Parameters));
+                writer.WriteLine("alias " + functionCall + " " + methodName + "_func_alias;");
+                var convertedParameters = ConvertParameters(methodSymbol.Parameters);
+                writer.WriteLine(String.Format("auto {1} = cast({2}) LoadLibraryFunc(__DllImportMap[{0}], \"{1}\");",
+                    dllImportId, methodName, methodName + "_func_alias"));
+                writer.WriteLine(String.Format((returnString != "void" ? "return " : "") + "{0}({1});", methodName,
+                    convertedParameters.Count > 0
+                        ? convertedParameters.Select(h => h).Aggregate((k, y) => (k) + " ," + y)
+                        : ""));
+            }
+            else
+            {
+               
+                var convertedParameters = ConvertParameters(methodSymbol.Parameters);
+               writer.WriteLine("//Extern (Internal) Method Call");
+                writer.WriteLine(String.Format((returnString != "void" ? "return " : "") + "__{0}({1});", methodName,
+                    convertedParameters.Count > 0
+                        ? convertedParameters.Select(h => h).Aggregate((k, y) => (k) + " ," + y)
+                        : ""));
+            }
         }
 
 

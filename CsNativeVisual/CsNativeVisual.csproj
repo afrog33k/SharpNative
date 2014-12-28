@@ -138,7 +138,6 @@
     <Compile Include="Extensions.cs" />
     <Compile Include="FileItem.cs" />
     <Compile Include="MainWindowViewModel.cs" />
-    <Compile Include="NativeCompilationUtils.cs" />
     <Compile Include="NotificationViewModel.cs" />
     <Compile Include="Views\Dialogs\CompilerOptionsViewModel.cs" />
     <Compile Include="Views\Dialogs\CompilerOptionsWindow.xaml.cs">

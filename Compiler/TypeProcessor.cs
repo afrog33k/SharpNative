@@ -215,7 +215,7 @@ namespace SharpNative.Compiler
         private static readonly ConcurrentDictionary<ITypeSymbol, string> _cachedTypes =
             new ConcurrentDictionary<ITypeSymbol, string>();
 
-        public static string ConvertType(ITypeSymbol typeSymbol, bool localize = true)
+        public static string ConvertType(ITypeSymbol typeSymbol, bool localize = true, bool usebasicname=true)
         {
             AddUsedType(typeSymbol);
 
@@ -223,6 +223,12 @@ namespace SharpNative.Compiler
 
             if (ret == null)
                 throw new Exception("Could not convert type " + typeSymbol);
+
+            if (!usebasicname)
+                if (typeSymbol.IsPrimitive())
+                {
+                    ret = typeSymbol.ContainingNamespace.FullName() + "." + typeSymbol.Name;
+                }
 
             if (localize)
             {
@@ -233,7 +239,11 @@ namespace SharpNative.Compiler
                 if (name != null)
                     ret = ret.RemoveFromStartOfString(name.Name.ToFullString() + ".Namespace.");
             }
+
+           
+
             return ret;
+
         }
 
         public static string TryConvertType(ITypeSymbol typeInfo, bool localize = true)
@@ -254,8 +264,6 @@ namespace SharpNative.Compiler
 
             var array = typeSymbol as IArrayTypeSymbol;
 
-            var ptr = array != null && (array.ElementType.IsValueType == false);
-
             if (array != null)
             {
                 var typeString = TryConvertType(array.ElementType, localize);
@@ -268,13 +276,7 @@ namespace SharpNative.Compiler
                     if (name != null)
                         typeString = typeString.RemoveFromStartOfString(name.Name.ToFullString() + ".Namespace.");
                 }
-                //if (array.Rank == 1) // Jagged / Single
                 return "Array_T!(" + typeString + ")";
-//				else
-//				{
-//					return  "Array_T!(" + typeString + Enumerable.Range (0, array.Rank-1).Select (l => "[]").Aggregate ((a, b) => a + b).ToString () +")";
-//
-//				}
             }
 
             if (typeSymbol.TypeKind == TypeKind.PointerType)
@@ -290,46 +292,38 @@ namespace SharpNative.Compiler
             if (typeSymbol.TypeKind == TypeKind.TypeParameter)
                 return typeSymbol.Name;
 
-//			if (typeSymbol.TypeKind == TypeKind.Delegate) {
-//				var dlg = named.DelegateInvokeMethod.As<IMethodSymbol> ();
-//				if (dlg.Parameters.Length == 0)
-//					return "() => " + TryConvertType (dlg.ReturnType);
-//				else
-//					return "(" + string.Join (", ", dlg.Parameters.ToList ().Select (o => TryConvertType (o.Type))) + ") => " + TryConvertType (dlg.ReturnType);
-
-//			}
-
-            // if (typeSymbol.TypeKind == TypeKind.Enum)
-            //   return "int"; //enums are always ints
-
             if (named.ContainingNamespace.ToString() == "System" && named.Name == "Exception")
                 return "System.Namespace.NException";
 
+            //TODO: Add explicit support for Nullable
             if (named != null && named.Name == "Nullable" && named.ContainingNamespace.ToString() == "System")
             {
                 //Nullable types
-                var convertedType = TryConvertType(named.TypeArguments.Single());
-
-                switch (convertedType)
+                if (named.TypeArguments.Any())
                 {
-                    case "Int":
-                        return "int";
-                    case "Boolean":
-                        return "bool";
-                    case "Byte":
-                        return "byte";
-                    case "Short":
-                        return "short";
-                    case "Float":
-                        return "float";
-                    case "Double":
-                        return "double";
-                    case "Char":
-                        return "char";
-                    case "Long":
-                        return "long";
-                    default:
-                        return convertedType;
+                    var convertedType = TryConvertType(named.TypeArguments.FirstOrDefault());
+
+                    switch (convertedType)
+                    {
+                        case "Int":
+                            return "int";
+                        case "Boolean":
+                            return "bool";
+                        case "Byte":
+                            return "byte";
+                        case "Short":
+                            return "short";
+                        case "Float":
+                            return "float";
+                        case "Double":
+                            return "double";
+                        case "Char":
+                            return "wchar"; // C#'s chars are 16-bit unicode
+                        case "Long":
+                            return "long";
+                        default:
+                            return convertedType;
+                    }
                 }
             }
 
@@ -384,7 +378,7 @@ namespace SharpNative.Compiler
                     return "short";
 
                 case "System.Namespace.Char":
-                    return "char";
+                    return "wchar";
 
                 case "System.Namespace.Array":
                     return "Array_T"; //All template (generic) classes have atleast one "_T" appended
@@ -457,7 +451,7 @@ namespace SharpNative.Compiler
                 case "double":
                 case "short":
                 case "long":
-                case "char":
+                case "wchar":
                 case "bool":
                     return true;
                 default:

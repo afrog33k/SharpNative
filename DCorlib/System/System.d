@@ -63,9 +63,9 @@ struct __IA(T) //Internal Array Struct, to make array creation easier
 }
 
 //TODO: Improve this to reuse strings
-public static String _S(string text)
+public static String _S(wstring text)
 {
-	return new String(text);
+	return new String((text));
 }
 
  T __TypeNew(T,U...)(U args)
@@ -972,7 +972,7 @@ public enum PlatformID
 				return new Version(0, 0, 0, 0);
 			}
 			for (int i = 0; i < info.Length; i++) {
-				char c = info[i];
+				wchar c = info[i];
 				if (Char.IsDigit(c)) {
 					if (number < 0) {
 						number = (c - '0');
@@ -1156,7 +1156,7 @@ class Boxed (T) : NObject
 
 	public override String ToString()
 	{
-		return new String(this.toString());
+		return new String(to!wstring(this.toString()));
 	}
 }
 
@@ -1450,7 +1450,7 @@ bool IsCast(T, U)(U obj)  if (is(T == interface))// && is(U :NObject))
 	//{
 			if(cast(T)(object) is null && object !is null)
 			{
-				throw new InvalidCastException(new String("Cannot cast " ~ object.classinfo.name ~ " to " ~ T.classinfo.name));
+				throw new InvalidCastException(new String(cast(wstring)("Cannot cast " ~ object.classinfo.name ~ " to " ~ T.classinfo.name)));
 			}
 			return cast(T)(object);
 	//}

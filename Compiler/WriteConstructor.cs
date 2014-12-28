@@ -197,13 +197,7 @@ namespace SharpNative.Compiler
             return method.Modifiers.Any(SyntaxKind.OverrideKeyword);
         }
 
-        public static string TypeParameter(TypeParameterSyntax prm, IMethodSymbol methodSymbol,
-            MethodDeclarationSyntax methodSyntax)
-        {
-            var identifier = Utility.TypeConstraints(prm, methodSyntax.ConstraintClauses);
-
-            return identifier;
-        }
+      
 
 
         public static void WriteStaticConstructor(OutputWriter writer, ConstructorDeclarationSyntax staticConstructor,
@@ -216,23 +210,23 @@ namespace SharpNative.Compiler
             writer.WriteLine("static this()");
             writer.OpenBrace();
 
+            if (otherStatics != null) //We need to write the static initializers before anything else
+            {
+                foreach (var statement in otherStatics)
+                {
+                    var nodeString = statement;
+
+                    if (nodeString != null) writer.WriteLine(nodeString);
+                }
+            }
+
             if (staticConstructor.Body != null)
             {
                 foreach (var statement in staticConstructor.Body.As<BlockSyntax>().Statements)
                     Core.Write(writer, statement);
             }
 
-            if (otherStatics != null)
-            {
-                foreach (var statement in otherStatics)
-                {
-                    var nodeString = statement;
-//				if (nodeString.EndsWith (" SharpNative;\n")) {
-//					nodeString = nodeString.RemoveFromEndOfString(" SharpNative;\n")+";\n";
-//				}
-                    writer.WriteLine(nodeString);
-                }
-            }
+           
 
             writer.CloseBrace();
 

@@ -65,33 +65,41 @@ namespace SharpNative.Compiler
         private static void WriteNamespaces()
         {
             //For now ignore system namespace to prevent conflicts, later we should just check if the module is defined in our sources
-
             foreach (var @namespace in Context.Namespaces)
             {
-                if (!@namespace.Key.StartsWith("System"))
+//                if (!@namespace.Key.StartsWith("System") && !isCorlib)
+
+                var anyExtern = !@namespace.Key.DeclaringSyntaxReferences.Any();
+                if(!anyExtern) // This should take care of corlib and external assemblies at once
                 {
                     // TODO: this should write nses for only types defined in binary, this should be a switch, we could be compiling corlib
-                    using (var writer = new OutputWriter(@namespace.Key, @namespace.Key) {IsNamespace = true})
+                    using (var writer = new OutputWriter(@namespace.Key.GetModuleName(), @namespace.Key.GetModuleName()) {IsNamespace = true})
                     {
-                        writer.WriteLine("module " + @namespace.Key + ";");
+                        writer.WriteLine("module " + @namespace.Key.GetModuleName() + ";");
+                        List<string> addedTypes = new List<string>();
 
                         foreach (var type in @namespace.Value)
                         {
-                            var className = type.RemoveFromStartOfString(@namespace.Key + ".");
-                            var properClassName = @namespace.Key.RemoveFromEndOfString(".Namespace") + "." + className +
-                                                  "." + className;
 
-                            if (className.EndsWith("Namespace"))
-                                continue;
+                            var properClassName = type.GetModuleName();
 
-                            if (className.StartsWith("__Boxed_")) //TODO: need a better system for this
+                            if (addedTypes.Contains(properClassName)) continue;
+
+                           
+
+                            var className = type.Name;
+
+                            if (properClassName.Trim() != String.Empty && className.Trim() != String.Empty)
+                                writer.WriteLine("alias " + properClassName + " " + className + ";");
+
+                            if (type.TypeKind == TypeKind.Struct)
                             {
-                                properClassName = @namespace.Key.RemoveFromEndOfString(".Namespace") + "." +
-                                                  className.RemoveFromStartOfString("__Boxed_") + "." + className;
-                                writer.WriteLine("alias " + properClassName + " " + className + ";");
+                                properClassName = type.GetBoxedModuleName();
+                                writer.WriteLine("alias " + properClassName + " __Boxed_" + className + ";");
+
                             }
-                            else
-                                writer.WriteLine("alias " + properClassName + " " + className + ";");
+
+                            addedTypes.Add(properClassName);
                         }
                     }
                 }
@@ -148,13 +156,17 @@ namespace SharpNative.Compiler
 
                 if (buildResult.Success == false)
                 {
-                    throw new Exception("Build failed. " + buildResult.Diagnostics.Count() + " errors: " +
-                                        string.Join("", buildResult.Diagnostics.Select(o => "\n  " + o.ToString())));
+                    if (buildResult.Diagnostics.FirstOrDefault().Id != "CS5001") // No main
+                    {
+                        throw new Exception("Build failed. " + buildResult.Diagnostics.Count() + " errors: " +
+                                            string.Join("", buildResult.Diagnostics.Select(o => "\n  " + o.ToString())));
+                    }
                 }
                 Console.WriteLine("Built in " + sw.Elapsed.TotalMilliseconds + " ms");
             }
         }
 
+        private static bool isCorlib = false;
         private static void Generate(IEnumerable<string> extraTranslation)
         {
             try
@@ -193,7 +205,7 @@ namespace SharpNative.Compiler
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Failed" + ex.Message + ex.StackTrace +
+                Console.WriteLine("Failed with exception: " + ex.Message + ex.StackTrace +
                                   ((ex.InnerException != null)
                                       ? ex.InnerException.Message + ex.InnerException.StackTrace
                                       : ""));
@@ -228,6 +240,8 @@ namespace SharpNative.Compiler
             }
         }
 
+        private static bool RunInParallel = false;
+
         private static void ProcessTypes()
         {
             var allTypes = _compilation.SyntaxTrees
@@ -241,6 +255,7 @@ namespace SharpNative.Compiler
                 .GroupBy(o => o.Symbol.ContainingNamespace.FullNameWithDot() + o.TypeName)
                 .ToList();
 
+            if(RunInParallel)
             allTypes.Parallel(type => //.ForEach(type => //.Parallel(type =>
             {
                 Context.Instance = new Context
@@ -267,10 +282,43 @@ namespace SharpNative.Compiler
                     catch (Exception ex)
                     {
                         //TODO: remove this when done with CorLib 
-                        //   throw ex;
+                           throw ex;
                     }
                 }
             });
+            else
+            {
+                allTypes.ForEach(type => //.ForEach(type => //.Parallel(type =>
+            {
+                Context.Instance = new Context
+                {
+                    TypeName = type.First().TypeName,
+                    Partials =
+                        type.Select(
+                            o =>
+                                new Context.SyntaxAndSymbol
+                    {
+                        Symbol = o.Symbol,
+                        Syntax = o.Syntax
+                    })
+                            .Where(o => !DoNotWrite.ContainsKey(o.Syntax))
+                            .ToList()
+                };
+
+                if (Context.Instance.Partials.Count > 0)
+                {
+                    try
+                    {
+                        WriteType.Go();
+                    }
+                    catch (Exception ex)
+                    {
+                        //TODO: remove this when done with CorLib 
+                        throw ex;
+                    }
+                }
+            });
+            }
 
             var symbols =
                 allTypes.SelectMany(o => o)
@@ -278,6 +326,12 @@ namespace SharpNative.Compiler
                     .Select(o => o.Symbol)
                     .Select(g => g)
                     .Where(g => g != null);
+
+            if (symbols.Any(j=>j.ContainingAssembly.Name == "mscorlib"))
+            {
+                isCorlib = true;
+            }
+
             WriteConstructorBody.WriteConstructorsHelper(symbols);
         }
 
@@ -292,6 +346,7 @@ namespace SharpNative.Compiler
                     TypeName = WriteType.TypeName(GetModel(o).GetDeclaredSymbol(o))
                 }).GroupBy(o => o.Symbol.ContainingNamespace.FullNameWithDot() + o.TypeName)
                 .ToList();
+            if(RunInParallel)
             delegates.Parallel(type => //.ForEach(type => //.Parallel(type =>
             {
                 Context.Instance = new Context
@@ -312,6 +367,29 @@ namespace SharpNative.Compiler
                 if (Context.Instance.DelegatePartials.Count > 0)
                     WriteDelegate.Go();
             });
+            else
+            {
+                delegates.ForEach(type => //.ForEach(type => //.Parallel(type =>
+            {
+                Context.Instance = new Context
+                {
+                    TypeName = type.First().TypeName,
+                    DelegatePartials =
+                        type.Select(
+                            o =>
+                                new Context.DelegateSyntaxAndSymbol
+                    {
+                        Symbol = o.Symbol,
+                        Syntax = o.Syntax
+                    })
+                            .Where(o => !DoNotWrite.ContainsKey(o.Syntax))
+                            .ToList()
+                };
+
+                if (Context.Instance.DelegatePartials.Count > 0)
+                    WriteDelegate.Go();
+            });
+            }
         }
 
         private static void ProcessAnonymousTypes()
@@ -399,11 +477,11 @@ namespace SharpNative.Compiler
                     }
                     var nodeArray = replacedNodes.ToArray();
 
-                    if (!isroot)
-                        Console.WriteLine("No root here ... move along ...");
-                    else
+//                    if (!isroot)
+//                        Console.WriteLine("No root here ... move along ...");
+//                    else
                     {
-                        Console.WriteLine("Lets do the magic...");
+//                        Console.WriteLine("Lets do the magic...");
                         //						for (int i = 0, nodeArrayLength = nodeArray.Length; i < nodeArrayLength; i++)
                         //						{
                         //							var replacedNode = nodeArray [i];

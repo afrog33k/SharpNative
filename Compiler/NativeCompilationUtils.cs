@@ -42,22 +42,22 @@ namespace SharpNative.Compiler
             public LdcOptions()
             {
                 PathOfCompilerTools = @"/usr/local/bin/";
-//				PathOfCompilerTools = @"/Projects/Experiments/SharpNative/iOS/thumb7-ios-ldc/bin"; // iOS
+                //				PathOfCompilerTools = @"/Projects/Experiments/SharpNative/iOS/thumb7-ios-ldc/bin"; // iOS
 
                 //				CompilerExe = "ldmd2-0.15"; // lat	est version of ldm2
-//				CompilerExe = "ldmd2"; //Doesnt work with AsIs Test (sharplang)
+                //				CompilerExe = "ldmd2"; //Doesnt work with AsIs Test (sharplang)
                 CompilerExe = "ldc"; //iOS
 
-//				CompilerExe = "dmd";//Fast compile
+                //				CompilerExe = "dmd";//Fast compile
 
                 //fannkuch(12) -noboundscheck -fPIC--> (25s)
-//				OptimizationFlags = " -noboundscheck -fPIC -m64 -O  -inline -release \"-I/Projects/Experiments/SharpNative/ldc2-0.15.0/import\" ";
+                //				OptimizationFlags = " -noboundscheck -fPIC -m64 -O  -inline -release \"-I/Projects/Experiments/SharpNative/ldc2-0.15.0/import\" ";
 
                 OptimizationFlags =
                     "  -m64 -O  -noboundscheck -O -fPIC  -inline -release \"-I/usr/local/Cellar/ldc/0.15.0/include/d\" ";
-//				OptimizationFlags = " -mtriple=thumbv7-apple-ios5.0.0 -disable-fp-elim -float-abi=softfp  \"-I/Projects/Experiments/SharpNative/iOS/thumb7-ios-ldc/import/\" "; //iOS
+                //				OptimizationFlags = " -mtriple=thumbv7-apple-ios5.0.0 -disable-fp-elim -float-abi=softfp  \"-I/Projects/Experiments/SharpNative/iOS/thumb7-ios-ldc/import/\" "; //iOS
 
-//				OptimizationFlags = "  -inline -release -m64 -noboundscheck -O -fPIC \"-I/usr/local/Cellar/dmd/2.066.0/include/d2\" ";
+                //				OptimizationFlags = "  -inline -release -m64 -noboundscheck -O -fPIC \"-I/usr/local/Cellar/dmd/2.066.0/include/d2\" ";
                 //								OptimizationFlags = "  -inline -release -m64  -O  \"-I/usr/local/Cellar/dmd/2.066.0/include/d2\" ";
 
                 LinkerOptions = "";

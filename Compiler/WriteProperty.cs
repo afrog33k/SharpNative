@@ -213,7 +213,7 @@ namespace SharpNative.Compiler
 
                 if (getter != null && isProxy)
                 {
-                    writer.WriteLine(acccessmodifiers + isOverride + typeString + "" + name + "() " + "@property " +
+                    writer.WriteLine(acccessmodifiers  + typeString + "" + name + "() " + "@property " +
                                      "{ return Value." + name + ";}");
                 }
                 else
@@ -225,13 +225,13 @@ namespace SharpNative.Compiler
                         }
                         else if (property.Modifiers.Any(SyntaxKind.AbstractKeyword) || isInterface)
                         {
-                            writer.WriteLine(acccessmodifiers + typeString + " " + name + "()" + isOverride +
+                            writer.WriteLine(acccessmodifiers + typeString + " " + name + "()"  +
                                              " @property;");
                         }
 
                         else
                         {
-                            writer.WriteLine(acccessmodifiers + isOverride + typeString + "" + name + "() " +
+                            writer.WriteLine(acccessmodifiers  + typeString + "" + name + "() " +
                                              "@property " + "{ return " + fieldName + ";}");
                         }
                     }

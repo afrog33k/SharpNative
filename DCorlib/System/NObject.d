@@ -23,14 +23,15 @@ public class NObject //: ICloneable //Inheriting from ICloneable gives symbol mu
     {
         return false;
     }
+
     public override string  toString() // Needed to  use built-in functions
     {
-        return ToString().Text;
+        return std.conv.to!string(ToString().Text);
     }
 
 	public String ToString()
 	{
-		return new String(this.toString());
+		return new String(std.conv.to!wstring(this.toString()));
 	}
 
 	public int GetHashCode() 

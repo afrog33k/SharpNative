@@ -10,5 +10,10 @@ namespace SharpNative.Compiler
         public TempWriter() : base("", "", false)
         {
         }
+
+        public override string ToString()
+        {
+            return base.ToString();
+        }
     }
 }

@@ -74,7 +74,7 @@ namespace SharpNative.Compiler
             var methodName = OverloadResolver.MethodName(methodSymbol);
 
             var pinvokeAttributes = method.GetAttribute(Context.DllImport);
-                // Fix this to actually look for the type, not just by name ...
+            var isInternalPInvoke = pinvokeAttributes == null && method.Modifiers.Any(SyntaxKind.ExternKeyword);
 
             //TODO: Improve partial class / method support -- partials classes work, methods need minor work ...
             if (method.Modifiers.Any(SyntaxKind.PartialKeyword) && method.Body == null)
@@ -136,7 +136,7 @@ namespace SharpNative.Compiler
             //                writer.IsInterface = true;
             //	        }
 
-            var returnTypeString = TypeProcessor.ConvertType(method.ReturnType) + " ";
+            var returnTypeString = TypeProcessor.ConvertType(method.ReturnType,true) + " ";
             var methodSignatureString = "";
             if (method.ReturnType.ToString() == "void")
                 returnTypeString = ("void ");
@@ -325,6 +325,10 @@ namespace SharpNative.Compiler
 
                 if (pinvokeAttributes != null)
                     WritePInvokeMethodBody.Go(writer, methodName, methodSymbol, pinvokeAttributes);
+
+                if(isInternalPInvoke)
+                    WritePInvokeMethodBody.Go(writer, methodName, methodSymbol, null);
+
             }
 
             writer.CloseBrace();
@@ -357,12 +361,6 @@ namespace SharpNative.Compiler
             return method.Modifiers.Any(SyntaxKind.OverrideKeyword);
         }
 
-        public static string TypeParameter(TypeParameterSyntax prm, IMethodSymbol methodSymbol,
-            MethodDeclarationSyntax methodSyntax)
-        {
-            var identifier = Utility.TypeConstraints(prm, methodSyntax.ConstraintClauses);
-
-            return identifier;
-        }
+       
     }
 }

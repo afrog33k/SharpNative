@@ -20,6 +20,12 @@ namespace SharpNative.Compiler
 {
     internal static class WriteType
     {
+        static Dictionary<string,string> TypeRenames = new Dictionary<string, string>()
+        {
+            { "System.Namespace.Object","NObject"},
+            { "System.Namespace.Exception","NException"}
+        }; 
+
         public static void Go()
         {
             var partials = Context.Instance.Partials;
@@ -28,10 +34,17 @@ namespace SharpNative.Compiler
             Context.Instance.Type = first.Symbol;
             TypeProcessor.ClearUsedTypes();
             var mynamespace = Context.Instance.Type.ContainingNamespace.FullName().RemoveFromEndOfString(".Namespace");
+
+            var fullname = Context.Instance.Namespace + "." + Context.Instance.TypeName;
+            if (TypeRenames.ContainsKey(fullname))
+            {
+                Context.Instance.TypeName = TypeRenames[fullname];
+            }
+
             // + "." + TypeState.Instance.TypeName;
-            Console.WriteLine("Writing out type: " + Context.Instance.Namespace + "." + Context.Instance.TypeName);
-            if ((Context.Instance.Namespace + "." + Context.Instance.TypeName) ==
-                "Mono.Security.X509.Namespace.X509Chain")
+            Console.WriteLine("Writing out type: " + fullname);
+            if (fullname ==
+                "System.Namespace.Nullable")
             {
             }
 
@@ -46,9 +59,7 @@ namespace SharpNative.Compiler
                     myUsingDirective, SystemUsingDirective
                 }).ToArray();
 
-            var objectType =
-                TypeProcessor.GetSemanticModel(partials.First().Syntax)
-                    .Compilation.GetTypeByMetadataName("System.Object");
+           
 
             using (var writer = new OutputWriter(Context.Instance.Namespace, Context.Instance.TypeName))
             {
@@ -62,10 +73,11 @@ namespace SharpNative.Compiler
 
                 //                var interfaces = bases.Where(o => o.TypeKind == TypeKind.Interface).ToList();
 
+                    if (  Context.Instance.Type !=Context.Object)
                 if (!bases.Any((j => j.TypeKind != TypeKind.Interface)) &&
                     !(first.Symbol.TypeKind == TypeKind.Interface || first.Symbol.TypeKind == TypeKind.Struct))
                     //TODO: fix structs using mixins / alias this
-                    bases.Add(objectType);
+                    bases.Add(Context.Object);
 
                 //                    WriteStandardIncludes.Go(writer);
 
@@ -76,6 +88,8 @@ namespace SharpNative.Compiler
                 //TypeState.Instance.DerivesFromObject = bases.Count == interfaces.Count;
 
                 var @namespace = first.Symbol.ContainingNamespace.FullName();
+                var genericArgs = Context.Instance.Type.TypeParameters.ToList();
+
 
                 //Module name = namespace + "." + typename;
 
@@ -166,12 +180,12 @@ namespace SharpNative.Compiler
                 if (first.Syntax is TypeDeclarationSyntax)
                 {
                     //Look for generic arguments 
-                    var genericArgs = partials
-                        .Select(o => o.Syntax)
-                        .Cast<TypeDeclarationSyntax>()
-                        .Where(o => o.TypeParameterList != null)
-                        .SelectMany(o => o.TypeParameterList.Parameters)
-                        .ToList();
+//                    var genericArgs = partials
+//                        .Select(o => o.Syntax)
+//                        .Cast<TypeDeclarationSyntax>()
+//                        .Where(o => o.TypeParameterList != null)
+//                        .SelectMany(o => o.TypeParameterList.Parameters)
+//                        .ToList();
 
                     if (Context.Instance.Type.TypeKind == TypeKind.Class)
                         writer.Write("class ");
@@ -188,11 +202,27 @@ namespace SharpNative.Compiler
 
                     writer.Write(Context.Instance.TypeName);
 
-                    if (genericArgs.Count > 0)
+                    if (Context.Instance.Type.IsGenericType)
                     {
-                        writer.Write("( ");
-                        writer.Write(string.Join(" , ", genericArgs.Select(o => o)));
-                        writer.Write(" )");
+
+                        {
+                         //   List<string> genArgs = new List<string>();
+                            foreach (var @base in bases)
+                            {
+                                foreach (var arg in (@base as INamedTypeSymbol).TypeParameters)
+                                {
+                                    
+                                    if (!genericArgs.Any(k=>k.Name==arg.Name))
+                                    {
+                                        genericArgs.Add(arg);
+                                    }
+                                }
+                            }
+                            if (genericArgs.Any())
+                            {
+                                writer.Write("("+string.Join(" , ", genericArgs.Select(o => o))+")");
+                            }
+                        }
                     }
 
                     bool firstBase = true;
@@ -201,26 +231,15 @@ namespace SharpNative.Compiler
                     {
                         foreach (var baseType in bases.OrderBy(o => o.TypeKind == TypeKind.Interface ? 1 : 0))
                         {
+                            var convertType = TypeProcessor.ConvertType(baseType);
+
+                         
+
                             writer.Write(firstBase ? " : " : " ,");
 
-                            writer.Write(TypeProcessor.ConvertType(baseType));
+                            
+                            writer.Write(convertType);
 
-                            //                            if (firstBase && ctorOpt != null && ctorOpt.Initializer != null &&
-                            //                                ctorOpt.Initializer.ArgumentList.Arguments.Count > 0)
-                            //                            {
-                            //                                writer.Write("(");
-                            //                                bool firstArg = true;
-                            //                                foreach (var init in ctorOpt.Initializer.ArgumentList.Arguments)
-                            //                                {
-                            //                                    if (firstArg)
-                            //                                        firstArg = false;
-                            //                                    else
-                            //                                        writer.Write(", ");
-                            //
-                            //                                    Core.Write(writer, init.Expression);
-                            //                                }
-                            //                                writer.Write(")");
-                            //                            }
 
                             firstBase = false;
                         }
@@ -249,9 +268,9 @@ namespace SharpNative.Compiler
                                         k => k.NameEquals != null && k.NameEquals.Name.ToFullString().Trim() == "Value")
                                         .Expression.ToFullString()
                                         .SubstringAfterLast('.'));
-                        //structLayout.ArgumentList.Arguments.Where (k => k.Expression is MemberAccessExpressionSyntax).FirstOrDefault(k=>(k.Expression as MemberAccessExpressionSyntax).Name.ToFullString() == "Value");
+                       
                     }
-                        //structLayout.ArgumentList.Arguments.Where (k => k.Expression is MemberAccessExpressionSyntax).FirstOrDefault(k=>(k.Expression as MemberAccessExpressionSyntax).Name.ToFullString() == "Value");
+                       
                     else if (structLayout.ArgumentList.Arguments.Count > 0 &&
                              structLayout.ArgumentList.Arguments[0].NameEquals == null)
                     {
@@ -394,7 +413,7 @@ namespace SharpNative.Compiler
                         foreach (var member in fields)
                         {
                             pack = 1;
-                            writer.WriteLine("align (" + pack + "): //Pack = " + pack + "C# default");
+                            writer.WriteLine("align (" + pack + "): //Pack = " + pack + " C# default");
                             //                    writer.WriteLine();
                             Core.Write(writer, member);
                         }
@@ -502,8 +521,18 @@ namespace SharpNative.Compiler
                 if (Context.Instance.Type.TypeKind == TypeKind.Struct)
                 {
                     writer.WriteLine();
-                    var typeName = Context.Instance.TypeName;
-                    writer.Write("public class __Boxed_" + typeName + " : Boxed!(" + typeName + ")");
+                    var typeName = Context.Instance.TypeName + (Context.Instance.Type.IsGenericType? ("!(" + string.Join(" , ", genericArgs.Select(o => o)) + ")") :"");
+                    writer.Write("public class __Boxed_" + typeName + " ");
+
+                    if (genericArgs.Any())
+                    {
+                        writer.Write("( ");
+                        writer.Write(string.Join(" , ", genericArgs.Select(o => o)));
+                        writer.Write(" )");
+                    }
+
+                    writer.Write(": Boxed!(" + typeName + ")");
+
                     foreach (var baseType in bases.OrderBy(o => o.TypeKind == TypeKind.Interface ? 1 : 0))
                     {
                         writer.Write(" ,");
@@ -695,13 +724,7 @@ namespace SharpNative.Compiler
             return ret;
         }
 
-        private static string TypeParameter(TypeParameterSyntax type)
-        {
-            var ret = Utility.TypeConstraints(type,
-                Context.Instance.Partials.SelectMany(z => z.Syntax.As<TypeDeclarationSyntax>().ConstraintClauses));
-
-            return ret;
-        }
+      
 
         private static bool IsStatic(MemberDeclarationSyntax member)
         {

@@ -3,18 +3,21 @@
 //   (C) 2014 Irio Systems 
 // */
 
+using Microsoft.CodeAnalysis;
+
 namespace SharpNative.Compiler
 {
     public static class WriteStandardIncludes
     {
-        public static string[] StandardIncludes =
+        public static ITypeSymbol[] StandardIncludes =
         {
+            Context.Object,
 //            "iostream",
 //            "thread",
 //            "cwchar",
 //            "stdio.h",
 //            "memory",
-            "System.Namespace"
+           // "System.Namespace"
 //            "System/Console.h",
 //            "System/Convert.h",
         };

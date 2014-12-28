@@ -19,7 +19,7 @@ namespace SharpNative.Compiler
         {
             var type = TypeProcessor.GetTypeInfo(expression.Type);
             //Use dTypes
-            writer.Write("" + TypeProcessor.ConvertType(type.Type) + ".sizeof");
+            writer.Write("(" + TypeProcessor.ConvertType(type.Type) + ").sizeof");
             //  writer.Write(SizeOf(type.Type).ToString());
         }
 

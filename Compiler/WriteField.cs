@@ -138,10 +138,11 @@ namespace SharpNative.Compiler
                             writer.Write(TypeProcessor.DefaultValue(type));
                     }
                 }
+            
             }
             else
             {
-                var staticWriter = new OutputWriter("", "", false);
+                var staticWriter = new TempWriter();
 
                 if (initializerOpt != null)
                 {
@@ -162,12 +163,13 @@ namespace SharpNative.Compiler
                     else
 
                         Core.Write(staticWriter, initializerOpt.Value);
-//                    if (CSharpExtensions.CSharpKind(initializerOpt.Value) == SyntaxKind.CollectionInitializerExpression || CSharpExtensions.CSharpKind(initializerOpt.Value) == SyntaxKind.ArrayInitializerExpression)
-//                    {
-//
-//
-//						staticWriter.Write("])");
-//                    }
+
+                    staticWriter.Write(";");
+
+                    staticWriter.WriteLine();
+
+                    Context.Instance.StaticInits.Add(staticWriter.ToString());
+
                 }
 
                 else if (typeinfo.Type.TypeKind != TypeKind.Struct)
@@ -180,19 +182,21 @@ namespace SharpNative.Compiler
                         staticWriter.Write("new " + typeString + "()");
                     else
                         staticWriter.Write(TypeProcessor.DefaultValue(type));
+
+                    staticWriter.Write(";");
+
+                    staticWriter.WriteLine();
+
+                    Context.Instance.StaticInits.Add(staticWriter.ToString());
                 }
 
-//				staticWriter.Write (" SharpNative");
+               
 
-                staticWriter.Write(";");
 
-                staticWriter.WriteLine();
-
-                Context.Instance.StaticInits.Add(staticWriter.ToString());
             }
 
-            writer.Write(";");
-            writer.WriteLine();
+           writer.Write(";");
+                writer.WriteLine();
         }
 
         public static bool IsConst(SyntaxTokenList modifiers, EqualsValueClauseSyntax initializerOpt, TypeSyntax type)

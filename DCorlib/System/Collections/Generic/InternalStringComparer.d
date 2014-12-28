@@ -11,7 +11,7 @@ import System.Collections.Generic.Namespace;
   public int GetHashCode(String obj) 
   {
 
-    if (obj is  (new String (null)))
+    if (obj is  null)
     {
 
       return (0);
@@ -24,10 +24,10 @@ import System.Collections.Generic.Namespace;
   public bool Equals(String x, String y) 
   {
 
-    if (x is  (new String (null)))
+    if (x is  null)
     {
 
-      return (y is  (new String (null)));
+      return (y is null);
     
 }
     if (AsCast!( System.Namespace.NObject )(x)==AsCast!( System.Namespace.NObject )(y))
