@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 #endregion
@@ -32,15 +33,37 @@ namespace SharpNative.Compiler
             var children = allChildren.ToArray();
             var values =
                 children.Select(
-                    o => new {Syntax = o, Value = o.EqualsValue != null ? o.EqualsValue.Value.ToString() : null})
+                    o => new {Syntax = o, Value = o.EqualsValue != null ? o.EqualsValue.Value : null})
                     .ToList();
 
             foreach (var value in values)
             {
-                writer.WriteLine(
-                    WriteIdentifierName.TransformIdentifier(value.Syntax.Identifier.ValueText) +
-                    (value.Value != null ? " = " + value.Value : "") +
-                    ",");
+
+
+                var text = "";
+
+                text = WriteIdentifierName.TransformIdentifier(value.Syntax.Identifier.ValueText);
+
+                if (value.Value != null)
+                {
+                    //lets try parsing the value so we can evaluate it
+                    var expression =value.Value;
+                    if (expression != null)
+                    {
+                        var temp = new TempWriter();
+                        Core.Write(temp,expression);
+                        text += " = " + temp.ToString() + ",";
+                        temp.Dispose();;
+                    }
+                    else
+                    {
+                        text += value.Value;
+                    }
+                }
+                writer.WriteLine(text);
+
+//                (value.Value != null ? " = " + value.Value : "") +
+//                    ",");
             }
 
             //                writer.WriteLine("final val " + WriteIdentifierName.TransformIdentifier(value.Syntax.Identifier.ValueText) + ":Int = " + value.Value + ";");

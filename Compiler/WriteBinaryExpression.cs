@@ -108,41 +108,6 @@ namespace SharpNative.Compiler
 
                 Action<ExpressionSyntax> write = e =>
                 {
-                    var type = TypeProcessor.GetTypeInfo(e);
-
-                    //Check for enums being converted to strings by string concatenation
-                    var typeSymbol = type.Type ?? type.ConvertedType;
-
-                    if (expression.OperatorToken.RawKind == (decimal) SyntaxKind.PlusToken &&
-                        typeSymbol.TypeKind == TypeKind.Enum)
-                    {
-                        writer.Write(typeSymbol.ContainingNamespace.FullNameWithDot());
-                        writer.Write(WriteType.TypeName(typeSymbol.As<INamedTypeSymbol>()));
-                        writer.Write(".ToString(");
-                        Core.Write(writer, e);
-                        writer.Write(")");
-                    }
-                    else if (expression.OperatorToken.RawKind == (decimal) SyntaxKind.PlusToken &&
-                             (typeSymbol.Name == "Nullable" && typeSymbol.ContainingNamespace.FullName() == "System" &&
-                              typeSymbol.As<INamedTypeSymbol>().TypeArguments.Single().TypeKind == TypeKind.Enum))
-                    {
-                        var enumType = typeSymbol.As<INamedTypeSymbol>().TypeArguments.Single();
-                        writer.Write(enumType.ContainingNamespace.FullNameWithDot());
-                        writer.Write(WriteType.TypeName(enumType.As<INamedTypeSymbol>()));
-                        writer.Write(".ToString(");
-                        Core.Write(writer, e);
-                        writer.Write(")");
-                    }
-                    else if (expression.OperatorToken.RawKind == (decimal) SyntaxKind.PlusToken &&
-                             IsException(typeSymbol))
-                        //Check for exceptions being converted to strings by string concatenation
-                    {
-                        //   writer.Write("System.SharpNative.ExceptionToString(");
-                        Core.Write(writer, e);
-                        //   writer.Write(")");
-                    }
-//                 
-                    else
                         Core.Write(writer, e);
                 };
 

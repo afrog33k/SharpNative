@@ -1,11 +1,13 @@
-﻿using System;
+using System;
 
 public static class Program
 {
+	public const int other = 98;
+	
     public enum SimpleEnum : ushort
     {
         Value1 = 1,
-        Value2 = 2,
+        Value2 = (ushort)(Value1 + 6 * other),
         Value3 = 3,
     }
 
