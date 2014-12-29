@@ -236,11 +236,12 @@ namespace SharpNative.Compiler
                             methodSymbol))
                     {
                         methodName =
-                            Regex.Replace(
-                                TypeProcessor.ConvertType(methodSymbol.ContainingType.OriginalDefinition)
+                            Regex.Replace(TypeProcessor.ConvertType(methodSymbol.ContainingType.OriginalDefinition)
                                     .RemoveFromStartOfString(methodSymbol.ContainingNamespace + ".Namespace.") + "_" +
                                 methodName,
                                 @" ?!\(.*?\)", string.Empty);
+                        if (methodSymbol.ContainingType.ContainingType != null)
+                            methodName = methodName.RemoveFromStartOfString(methodSymbol.ContainingType.ContainingType.Name+".");
                     }
 
                     var interfaceMethods =

@@ -250,6 +250,7 @@
    </Folder>
    <Folder name="IO">
     <File path="System\IO\File.d" />
+    <File path="System\IO\System.IO.Namespace.d" />
    </Folder>
    <Folder name="Runtime">
     <Folder name="InteropServices">

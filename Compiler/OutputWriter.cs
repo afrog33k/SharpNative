@@ -139,9 +139,14 @@ namespace SharpNative.Compiler
             {
                 //				if (!IsInterface) 
                 {
-                    //Remove read only so we can write it
-                    if (File.Exists(_path))
-                        File.SetAttributes(_path, FileAttributes.Normal);
+
+                    if (!(this is TempWriter))
+                    {
+                        //Remove read only so we can write it
+                        if (File.Exists(_path))
+                            File.SetAttributes(_path, FileAttributes.Normal);
+                    }
+
                     var finalBuilder = new StringBuilder();
 
                     var forwardDeclarations = new List<string>();
@@ -253,18 +258,24 @@ namespace SharpNative.Compiler
 
                     finalBuilder.Append(_builder);
 
-                    File.WriteAllText(_path, finalBuilder.ToString());
+                    if (!(this is TempWriter))
+                    {
+                        File.WriteAllText(_path, finalBuilder.ToString());
 
-                    //Set read-only on generated files
-                    File.SetAttributes(_path, FileAttributes.ReadOnly);
+                        //Set read-only on generated files
+                        File.SetAttributes(_path, FileAttributes.ReadOnly);
+                    }
                 }
             }
             else
             {
-                File.WriteAllText(_path, _builder.ToString());
+                if (!(this is TempWriter))
+                {
+                    File.WriteAllText(_path, _builder.ToString());
 
-                //Set read-only on generated files
-                File.SetAttributes(_path, FileAttributes.ReadOnly);
+                    //Set read-only on generated files
+                    File.SetAttributes(_path, FileAttributes.ReadOnly);
+                }
             }
             _writer.Dispose();
             }

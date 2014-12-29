@@ -23,7 +23,7 @@ template Action(T) {
 		*/
 
 
-        public static void Go()
+        public static void Go(OutputWriter outputWriter = null)
         {
             var partials = Context.Instance.DelegatePartials;
             var first = partials.First();
@@ -42,9 +42,17 @@ template Action(T) {
                     {
                         myUsingDirective, SystemUsingDirective
                     }).ToArray();
+            OutputWriter writer = null;
 
-            using (var writer = new OutputWriter(Context.Instance.Namespace, Context.Instance.TypeName))
+            using (writer = outputWriter == null ? new OutputWriter(Context.Instance.Namespace, Context.Instance.TypeName) : new TempWriter())
             {
+                if (outputWriter != null)
+                {
+                    writer.WriteLine();
+                    writer.Indent = outputWriter.Indent + 2;
+                    writer.WriteIndent();
+                }
+
                 var objectType =
                     TypeProcessor.GetSemanticModel(partials.First().Syntax)
                         .Compilation.GetTypeByMetadataName("System.Object");
@@ -82,7 +90,7 @@ template Action(T) {
                     writer.Write("alias Delegate!(" + TypeProcessor.ConvertType(first.Syntax.ReturnType) + " delegate" +
                                  WriteMethod.GetParameterListAsString(first.Syntax.ParameterList));
 
-                    writer.Write(") " + Context.Instance.TypeName + ";");
+                    writer.Write(") " + WriteType.TypeName(Context.Instance.Type, false) + ";");
 
                     writer.Indent--;
                     writer.Write("\r\n");
@@ -94,7 +102,12 @@ template Action(T) {
                     writer.Write("alias Delegate!(" + TypeProcessor.ConvertType(first.Syntax.ReturnType) + " delegate" +
                                  WriteMethod.GetParameterListAsString(first.Syntax.ParameterList));
 
-                    writer.Write(") " + Context.Instance.TypeName + ";");
+                    writer.Write(") " + WriteType.TypeName(Context.Instance.Type, false) + ";");
+                }
+
+                if (outputWriter != null)
+                {
+                    outputWriter.WriteLine(writer.ToString());
                 }
             }
         }

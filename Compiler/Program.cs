@@ -80,6 +80,8 @@ namespace SharpNative.Compiler
 
                         foreach (var type in @namespace.Value)
                         {
+                            if(type.ContainingType!=null)
+                                continue;
 
                             var properClassName = type.GetModuleName();
 
@@ -251,7 +253,7 @@ namespace SharpNative.Compiler
                     Syntax = o,
                     Symbol = GetModel(o).GetDeclaredSymbol(o),
                     TypeName = WriteType.TypeName(GetModel(o).GetDeclaredSymbol(o))
-                })
+                }).Where(k=>k.Symbol.ContainingType==null) // Ignore all nested classes
                 .GroupBy(o => o.Symbol.ContainingNamespace.FullNameWithDot() + o.TypeName)
                 .ToList();
 
@@ -332,7 +334,7 @@ namespace SharpNative.Compiler
                 isCorlib = true;
             }
 
-            WriteConstructorBody.WriteConstructorsHelper(symbols);
+           
         }
 
         private static void ProcessDelegates()
@@ -344,8 +346,10 @@ namespace SharpNative.Compiler
                     Syntax = o,
                     Symbol = GetModel(o).GetDeclaredSymbol(o),
                     TypeName = WriteType.TypeName(GetModel(o).GetDeclaredSymbol(o))
-                }).GroupBy(o => o.Symbol.ContainingNamespace.FullNameWithDot() + o.TypeName)
+                }).Where(k => k.Symbol.ContainingType == null) // Ignore all nested delegates
+                .GroupBy(o => o.Symbol.ContainingNamespace.FullNameWithDot() + o.TypeName)
                 .ToList();
+
             if(RunInParallel)
             delegates.Parallel(type => //.ForEach(type => //.Parallel(type =>
             {
@@ -538,7 +542,7 @@ namespace SharpNative.Compiler
             {
                 var initializerInfo = GetModel(target).GetTypeInfo(target);
 
-                var tempName = initializerInfo.Type.FullName() + "_helper_" + lastTemporaryIndex++;
+                var tempName = initializerInfo.Type.Name + "_helper_" + lastTemporaryIndex++;
 
                 var assignments = new List<SyntaxNode>();
 

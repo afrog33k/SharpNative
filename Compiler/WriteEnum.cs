@@ -22,7 +22,9 @@ namespace SharpNative.Compiler
         {
 //            writer.IsInterface = true;
             writer.Write("enum ");
-            writer.Write(Context.Instance.TypeName);
+            writer.Write(WriteType.TypeName(Context.Instance.Type, false));
+
+//            writer.Write(Context.Instance.TypeName);
             writer.Write(":" + TypeProcessor.ConvertType(Context.Instance.Type.EnumUnderlyingType) + "\r\n");
             writer.OpenBrace();
 

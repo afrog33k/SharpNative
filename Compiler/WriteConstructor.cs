@@ -238,13 +238,6 @@ namespace SharpNative.Compiler
         private static readonly HashSet<string> AllTypes = new HashSet<string>();
 
 
-        public static void WriteConstructorsHelper(IEnumerable<INamedTypeSymbol> allTypes)
-        {
-            foreach (var t in allTypes.Select(o => o.ContainingNamespace.FullNameWithDot() + WriteType.TypeName(o)))
-                AllTypes.Add(t);
-
-            if (StaticConstructors.Count == 0)
-                return; //no need for it.
-        }
+     
     }
 }

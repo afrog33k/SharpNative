@@ -20,6 +20,11 @@ namespace SharpNative.Compiler
         {
             var symbol = TypeProcessor.GetSymbolInfo(identifier).Symbol;
 
+            if (symbol == null)
+            {
+                
+            }
+
             if (symbol.IsStatic)
             {
                 writer.Write(symbol.ContainingNamespace.FullNameWithDot());

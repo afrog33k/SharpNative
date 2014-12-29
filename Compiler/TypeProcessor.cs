@@ -166,7 +166,7 @@ namespace SharpNative.Compiler
             if (ret == null)
                 throw new Exception("Type could not be determined for " + node);
 
-            if (localize)
+            if (localize) //TODO: We need to check for collisions and thus fully qualify
             {
                 var name =
                     Context.Instance.UsingDeclarations.FirstOrDefault(
@@ -292,11 +292,11 @@ namespace SharpNative.Compiler
             if (typeSymbol.TypeKind == TypeKind.TypeParameter)
                 return typeSymbol.Name;
 
-            if (named.ContainingNamespace.ToString() == "System" && named.Name == "Exception")
+            if (named != null && (named.ContainingNamespace.ToString() == "System" && named.Name == "Exception"))
                 return "System.Namespace.NException";
 
             //TODO: Add explicit support for Nullable
-            if (named != null && named.Name == "Nullable" && named.ContainingNamespace.ToString() == "System")
+            if (named != null && (named.Name == "Nullable" && named.ContainingNamespace.ToString() == "System"))
             {
                 //Nullable types
                 if (named.TypeArguments.Any())

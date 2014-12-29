@@ -41,19 +41,20 @@ namespace SharpNative.Compiler
 
             var typeInfo = TypeProcessor.GetTypeInfo(expression.Expression);
             var symbolInfo = TypeProcessor.GetSymbolInfo(expression);
-            if (symbolInfo.Symbol == null)
+            var methodSymbol = symbolInfo.Symbol;
+            if (methodSymbol == null)
                 symbolInfo = TypeProcessor.GetSymbolInfo(expression.Expression);
-            if (type != null && symbolInfo.Symbol != null)
+            if (type != null && methodSymbol != null)
                 //if type is null, then we're just a namespace.  We can ignore these.
             {
-                var directInvocationOnBasics = symbolInfo.Symbol.ContainingType.IsBasicType() && symbolInfo.Symbol.IsStatic;
+                var directInvocationOnBasics = methodSymbol.ContainingType.IsBasicType() && methodSymbol.IsStatic;
 
                 if (directInvocationOnBasics)
                 {
                     //						var extensionNamespace =  symbolInfo.Symbol.ContainingNamespace.FullNameWithDot() + symbolInfo.Symbol.ContainingType.FullName(); //null means it's not an extension method, non-null means it is
 
                     //Extension methods in Dlang are straightforward, although this could lead to clashes without qualification
-                    if (symbolInfo.Symbol.ContainingType != Context.Instance.Type)
+                    if (methodSymbol.ContainingType != Context.Instance.Type)
                     {
                         var extensionNamespace = TypeProcessor.ConvertType(type, true, false);
                             // type.ContainingNamespace.FullName() + "." + type.Name;
@@ -72,36 +73,38 @@ namespace SharpNative.Compiler
                 // Ideally Escape analysis should take care of this, but for now all value types are on heap and ref types on stack
             }
 
-            if (symbolInfo.Symbol != null && symbolInfo.Symbol.Kind == SymbolKind.Property)
+            if (methodSymbol != null && methodSymbol.Kind == SymbolKind.Property)
             {
-                if (symbolInfo.Symbol.ContainingType.TypeKind == TypeKind.Interface ||
-                    Equals(symbolInfo.Symbol.ContainingType.FindImplementationForInterfaceMember(symbolInfo.Symbol),
-                        symbolInfo.Symbol))
+                if (methodSymbol.ContainingType.TypeKind == TypeKind.Interface ||
+                    Equals(methodSymbol.ContainingType.FindImplementationForInterfaceMember(methodSymbol),
+                        methodSymbol))
                 {
                     memberName =
                         Regex.Replace(
-                            TypeProcessor.ConvertType(symbolInfo.Symbol.ContainingType.OriginalDefinition)
-                                .RemoveFromStartOfString(symbolInfo.Symbol.ContainingNamespace + ".Namespace.") +
+                            TypeProcessor.ConvertType(methodSymbol.ContainingType.OriginalDefinition)
+                                .RemoveFromStartOfString(methodSymbol.ContainingNamespace + ".Namespace.") +
                             "_" + memberName,
                             @" ?!\(.*?\)", string.Empty);
+                    if (methodSymbol.ContainingType.ContainingType != null)
+                        memberName = memberName.RemoveFromStartOfString(methodSymbol.ContainingType.ContainingType.Name + ".");
                 }
 
                 var interfaceMethods =
-                    symbolInfo.Symbol.ContainingType.AllInterfaces.SelectMany(
+                    methodSymbol.ContainingType.AllInterfaces.SelectMany(
                         u =>
                             u.GetMembers(memberName)).ToArray();
 
                 ISymbol interfaceMethod =
                     interfaceMethods.FirstOrDefault(
                         o =>
-                            symbolInfo.Symbol.ContainingType.FindImplementationForInterfaceMember(o) ==
-                            symbolInfo.Symbol);
+                            methodSymbol.ContainingType.FindImplementationForInterfaceMember(o) ==
+                            methodSymbol);
 
                 if (interfaceMethod != null)
 
                 {
 //This is an interface method //TO
-                    if (symbolInfo.Symbol.ContainingType.SpecialType == SpecialType.System_Array)
+                    if (methodSymbol.ContainingType.SpecialType == SpecialType.System_Array)
                         writer.Write("");
                     else
                     {
@@ -116,9 +119,9 @@ namespace SharpNative.Compiler
                     }
                 }
 
-                if (!symbolInfo.Symbol.ContainingType.IsAnonymousType &&
-                    (symbolInfo.Symbol.DeclaringSyntaxReferences.Any() &&
-                     symbolInfo.Symbol.DeclaringSyntaxReferences.FirstOrDefault()
+                if (!methodSymbol.ContainingType.IsAnonymousType &&
+                    (methodSymbol.DeclaringSyntaxReferences.Any() &&
+                     methodSymbol.DeclaringSyntaxReferences.FirstOrDefault()
                          .GetSyntax()
                          .As<PropertyDeclarationSyntax>()
                          .Modifiers.Any(SyntaxKind.NewKeyword)))

@@ -1207,11 +1207,17 @@ template Func_TResult( TResult )
 static NObject BOX(T)(T value)
 if(is(T == struct))
 {
-		auto name = fullyQualifiedName!(T)[0..fullyQualifiedName!(T).lastIndexOf(T.stringof)]~ "__Boxed_" ~ T.stringof;
-		//	writeln("this is a struct: " ~ name);
-		auto boxedStruct= cast(Boxed!(T))Object.factory(name);
+	//writeln("boxing a struct");
+	//writeln("this is a struct: " ~ name);
+	//auto name = fullyQualifiedName!(T) ~ ".__Boxed_";
+	//	auto name = fullyQualifiedName!(T)[0..fullyQualifiedName!(T).lastIndexOf(T.stringof)]~ "__Boxed_" ~ T.stringof;
+			//writeln("this is a struct: " ~ name);
+			//writeln(new T.__Boxed_());
+
+			//return new NObject();
+		auto boxedStruct= new T.__Boxed_(value);//cast(Boxed!(T))Object.factory(name); // Object.Factory cannot create instance of nested class ... why ? ... I am going to have to create my own class generator/registry
 		//writeln(boxedStruct is null);
-		boxedStruct.Value = value;
+		//boxedStruct.Value = value;
 		return boxedStruct;
 	//return null;
 		 //mixin("new " ~ fullyQualifiedName!(T)[0..fullyQualifiedName!(T).lastIndexOf(T.stringof)]~ "__Boxed_" ~ T.stringof ~ "(value)");
@@ -1415,20 +1421,22 @@ bool IsCast(T, U)(U obj)  if (is(T == interface))// && is(U :NObject))
 
 	static T AsCast(T)(NObject object)
 	{
-	//if(is(T==class))
-	//{
 			if(cast(T)(object) is null && object !is null)
 			{
 				throw new InvalidCastException(new String(cast(wstring)("Cannot cast " ~ object.classinfo.name ~ " to " ~ T.classinfo.name)));
 			}
 			return cast(T)(object);
-	//}
-
-		
-	//	return (cast(Boxed!(T))object).Value;
-		
 	}
-
+	
+	static T AsCast(T,U)(U object)
+	if(!is(U:NObject))
+	{
+		if(cast(T)(object) is null && object !is null)
+		{
+			throw new InvalidCastException(new String(cast(wstring)("Cannot cast " ~ object.classinfo.name ~ " to " ~ T.classinfo.name)));
+		}
+		return cast(T)(object);
+	}
 
 	//static T AsCast(T)(NObject object)
 	//{

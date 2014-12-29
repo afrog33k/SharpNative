@@ -20,52 +20,17 @@ namespace SharpNative.Compiler
         {
             foreach (var variable in declaration.Declaration.Variables)
             {
-                ISymbol symbol = TypeProcessor.GetDeclaredSymbol(variable);
 
-                var isRef = false; //UsedAsRef(variable, symbol);
 
                 writer.WriteIndent();
-                // writer.Write("var ");
-
-//                if (isRef) //Not needed c++ can passby ref
-//                {
-//
-//                    var typeStr = TypeProcessor.ConvertType(declaration.Declaration.Type);
-//
-//                    var localSymbol = symbol as ILocalSymbol;
-//                    var ptr = localSymbol != null && !localSymbol.Type.IsValueType?"*" : "";
-//                                        writer.Write("gc::gc_ptr < " + typeStr+ ptr + " >");
-//                    writer.Write("" + typeStr + ptr + "");
-//
-//                    writer.Write(" ");
-//                    writer.Write(WriteIdentifierName.TransformIdentifier(variable.Identifier.ValueText));
-//                    
-//                    Program.RefOutSymbols.TryAdd(symbol, null);
-//
-//                    writer.Write(" = std::make_shared < ");
-//                    writer.Write(typeStr + ptr);
-//                    writer.Write(" >(");
-//
-//                    WriteInitializer(writer, declaration, variable);
-//
-//                    writer.Write(")");
-//                }
-//                else
+               
                 {
-                    var lsymbol = symbol as ILocalSymbol;
-
-                    //  if (lsymbol != null && lsymbol.Type.IsValueType == false)
-                    //    writer.Write(" "); // Ideally Escape analysis should take care of this, but for now all value types are on heap and ref types on stack
-
                     var str = TypeProcessor.ConvertType(declaration.Declaration.Type);
-                    if (str == "NObject")
+                    if (str == "NObject") // Dlangs casting is slow
                         // Looks harmless but is actually a performance optimization ... makes CastTest improve by a whole lot
                         writer.Write("auto ");
                     else
                         writer.Write(str);
-
-                    // if (lsymbol != null && lsymbol.Type.IsValueType == false)
-                    //   writer.Write(" ");
 
                     writer.Write(" ");
                     writer.Write(WriteIdentifierName.TransformIdentifier(variable.Identifier.ValueText));
@@ -111,43 +76,12 @@ namespace SharpNative.Compiler
                 //Do we have an implicit converter, if so, use it
                 if (shouldBox || shouldUnBox)
                 {
-//			        if (shouldUnBox)
-//			        {
-//			            bool useType = true;
-//
-//                        //We should start with exact converters and then move to more generic convertors i.e. base class or integers which are implicitly convertible
-//			            var correctConverter = initializerType.Type.GetImplicitCoversionOp(initializerType.Type,initializerType.ConvertedType);
-////                            initializerType.Type.GetMembers("op_Implicit").OfType<IMethodSymbol>().FirstOrDefault(h => h.ReturnType == initializerType.Type && h.Parameters[0].Type == initializerType.ConvertedType);
-//
-//			            if (correctConverter == null)
-//			            {
-//			                useType = false;
-//                            correctConverter =
-//                            initializerType.ConvertedType.GetImplicitCoversionOp(initializerType.Type, initializerType.ConvertedType); //.GetMembers("op_Implicit").OfType<IMethodSymbol>().FirstOrDefault(h => h.ReturnType == initializerType.Type && h.Parameters[0].Type == initializerType.ConvertedType);
-//                        }
-//
-//			            if (correctConverter != null)
-//			            {
-//                            if(useType)
-//			                writer.Write(TypeProcessor.ConvertType(initializerType.Type) +"."+ "op_Implicit_" + TypeProcessor.ConvertType(correctConverter.ReturnType));
-//                            else
-//                            {
-//			                writer.Write(TypeProcessor.ConvertType(initializerType.ConvertedType) +"."+ "op_Implicit_" + TypeProcessor.ConvertType(correctConverter.ReturnType));
-//
-//                            }
-//                            writer.Write("(");
-//                            Core.Write(writer, value);
-//                            writer.Write(")");
-//                            return;
-//                        }
-//                    }
-//			        if (shouldBox)
                     {
                         bool useType = true;
                         var correctConverter =
                             initializerType.Type.GetImplicitCoversionOp(initializerType.ConvertedType,
                                 initializerType.Type);
-                            //.GetMembers("op_Implicit").OfType<IMethodSymbol>().FirstOrDefault(h => h.ReturnType == initializerType.ConvertedType && h.Parameters[0].Type == initializerType.Type);
+                          
 
                         if (correctConverter == null)
                         {
@@ -155,7 +89,7 @@ namespace SharpNative.Compiler
                             correctConverter =
                                 initializerType.ConvertedType.GetImplicitCoversionOp(initializerType.ConvertedType,
                                     initializerType.Type);
-                            //.GetMembers("op_Implicit").OfType<IMethodSymbol>().FirstOrDefault(h => h.ReturnType == initializerType.ConvertedType && h.Parameters[0].Type == initializerType.Type);
+                         
                         }
 
                         if (correctConverter != null)
@@ -243,21 +177,6 @@ namespace SharpNative.Compiler
             ProcessInitializer(writer, declaration, variable);
         }
 
-        /// <summary>
-        ///     Determines if the passed symbol is used in any ref or out clauses
-        /// </summary>
-        private static bool UsedAsRef(VariableDeclaratorSyntax variable, ISymbol symbol)
-        {
-            SyntaxNode node = variable;
-            BlockSyntax scope;
-            do
-                scope = (node = node.Parent) as BlockSyntax;
-            while (scope == null);
-
-            return scope.DescendantNodes().OfType<InvocationExpressionSyntax>()
-                .SelectMany(o => o.ArgumentList.Arguments)
-                .Where(o => o.RefOrOutKeyword.RawKind != (decimal) SyntaxKind.None)
-                .Any(o => TypeProcessor.GetSymbolInfo(o.Expression).Symbol == symbol);
-        }
+       
     }
 }

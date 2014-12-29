@@ -361,22 +361,7 @@ namespace SharpNative.Compiler
 
         public static string GetModuleName(this ITypeSymbol type)
         {
-
-//            var namespaceName = "";
-//
-//            if (type.ContainingNamespace.IsGlobalNamespace)
-//                namespaceName = GlobalNamespaceName;
-
             return type.ContainingNamespace.FullName(false) + "." + type.GetNameD() + "." + type.GetNameD();
-
-//            var fullName = typeSymbol.GetFullName();
-//
-//            if (typeSymbol.IsGlobalNamespace)
-//            {
-//                fullName = GlobalNamespaceName;
-//            }
-//            string result = fullName + "." + NamespaceModuleName;
-//            return result;
         }
 
         public static string GetBoxedModuleName(this ITypeSymbol type)
@@ -393,8 +378,7 @@ namespace SharpNative.Compiler
 
         public static string GetNameD(this ITypeSymbol type, bool removeGenerics=true)
         {
-            var name=
-             TypeProcessor.ConvertType(type,true,false).RemoveFromStartOfString(type.ContainingNamespace.FullName(true)+".");
+            var name=TypeProcessor.ConvertType(type,true,false).RemoveFromStartOfString(type.ContainingNamespace.FullName()+".");
 
             return removeGenerics? Regex.Replace(name, @" ?!\(.*?\)", string.Empty) : name;
 
@@ -404,7 +388,6 @@ namespace SharpNative.Compiler
         public static string GetFullNameD(this ITypeSymbol typeInfo, bool includeNamespace = true)
         {
             return TypeProcessor.ConvertType(typeInfo, false);
-//         
         }
 
         public static string GetFullNameCSharp(this ITypeSymbol typeInfo, bool includeNamespace = true)
@@ -472,8 +455,8 @@ namespace SharpNative.Compiler
         {
             var name =
                 (!(ns.ContainingSymbol is INamespaceSymbol) && !String.IsNullOrEmpty(ns.Name)
-                    ? (ns.ContainingSymbol.Name + "_")
-                    : "").Replace(".", "_") + ns.Name.Replace(".", "_");
+                    ? (ns.ContainingSymbol.Name + ".")
+                    : "")+ ns.Name.Replace(".", "_");
             name = name.Replace(ns.ContainingNamespace.FullName() + "_", ns.ContainingNamespace.FullName() + ".");
 
             return name;

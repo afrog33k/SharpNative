@@ -57,21 +57,14 @@ namespace SharpNative.Compiler
             return writer.ToString();
         }
 
-        private static bool CompareMethods(IMethodSymbol interfaceMethod, IMethodSymbol methodSymbol)
-        {
-            if (interfaceMethod == null || methodSymbol == null)
-                return false;
-            return interfaceMethod.Name == methodSymbol.Name && interfaceMethod.ReturnType == methodSymbol.ReturnType &&
-                   interfaceMethod.Parameters == methodSymbol.Parameters &&
-                   interfaceMethod.TypeArguments == methodSymbol.TypeArguments;
-        }
-
+      
 
         public static void WriteIt(OutputWriter writer, MethodDeclarationSyntax method, bool isProxy = true)
         {
             writer.WriteLine();
             var methodSymbol = (IMethodSymbol) TypeProcessor.GetDeclaredSymbol(method);
-            var methodName = OverloadResolver.MethodName(methodSymbol);
+        
+          
 
             var pinvokeAttributes = method.GetAttribute(Context.DllImport);
             var isInternalPInvoke = pinvokeAttributes == null && method.Modifiers.Any(SyntaxKind.ExternKeyword);
@@ -86,13 +79,15 @@ namespace SharpNative.Compiler
                     return;
             }
 
-            bool isoverride = ShouldUseOverrideKeyword(method, methodSymbol);
+          
 
             var accessString = "";
-            if (isoverride)
-                accessString += (" override ");
+
+          
 
             var isInterface = method.Parent is InterfaceDeclarationSyntax;
+
+            var methodName = MemberUtilities.GetMethodName(method, ref isInterface); //
             if (methodName == "Main" /*&& method.Modifiers.Any(SyntaxKind.PublicKeyword)*/&&
                 method.Modifiers.Any(SyntaxKind.StaticKeyword))
             {
@@ -109,26 +104,7 @@ namespace SharpNative.Compiler
 
             else
             {
-                if (method.Modifiers.Any(SyntaxKind.PublicKeyword) || method.Modifiers.Any(SyntaxKind.InternalKeyword) ||
-                    method.Modifiers.Any(SyntaxKind.ProtectedKeyword) ||
-                    method.Modifiers.Any(SyntaxKind.AbstractKeyword) || isInterface)
-                    accessString += ("public ");
-
-                if (method.Modifiers.Any(SyntaxKind.PrivateKeyword))
-                    accessString += ("private ");
-
-                //	            if (method.Modifiers.Any(SyntaxKind.VirtualKeyword) || isInterface)
-                //	                writer.Write("virtual ");
-
-                //				if (!(method.Modifiers.Any (SyntaxKind.VirtualKeyword) || (method.Modifiers.Any (SyntaxKind.AbstractKeyword) || isInterface || isoverride))) {
-                //					writer.Write(" final ");
-                //				}
-
-                if (method.Modifiers.Any(SyntaxKind.AbstractKeyword))
-                    accessString += (" abstract ");
-
-                if (method.Modifiers.Any(SyntaxKind.StaticKeyword))
-                    accessString += ("static ");
+                accessString = MemberUtilities.GetAccessModifiers(method,isInterface);
             }
 
             //	        if (isInterface)
@@ -140,102 +116,7 @@ namespace SharpNative.Compiler
             var methodSignatureString = "";
             if (method.ReturnType.ToString() == "void")
                 returnTypeString = ("void ");
-            else
-                //  bool returnsVoid = method.ReturnType.ToString() == "void";
-                //if (!returnsVoid)
-            {
-                var typeSymbol = TypeProcessor.GetTypeInfo(method.ReturnType).Type;
-
-                //   var isPtr = typeSymbol != null && (typeSymbol.IsValueType || typeSymbol.TypeKind == TypeKind.TypeParameter) ? "" : "";
-                //     var typeString = TypeProcessor.ConvertType(method.ReturnType) + isPtr + " ";
-
-                //	            writer.Write(typeString);
-                //	            writer.HeaderWriter.Write(typeString);
-
-                var isPtr = typeSymbol != null &&
-                            (!typeSymbol.IsValueType || typeSymbol.TypeKind == TypeKind.TypeParameter);
-            }
-
-            if (methodSymbol.ContainingType.TypeKind == TypeKind.Interface ||
-                Equals(methodSymbol.ContainingType.FindImplementationForInterfaceMember(methodSymbol), methodSymbol))
-            {
-                methodName =
-                    Regex.Replace(
-                        TypeProcessor.ConvertType(methodSymbol.ContainingType.ConstructedFrom) + "_" + methodName,
-                        @" ?!\(.*?\)", string.Empty);
-            }
-
-            if (methodName.Contains(".")) // Explicit Interface method
-            {
-                //				
-                methodName = methodName.SubstringAfterLast('.');
-                methodName = methodName.Replace('.', '_');
-            }
-
-            //			var typenameI = Regex.Replace (TypeProcessor.ConvertType (interfaceMethod.ContainingType), @" ?!\(.*?\)", string.Empty);
-
-            var interfaceMethods =
-                methodSymbol.ContainingType.AllInterfaces.SelectMany(
-                    u =>
-                        u.GetMembers(methodName)).ToArray();
-
-            ISymbol interfaceMethod =
-                interfaceMethods.FirstOrDefault(
-                    o => methodSymbol.ContainingType.FindImplementationForInterfaceMember(o) == methodSymbol);
-
-            if (interfaceMethod == null)
-            {
-                //TODO: fix this for virtual method test 7, seems roslyn cannot deal with virtual 
-                // overrides of interface methods ... so i'll provide a kludge
-                if (!method.Modifiers.Any(SyntaxKind.NewKeyword))
-                {
-                    interfaceMethod =
-                        interfaceMethods.FirstOrDefault(k => CompareMethods(k as IMethodSymbol, methodSymbol));
-                }
-            }
-
-            if (interfaceMethod != null)
-                // && CompareMethods(interfaceMethod ,methodSymbol)) {
-            {
-//This is an interface method //TO
-                if (methodSymbol.ContainingType.SpecialType == SpecialType.System_Array)
-                    methodSignatureString += ("");
-                else
-                {
-                    var typenameI =
-                        Regex.Replace(TypeProcessor.ConvertType(interfaceMethod.ContainingType.ConstructedFrom),
-                            @" ?!\(.*?\)", string.Empty);
-                        //TODO: we should be able to get the original interface name, or just remove all generics from this
-                    if (typenameI.Contains('.'))
-                        typenameI = typenameI.SubstringAfterLast('.');
-                    methodName = (typenameI + "_") + methodName;
-                }
-            }
-
-            //            var explicitHeaderNAme = "";
-            //FIX ME: To support explicits, all method calls are going to be prequalified with the interface name, lets just hope we dont have similar interfaces
-            //
-            // if (methodSymbol.MethodKind == MethodKind.ExplicitInterfaceImplementation)
-            //	        {
-            //	           // var implementations = methodSymbol.ExplicitInterfaceImplementations[0];
-            //	            if (implementations != null)
-            //	            {
-            //	              //  explicitHeaderNAme = implementations.Name;
-            //                     methodName = TypeProcessor.ConvertType(implementations.ReceiverType) + "_" +implementations.Name; //Explicit fix ?
-            //
-            //	                //			writer.Write(methodSymbol.ContainingType + "." + methodName);
-            //	                //Looks like internal classes are not handled properly here ...
-            //	            }
-            //	        }
-            // methodName = methodName.Replace(methodSymbol.ContainingNamespace.FullName() + ".", methodSymbol.ContainingNamespace.FullName().Replace(".", "::") + "::");
-            //           (methodSymbol as).Is
-            //	        (methodSymbol as Microsoft.CodeAnalysis.CSharp.Symbols.SourceMethodSymbol);
-            if (method.Modifiers.Any(SyntaxKind.NewKeyword))
-                methodName += "_";
-
-            //            writer.Write( TypeProcessor.ConvertType(methodSymbol.ContainingType)+ "." + methodName); //Dealting with explicit VMT7
-            // writer.Write(!String.IsNullOrEmpty(explicitHeaderNAme)? explicitHeaderNAme : methodName);
-            //            writer.Write(methodName);
+           
             methodSignatureString += methodName;
 
             if (method.TypeParameterList != null)
@@ -259,39 +140,7 @@ namespace SharpNative.Compiler
 
             var @params = GetParameterListAsString(method.ParameterList);
 
-            var constraints = "";
-
-            if (method.ConstraintClauses.Count > 0)
-            {
-                constraints += (" if (");
-                bool isFirst = true;
-                foreach (var constraint in method.ConstraintClauses)
-                {
-                    foreach (var condition in constraint.Constraints)
-                    {
-                        string dlangCondition = condition.ToString();
-
-                        if (dlangCondition == "new()")
-                            continue;
-                        if (dlangCondition == "class") // TODO: is there a better way to do this ?
-                            dlangCondition = "NObject";
-
-                        if (dlangCondition == "struct")
-                            constraints += ((isFirst ? "" : "&&") + " !is(" + constraint.Name + " : NObject)");
-                        else
-                        {
-                            constraints += ((isFirst ? "" : "&&") + " is(" + constraint.Name + " : " + dlangCondition +
-                                            ")");
-                        }
-
-                        isFirst = false;
-
-                        //								Console.WriteLine (condition);
-                    }
-                }
-
-                constraints += (")");
-            }
+            string constraints = GetMethodConstraints(method);
 
             if (isInterface || method.Modifiers.Any(SyntaxKind.AbstractKeyword))
             {
@@ -334,33 +183,47 @@ namespace SharpNative.Compiler
             writer.CloseBrace();
         }
 
+        private static string GetMethodConstraints(MethodDeclarationSyntax method)
+        {
+            string constraints = "";
+            if (method.ConstraintClauses.Count > 0)
+            {
+                constraints += (" if (");
+                bool isFirst = true;
+                foreach (var constraint in method.ConstraintClauses)
+                {
+                    foreach (var condition in constraint.Constraints)
+                    {
+                        string dlangCondition = condition.ToString();
+
+                        if (dlangCondition == "new()")
+                            continue;
+                        if (dlangCondition == "class") // TODO: is there a better way to do this ?
+                            dlangCondition = "NObject";
+
+                        if (dlangCondition == "struct")
+                            constraints += ((isFirst ? "" : "&&") + " !is(" + constraint.Name + " : NObject)");
+                        else
+                        {
+                            constraints += ((isFirst ? "" : "&&") + " is(" + constraint.Name + " : " + dlangCondition +
+                                            ")");
+                        }
+
+                        isFirst = false;
+
+                        //								Console.WriteLine (condition);
+                    }
+                }
+
+                constraints += (")");
+            }
+            return constraints;
+        }
+
 
         public static void Go(OutputWriter writer, MethodDeclarationSyntax method)
         {
             WriteIt(writer, method, false);
         }
-
-        private static bool ShouldUseOverrideKeyword(MethodDeclarationSyntax method, IMethodSymbol symbol)
-        {
-            if (symbol.ContainingType.TypeKind == TypeKind.Struct ||
-                symbol.ContainingType.TypeKind == TypeKind.Interface)
-            {
-                return false;
-                    // Structs dont have a base class to override (maybe opEquals) ... but that will be handled separately
-                //Interfaces are contracts, so no overriding here// maybe we should compare the methods 
-            }
-            if (method.Modifiers.Any(SyntaxKind.StaticKeyword))
-                return false;
-            //			if (method.Modifiers.Any(SyntaxKind.NewKeyword))
-            //				return  symbol.ContainingType.BaseType.GetMembers(symbol.Name).Any(k=>k.IsAbstract || k.IsVirtual);
-
-            if (method.Modifiers.Any(SyntaxKind.PartialKeyword))
-                //partial methods seem exempt from C#'s normal override keyword requirement, so we have to check manually to see if it exists in a base class
-                return symbol.ContainingType.BaseType.GetMembers(symbol.Name).Any();
-
-            return method.Modifiers.Any(SyntaxKind.OverrideKeyword);
-        }
-
-       
     }
 }

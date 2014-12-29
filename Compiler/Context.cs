@@ -102,5 +102,16 @@ namespace SharpNative.Compiler
                 //These are not always included
             }
         }
+
+        private static readonly Stack<Context> Instances = new Stack<Context>();
+        internal static void Push()
+        {
+            Instances.Push(Instance);
+        }
+
+        internal static void Pop()
+        {
+            Instance = Instances.Pop();
+        }
     }
 }

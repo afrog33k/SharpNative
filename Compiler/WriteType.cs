@@ -26,7 +26,7 @@ namespace SharpNative.Compiler
             { "System.Namespace.Exception","NException"}
         }; 
 
-        public static void Go()
+        public static void Go(OutputWriter outputWriter =null)
         {
             var partials = Context.Instance.Partials;
             var first = partials.First();
@@ -59,10 +59,18 @@ namespace SharpNative.Compiler
                     myUsingDirective, SystemUsingDirective
                 }).ToArray();
 
-           
+            OutputWriter writer = null;
 
-            using (var writer = new OutputWriter(Context.Instance.Namespace, Context.Instance.TypeName))
+           
+            using (writer = outputWriter == null?new OutputWriter(Context.Instance.Namespace, Context.Instance.TypeName) : new TempWriter())
             {
+                if (outputWriter != null)
+                {
+                    writer.WriteLine();
+                    writer.Indent = outputWriter.Indent+2;
+                    writer.WriteIndent();
+                }
+                
                 var bases = partials
                     .Select(o => o.Syntax.BaseList)
                     .Where(o => o != null)
@@ -115,6 +123,11 @@ namespace SharpNative.Compiler
                             .Cast<EnumDeclarationSyntax>()
                             .SelectMany(o => o.Members)
                             .Where(o => !Program.DoNotWrite.ContainsKey(o)));
+
+                    if (outputWriter != null)
+                    {
+                        outputWriter.Write(writer.ToString());
+                    }
 
                     return;
                 }
@@ -180,14 +193,19 @@ namespace SharpNative.Compiler
                 if (first.Syntax is TypeDeclarationSyntax)
                 {
                     //Look for generic arguments 
-//                    var genericArgs = partials
-//                        .Select(o => o.Syntax)
-//                        .Cast<TypeDeclarationSyntax>()
-//                        .Where(o => o.TypeParameterList != null)
-//                        .SelectMany(o => o.TypeParameterList.Parameters)
-//                        .ToList();
+                    //                    var genericArgs = partials
+                    //                        .Select(o => o.Syntax)
+                    //                        .Cast<TypeDeclarationSyntax>()
+                    //                        .Where(o => o.TypeParameterList != null)
+                    //                        .SelectMany(o => o.TypeParameterList.Parameters)
+                    //                        .ToList();
 
-                    if (Context.Instance.Type.TypeKind == TypeKind.Class)
+                    //Internal classes/structs are declared static in D to behave correctly
+                    if (outputWriter != null)
+                    {
+                        writer.Write("static ");
+                    }
+                        if (Context.Instance.Type.TypeKind == TypeKind.Class)
                         writer.Write("class ");
                     else if (Context.Instance.Type.TypeKind == TypeKind.Interface)
                         writer.Write("interface ");
@@ -200,7 +218,7 @@ namespace SharpNative.Compiler
                         throw new Exception("don't know how to write type: " + Context.Instance.Type.TypeKind);
                     //writer.Write (((TypeState.Instance.Type.TypeKind== TypeKind.Interface)?" interface ": ) );
 
-                    writer.Write(Context.Instance.TypeName);
+                    writer.Write(TypeName(Context.Instance.Type, false));
 
                     if (Context.Instance.Type.IsGenericType)
                     {
@@ -518,162 +536,233 @@ namespace SharpNative.Compiler
                     }
                 }
                 writer.Indent--;
+                WriteOutNestedTypes(first, writer);
+
+                WriteOutBoxed(writer, genericArgs, bases);
                 writer.CloseBrace();
 
-                //Implement Boxed!Interface
-                if (Context.Instance.Type.TypeKind == TypeKind.Struct)
-                {
-                    writer.WriteLine();
-                    var typeName = Context.Instance.TypeName + (Context.Instance.Type.IsGenericType? ("!(" + string.Join(" , ", genericArgs.Select(o => o)) + ")") :"");
-                    writer.Write("public class __Boxed_" + typeName + " ");
-
-                    if (genericArgs.Any())
-                    {
-                        writer.Write("( ");
-                        writer.Write(string.Join(" , ", genericArgs.Select(o => o)));
-                        writer.Write(" )");
-                    }
-
-                    writer.Write(": Boxed!(" + typeName + ")");
-
-                    foreach (var baseType in bases.OrderBy(o => o.TypeKind == TypeKind.Interface ? 1 : 0))
-                    {
-                        writer.Write(" ,");
-
-                        writer.Write(TypeProcessor.ConvertType(baseType, false));
-                    }
-
-                    writer.OpenBrace();
-
-                    //FIXME:This is giving issues, we will just generate them here
-
-//					writer.WriteLine ("import Irio.Utilities;");
-
-                    writer.WriteLine("import std.traits;");
-
-                    foreach (var baseType in bases.Where(o => o.TypeKind == TypeKind.Interface))
-                    {
-                        //FIXME:This is giving issues, we will just generate them here
-//						writer.WriteLine ("mixin(__ImplementInterface!({0}, Value));",TypeProcessor.ConvertType(baseType,false)); 
-                        var ifacemembers = baseType.GetMembers();
-
-                        foreach (var member in ifacemembers)
-                        {
-                            var ifacemethod =
-                                Context.Instance.Type.FindImplementationForInterfaceMember(member)
-                                    .DeclaringSyntaxReferences.First()
-                                    .GetSyntax();
-//								.Where(member => !(member is TypeDeclarationSyntax)
-//									&& !(member is EnumDeclarationSyntax)
-//									&& !(member is DelegateDeclarationSyntax) && !(member is ConstructorDeclarationSyntax))
-//								.ToList();
-
-                            //                    writer.WriteLine();
-//							Core.Write(writer, member);
-
-                            if (ifacemethod is MethodDeclarationSyntax)
-                                WriteMethod.WriteIt(writer, (MethodDeclarationSyntax) ifacemethod);
-                            else if (ifacemethod is PropertyDeclarationSyntax)
-                                WriteProperty.Go(writer, (PropertyDeclarationSyntax) ifacemethod, true);
-                        }
-                    }
-
-                    //This is required to be able to create an instance at runtime / reflection
-//					this()
-                    //					{
-                    //						super(SimpleStruct.init);
-                    //					}
-
-                    writer.WriteLine();
-                    writer.WriteLine("this()");
-                    writer.OpenBrace();
-                    writer.WriteLine("super({0}.init);", typeName);
-                    writer.CloseBrace();
-
-                    if (Context.Instance.Type.GetMembers("ToString").Count() >= 1) // Use better matching ?
-                    {
-                        //					writer.WriteLine ();
-                        writer.WriteLine("override String ToString()");
-                        writer.OpenBrace();
-                        writer.WriteLine("return Value.ToString();");
-                        writer.CloseBrace();
-                    }
-
-                    writer.WriteLine();
-                    writer.WriteLine("this(ref " + typeName + " value)");
-                    writer.OpenBrace();
-                    writer.WriteLine("super(value);");
-                    writer.CloseBrace();
-
-                    writer.WriteLine();
-                    writer.WriteLine("U opCast(U)()");
-                    writer.WriteLine("if(is(U:{0}))", typeName);
-                    writer.OpenBrace();
-                    writer.WriteLine("return Value;");
-                    writer.CloseBrace();
-
-                    writer.WriteLine();
-                    writer.WriteLine("U opCast(U)()");
-                    writer.WriteLine("if(!is(U:{0}))", typeName);
-                    writer.OpenBrace();
-                    writer.WriteLine("return this;");
-                    writer.CloseBrace();
-
-                    writer.WriteLine();
-                    writer.WriteLine("auto opDispatch(string op, Args...)(Args args)");
-                    writer.OpenBrace();
-                    writer.WriteLine("enum name = op;");
-                    writer.WriteLine("return __traits(getMember, Value, name)(args);");
-                    writer.CloseBrace();
-
-                    writer.CloseBrace();
+                WriteEntryMethod(writer, dllImports);
+               
+                if (outputWriter != null)
+                {   
+                    outputWriter.Write(writer.ToString());
                 }
-
-                if (Context.Instance.EntryMethod != null)
-                {
-                    //TODO: DllImports should be centralized
-
-                    //
-                    writer.WriteLine();
-                    writer.WriteLine("void main(string[] args)");
-                    writer.OpenBrace();
-
-                    if (dllImports.Count > 0)
-                        writer.WriteLine(Context.Instance.TypeName + ".__SetupDllImports();");
-                    writer.WriteLine(Context.Instance.EntryMethod);
-                    if (dllImports.Count > 0)
-                        writer.WriteLine(Context.Instance.TypeName + ".__FreeDllImports();");
-
-                    writer.CloseBrace();
-                }
-
-                //				var mySpecializations = Program.AllGenericSpecializations.Where (t => t.OriginalDefinition == TypeState.Instance.Type);
-                //
-                //
-                //				foreach (var specialization in mySpecializations) {
-                //
-                //					var specializationText = ("template class " + specialization.GetFullNameD (false) + " (" +
-                //					                                            (string.Join (" , ",
-                //						                                            specialization.TypeArguments.Select (
-                //							                                            o =>
-                //                                                                       TypeProcessor.ConvertType (o) +
-                //							                                            ((o.IsValueType ||
-                //							                                            o.TypeKind == TypeKind.TypeParameter)
-                //                                                                           ? ""
-                //                                                                           : "*"))) +
-                //							");"));
-                //					writer.Write (specializationText);
-                //				}
-
-                //                    if (@namespace.Length > 0)
-                //                    {
-                //                        foreach (var ns in namespaces)
-                //                        {
-                //                            writer.WriteLine("\n\n}");
-                //                            writer.WriteLine("\n\n}");
-                //                        }
-                //                    }
             }
+        }
+
+        private static void WriteEntryMethod(OutputWriter writer, List<AttributeSyntax> dllImports)
+        {
+            if (Context.Instance.EntryMethod != null)
+            {
+                //TODO: DllImports should be centralized
+
+                //
+                writer.WriteLine();
+                writer.WriteLine("void main(string[] args)");
+                writer.OpenBrace();
+
+                if (dllImports.Count > 0)
+                    writer.WriteLine(Context.Instance.TypeName + ".__SetupDllImports();");
+                writer.WriteLine(Context.Instance.EntryMethod);
+                if (dllImports.Count > 0)
+                    writer.WriteLine(Context.Instance.TypeName + ".__FreeDllImports();");
+
+                writer.CloseBrace();
+            }
+        }
+
+        private static void WriteOutBoxed(OutputWriter writer, List<ITypeSymbol> genericArgs, List<ITypeSymbol> bases)
+        {
+            //Implement Boxed!Interface
+            if (Context.Instance.Type.TypeKind == TypeKind.Struct)
+            {
+                writer.WriteLine();
+                var typeName = TypeName(Context.Instance.Type, false) +
+                               (Context.Instance.Type.IsGenericType
+                                   ? ("!(" + string.Join(" , ", genericArgs.Select(o => o)) + ")")
+                                   : "");
+
+                var baseString = "";
+
+                foreach (var baseType in bases.OrderBy(o => o.TypeKind == TypeKind.Interface ? 1 : 0))
+                {
+                    baseString += (" ,");
+
+                    baseString += (TypeProcessor.ConvertType(baseType, false));
+                }
+
+                writer.WriteLine("public static class __Boxed_" + " " +
+                                 (genericArgs.Any() ? ("( " + (string.Join(" , ", genericArgs.Select(o => o)) + " )")) : "") +
+                                 ": Boxed!(" + typeName + ")" + baseString);
+
+                writer.OpenBrace();
+
+                //FIXME:This is giving issues, we will just generate them here
+
+                //					writer.WriteLine ("import Irio.Utilities;");
+
+                writer.WriteLine("import std.traits;");
+
+                foreach (var baseType in bases.Where(o => o.TypeKind == TypeKind.Interface))
+                {
+                    //FIXME:This is giving issues, we will just generate them here
+                    //						writer.WriteLine ("mixin(__ImplementInterface!({0}, Value));",TypeProcessor.ConvertType(baseType,false)); 
+                    var ifacemembers = baseType.GetMembers();
+
+                    foreach (var member in ifacemembers)
+                    {
+                        var ifacemethod =
+                            Context.Instance.Type.FindImplementationForInterfaceMember(member)
+                                .DeclaringSyntaxReferences.First()
+                                .GetSyntax();
+                        //								.Where(member => !(member is TypeDeclarationSyntax)
+                        //									&& !(member is EnumDeclarationSyntax)
+                        //									&& !(member is DelegateDeclarationSyntax) && !(member is ConstructorDeclarationSyntax))
+                        //								.ToList();
+
+                        //                    writer.WriteLine();
+                        //							Core.Write(writer, member);
+
+                        if (ifacemethod is MethodDeclarationSyntax)
+                            WriteMethod.WriteIt(writer, (MethodDeclarationSyntax) ifacemethod);
+                        else if (ifacemethod is PropertyDeclarationSyntax)
+                            WriteProperty.Go(writer, (PropertyDeclarationSyntax) ifacemethod, true);
+                    }
+                }
+
+                //This is required to be able to create an instance at runtime / reflection
+                //					this()
+                //					{
+                //						super(SimpleStruct.init);
+                //					}
+
+                writer.WriteLine();
+                writer.WriteLine("this()");
+                writer.OpenBrace();
+                writer.WriteLine("super({0}.init);", typeName);
+                writer.CloseBrace();
+
+                if (Context.Instance.Type.GetMembers("ToString").Count() >= 1) // Use better matching ?
+                {
+                    //					writer.WriteLine ();
+                    writer.WriteLine("override String ToString()");
+                    writer.OpenBrace();
+                    writer.WriteLine("return Value.ToString();");
+                    writer.CloseBrace();
+                }
+
+                writer.WriteLine();
+                writer.WriteLine("this(ref " + typeName + " value)");
+                writer.OpenBrace();
+                writer.WriteLine("super(value);");
+                writer.CloseBrace();
+
+                writer.WriteLine();
+                writer.WriteLine("U opCast(U)()");
+                writer.WriteLine("if(is(U:{0}))", typeName);
+                writer.OpenBrace();
+                writer.WriteLine("return Value;");
+                writer.CloseBrace();
+
+                writer.WriteLine();
+                writer.WriteLine("U opCast(U)()");
+                writer.WriteLine("if(!is(U:{0}))", typeName);
+                writer.OpenBrace();
+                writer.WriteLine("return this;");
+                writer.CloseBrace();
+
+                writer.WriteLine();
+                writer.WriteLine("auto opDispatch(string op, Args...)(Args args)");
+                writer.OpenBrace();
+                writer.WriteLine("enum name = op;");
+                writer.WriteLine("return __traits(getMember, Value, name)(args);");
+                writer.CloseBrace();
+
+                writer.CloseBrace();
+            }
+        }
+
+        private static void WriteOutNestedTypes(Context.SyntaxAndSymbol first, OutputWriter writer)
+        {
+            //WriteOut All My nested classes
+            Context.Push();
+
+            var delegates = first.Syntax.DescendantNodes().OfType<DelegateDeclarationSyntax>()
+                .Select(o => new
+            {
+                Syntax = o,
+                Symbol = TypeProcessor.GetDeclaredSymbol(o),
+                TypeName = WriteType.TypeName((INamedTypeSymbol) TypeProcessor.GetDeclaredSymbol(o))
+            }).Where(k => k.Symbol.ContainingType ==  Context.Instance.Type) // Ignore all nested delegates
+                .GroupBy(o => o.Symbol.ContainingNamespace.FullNameWithDot() + o.TypeName)
+                .ToList();
+
+         
+                delegates.ForEach(type => //.ForEach(type => //.Parallel(type =>
+            {
+                Context.Instance = new Context
+                {
+                    TypeName = type.First().TypeName,
+                    DelegatePartials =
+                        type.Select(
+                            o =>
+                                new Context.DelegateSyntaxAndSymbol
+                    {
+                        Symbol = (INamedTypeSymbol) o.Symbol,
+                        Syntax = o.Syntax
+                    })
+                            .Where(o => !Program.DoNotWrite.ContainsKey(o.Syntax))
+                            .ToList()
+                };
+
+                if (Context.Instance.DelegatePartials.Count > 0)
+                    WriteDelegate.Go(writer);
+            });
+            Context.Pop();
+
+            Context.Push();
+            var subclasses = first.Syntax.DescendantNodes().OfType<BaseTypeDeclarationSyntax>()
+                .Select(o => new
+                {
+                    Syntax = o,
+                    Symbol = TypeProcessor.GetDeclaredSymbol(o),
+                    TypeName = WriteType.TypeName((INamedTypeSymbol) TypeProcessor.GetDeclaredSymbol(o))
+                }).Where(k => k.Symbol.ContainingType == Context.Instance.Type) // Ignore all nested classes
+                .GroupBy(o => o.Symbol.ContainingNamespace.FullNameWithDot() + o.TypeName)
+                .ToList();
+
+            subclasses.ForEach(type => //.ForEach(type => //.Parallel(type =>
+            {
+                Context.Instance = new Context
+                {
+                    TypeName = type.First().TypeName,
+                    Partials =
+                        type.Select(
+                            o =>
+                                new Context.SyntaxAndSymbol
+                                {
+                                    Symbol = (INamedTypeSymbol) o.Symbol,
+                                    Syntax = o.Syntax
+                                })
+                            .Where(o => !Program.DoNotWrite.ContainsKey(o.Syntax))
+                            .ToList()
+                };
+
+                if (Context.Instance.Partials.Count > 0)
+                {
+                    try
+                    {
+                        WriteType.Go(writer);
+                    }
+                    catch (Exception ex)
+                    {
+                        //TODO: remove this when done with CorLib 
+                        throw ex;
+                    }
+                }
+            });
+
+            Context.Pop();
         }
 
         public static OutputWriter EntryPoint = null;
@@ -736,17 +825,18 @@ namespace SharpNative.Compiler
         }
 
 
-        public static string TypeName(INamedTypeSymbol type)
+        public static string TypeName(INamedTypeSymbol type, bool appendContainingTypeName=true)
         {
             var sb =
                 new StringBuilder(string.Join("_",
                     (new[] {type.Name}).Union(type.TypeArguments.Select(o => o.ToString()))));
 
+            if(appendContainingTypeName)
             while (type.ContainingType != null)
             {
                 type = type.ContainingType;
-                sb.Insert(0,
-                    string.Join("_", (new[] {type.Name}).Union(type.TypeArguments.Select(o => o.ToString()))) + "_");
+                sb.Insert(0, type.Name +
+                    string.Join("_",(type.TypeArguments.Select(o => o.ToString()))) + ".");
                 sb.Append(string.Join("_", type.TypeArguments.Select(o => o)));
             }
 

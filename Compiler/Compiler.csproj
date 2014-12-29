@@ -93,6 +93,7 @@
     <Compile Include="Core.cs" />
     <Compile Include="DlangAst\InvocationRewriter.cs" />
     <Compile Include="InternalNames.cs" />
+    <Compile Include="MemberUtilities.cs" />
     <Compile Include="OutputWriter.cs" />
     <Compile Include="DlangAst\CSharpToDlangRewriter.cs" />
     <Compile Include="RoslynExtensions.cs" />
