@@ -94,13 +94,6 @@ namespace SharpNative.Compiler
                             if (properClassName.Trim() != String.Empty && className.Trim() != String.Empty)
                                 writer.WriteLine("alias " + properClassName + " " + className + ";");
 
-                            if (type.TypeKind == TypeKind.Struct)
-                            {
-                                properClassName = type.GetBoxedModuleName();
-                                writer.WriteLine("alias " + properClassName + " __Boxed_" + className + ";");
-
-                            }
-
                             addedTypes.Add(properClassName);
                         }
                     }
