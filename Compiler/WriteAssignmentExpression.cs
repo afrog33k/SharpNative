@@ -168,7 +168,7 @@ namespace SharpNative.Compiler
                     return;
                 }
                 //Do we have an implicit converter, if so, use it
-                if (leftExpressionType.Type != rightExpressionType.Type)
+                if (leftExpressionType.Type != rightExpressionType.Type && rightExpressionType.Type!=null)
                 {
                     // if (boxLeft)
                     {

@@ -1,4 +1,4 @@
-﻿//Basic constraints test
+//Basic constraints test
 using System;
 
 namespace CSharpPlayground
@@ -21,7 +21,7 @@ namespace CSharpPlayground
             return newVector;
         }
 
-        static void Main(string[] args)
+        static void Main()
         {
             Vector2D a = new Vector2D () {
                 X = 1,

@@ -41,6 +41,12 @@ import core.sys.posix.dlfcn;
 alias std.functional.toDelegate __ToDelegate;
 
 
+
+public static String ToString(T)(T basicType) // Should just implement this on all basic types
+{
+	return BOX!(T)(basicType).ToString();
+}
+
 public static __IA!(T) __CC(T)(T a) // create container
 {
 		__IA!(T) rr =  __IA!(T)(); // Need to find a way to get rid of new, this is an extra allocation ... ?
@@ -175,30 +181,7 @@ class Delegate(T):NObject
 			opCall(args);
 	}
 
-	//void opCall(U ...)(U args) 
-	//{
-
-	//	if(dFunc !is null)
-	//	{
-	//		dFunc(args);
-	//	}
-
-	//	if(funcs !is null)
-	//	{
-	//		 foreach (func; funcs)
- //       	{
- //           	if(func !is null)
- //           		func(args);
- //       	}
-	//	}
-	//}
-
-
-	//void Invoke(U ...)(U args)
-	//{
-	//	opCall(args);
-	//}
-
+	
 
 	
 
@@ -210,9 +193,13 @@ class Delegate(T):NObject
     void detach(Delegate!T func) {
         ulong i = -1;
         //Console.WriteLine("Removing " ~ (&(func.Function)).toString);
-        foreach (j, h; funcs)
+	//	Console.WriteLine(((cast(void*)func.Function)).toString);
+
+        for (int j=0;j< funcs.length; j++)
         {
-        	//Console.WriteLine((&(h.Function)).toString);
+			auto h = funcs[j];
+        //	Console.WriteLine((&(h.Function)).toString);
+        	//Console.WriteLine(((cast(void*)h.Function)).toString);
 
             if (h.Function is func.Function)
             {
@@ -225,34 +212,16 @@ class Delegate(T):NObject
 
         if (i != -1)
             funcs = funcs[0..cast(uint)i] ~ funcs[cast(uint)i+1..$];
-          /* if (i != -1)
-           {
-           	Console.WriteLine("i==" ~ i.toString);
-           	if(i==0)
-           	{
-           		if(funcs.length > 1)
-           			funcs = funcs[1..$];
-           		else
-           			funcs = [];
-           	}
-           	else if (i == funcs.length)
-           	{
-           		funcs = funcs[0..$-1];
-           	}
-           	else
-           		funcs = funcs[0..i] ~ funcs[i+1..$];
-           }
-        	//std.algorithm.remove!(Delegate!T)(funcs,i);*/
+
+		if(dFunc !is null && dFunc==func.Function) // Function could be the primary one we added during init ;)
+		{
+        //	Console.WriteLine("Found it!");
+			dFunc = null;
+		}
+        
     }
 
-    //void opAddAssign(Delegate!T func) {
-    //    attach(func);
-    //}
-
-    //void opSubAssign(Delegate!T func) {
-    //    detach(func);
-    //}
-
+   
 
     void opAddAssign(Delegate!T func) {
         attach(func);
@@ -262,12 +231,7 @@ class Delegate(T):NObject
         detach(func);
     }
 
-	//T Function() @property
-	//{
-	//	return dFunc;
-	//}
-
-	//alias Function this;
+	
 }
 
 class Event(T):NObject //if(is(T==delegate))
@@ -537,7 +501,7 @@ public class NException : Exception
 	public this(String message, NException innerException)
   	{
   		_innerException = innerException;
-    	super(cast(string)message);
+    	super(cast(string)cast(wstring)message);
   
 	}
 
@@ -553,10 +517,15 @@ public class NException : Exception
 
 	public this(String message)
 	{
-		super(cast(string)message);
+		super(cast(string)cast(wstring)message);
 	}
 
 	public String Message() @property
+	{
+		return new String(msg);
+	}
+
+	public String _Exception_Message() @property
 	{
 		return new String(msg);
 	}
@@ -1143,14 +1112,14 @@ class Boxed (T) : NObject
 		//{
 		//	return Value.toString();
 		//}
-		static if(!is(T==double) && !is(T==long) && !is(T==byte))
+		//static if(!is(T==double) && !is(T==long) && !is(T==byte))
 		{
 			return to!string(Value);
 		}
-		else
+		//else
 		{
 			//Console.WriteLine("integer:");
-			return Value.toString();
+	//		return Value.toString();
 		}
 	}
 
@@ -1479,16 +1448,6 @@ bool IsCast(T, U)(U obj)  if (is(T == interface))// && is(U :NObject))
 	//}
 //}
 
-
-public static String _(string aString) // Use to make strings less verbose i.e. _("yolo")._S = new String("yolo") :)
-{
-	return new String(aString);
-}
-
-public static String ToString(int anInt) // int.ToString()
-{
-	return new String(to!string(anInt));
-}
 
 //static import System;
 //import System.String;

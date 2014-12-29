@@ -87,7 +87,7 @@ namespace SharpNative.Compiler
 
                            
 
-                            var className = type.Name;
+                            var className = type.GetNameD();
 
                             if (properClassName.Trim() != String.Empty && className.Trim() != String.Empty)
                                 writer.WriteLine("alias " + properClassName + " " + className + ";");
@@ -128,8 +128,8 @@ namespace SharpNative.Compiler
                     AssemblyMetadata.CreateFromFile(typeof (DataTable).Assembly.Location).GetReference(),
                     AssemblyMetadata.CreateFromFile(typeof (XmlAttribute).Assembly.Location).GetReference(),
                     AssemblyMetadata.CreateFromFile(typeof (CSharpCodeProvider).Assembly.Location).GetReference(),
-                    //                AssemblyMetadata.CreateFromFile(typeof(System.ComponentModel.DataAnnotations.DisplayAttribute).Assembly.Location).GetReference(),
-                    //                AssemblyMetadata.CreateFromFile(typeof(System.ComponentModel.Composition.ImportAttribute).Assembly.Location).GetReference(),
+                    AssemblyMetadata.CreateFromFile(typeof (Enumerable).Assembly.Location).GetReference(),
+
                     AssemblyMetadata.CreateFromFile(typeof (HttpRequest).Assembly.Location).GetReference(),
                     AssemblyMetadata.CreateFromFile(typeof (CSharpCodeProvider).Assembly.Location).GetReference()
                 }, new CSharpCompilationOptions(OutputKind.ConsoleApplication, allowUnsafe: true));

@@ -1,4 +1,4 @@
-﻿//AsIs Test from Alter-Native
+//AsIs Test from Alter-Native
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -8,7 +8,7 @@ namespace NestedClasses
 {
     class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
             ParentClass p = new ParentClass();
             ParentClass.NestedClass1 n1 = new ParentClass.NestedClass1();

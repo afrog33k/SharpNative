@@ -1,4 +1,4 @@
-﻿//Partial classes test
+//Partial classes test
 using System;
 
 namespace CSharpPlayground
@@ -24,7 +24,7 @@ namespace CSharpPlayground
             foobar.Bar = 2;
         }
 
-        static void Main(string[] args)
+        static void Main()
         {
             var part =  new PartialExample();
             Console.WriteLine(part.foobar.Foo + part.foobar.Bar);

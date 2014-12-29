@@ -60,9 +60,14 @@
                     <TextBlock x:Name="OpenSolution" Text="Open Solution" />
                 </Button>
                 <Button 
+                	Margin="4"
+                	Click="RunAllTests">
+                    <TextBlock x:Name="OpenSolution1" Text="Run All Tests" />
+                </Button>
+                <Button 
                     Margin="4"
                     Click="OnShowCompilerOptions">
-                    <TextBlock ><Run Text="Options"/><LineBreak/><Run/></TextBlock>
+                    <TextBlock Text="Options" />
                 </Button>
             </StackPanel>
         </StackPanel>

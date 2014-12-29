@@ -5,6 +5,7 @@
 
 #region Imports
 
+using System;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -23,11 +24,10 @@ namespace SharpNative.Compiler
 
             var types = TypeProcessor.GetTypeInfo(foreachStatement.Expression);
             var typeStr = TypeProcessor.GenericTypeName(types.Type);
-            //  if (types.Type is IArrayTypeSymbol)
-//            {
-            //It's faster to "while" through arrays than "for" through them
-            //   writer.WriteOpenBrace();
             writer.WriteLine("");
+
+           
+            //   writer.WriteOpenBrace();
 
 //                writer.WriteIndent();
 
@@ -35,6 +35,31 @@ namespace SharpNative.Compiler
 
 //                var isPtr = typeinfo.Type != null && typeinfo.Type.IsValueType ? "" : "";
             var typeString = TypeProcessor.ConvertType(foreachStatement.Type) + " ";
+
+
+            if (types.Type is IArrayTypeSymbol)
+            {//Lets just for through the array, iterators are slow ... really slow
+                var forIter = "__for" + foreachCount;
+
+                var temp = new TempWriter();
+
+                Core.Write(temp, foreachStatement.Expression);
+
+                var expressiono = temp.ToString();
+
+                writer.WriteIndent();
+                writer.WriteLine("for (int {0}=0;{0} < {2}.Length; {0}++)", forIter,
+                    WriteIdentifierName.TransformIdentifier(foreachStatement.Identifier.ValueText), expressiono);
+               
+                writer.OpenBrace();
+                writer.WriteLine("auto {0} = {1}[{2}];", WriteIdentifierName.TransformIdentifier(foreachStatement.Identifier.ValueText), expressiono, forIter);
+                Core.WriteStatementAsBlock(writer, foreachStatement.Statement, false);
+                writer.CloseBrace();
+                foreachCount++;
+
+                return;
+            }
+            //It's faster to "while" through arrays than "for" through them
 
             var foreachIter = "__foreachIter" + foreachCount;
 
@@ -79,70 +104,8 @@ namespace SharpNative.Compiler
                 writer.CloseBrace();
                 writer.WriteLine("");
 
-                //				writer.CloseBrace ();
                 foreachCount++;
             }
-//				writer.Write(string.Format("foreach ({1}; ", typeString, WriteIdentifierName.TransformIdentifier(foreachStatement.Identifier.ValueText)));
-//                writer.Write(")\r\n");
-//              
-//                writer.OpenBrace();
-//
-//                writer.WriteIndent();
-//
-//                Core.WriteStatementAsBlock(writer, foreachStatement.Statement, false);
-//
-//                writer.CloseBrace();
-
-            //    writer.WriteCloseBrace();
-//            }
-//            else if (typeStr == "System.Collections.Generic.List<>"
-//                //|| typeStr == "System.Collections.Generic.Dictionary<,>" 
-//                || typeStr == "System.Collections.Generic.Dictionary<,>.KeyCollection"
-//                || typeStr == "System.Collections.Generic.Dictionary<,>.ValueCollection")
-//            {
-//                //It's faster to "while" over a list's iterator than to "for" through it
-//                writer.WriteOpenBrace();
-//                info.WritePreLoop(writer);
-//
-//                writer.WriteIndent();
-//                writer.Write("val __foreachiterator = ");
-//                Core.Write(writer, foreachStatement.Expression);
-//                writer.Write(".iterator();\r\n");
-//
-//
-//                writer.WriteLine("while (__foreachiterator.hasNext())");
-//                writer.WriteOpenBrace();
-//
-//                writer.WriteIndent();
-//                writer.Write("val ");
-//                writer.Write(WriteIdentifierName.TransformIdentifier(foreachStatement.Identifier.ValueText));
-//                writer.Write(" = __foreachiterator.next();\r\n");
-//
-//                info.WriteLoopOpening(writer);
-//                Core.WriteStatementAsBlock(writer, foreachStatement.Statement, false);
-//                info.WriteLoopClosing(writer);
-//                writer.WriteCloseBrace();
-//
-//                info.WritePostLoop(writer);
-//                writer.WriteCloseBrace();
-//            }
-//            else
-//            {
-//
-//                info.WritePreLoop(writer);
-//                writer.WriteIndent();
-//                writer.Write("for (");
-//                writer.Write(WriteIdentifierName.TransformIdentifier(foreachStatement.Identifier.ValueText));
-//                writer.Write(" = ");
-//                Core.Write(writer, foreachStatement.Expression);
-//                writer.Write(")\r\n");
-//                writer.WriteOpenBrace();
-//                info.WriteLoopOpening(writer);
-//                Core.WriteStatementAsBlock(writer, foreachStatement.Statement, false);
-//                info.WriteLoopClosing(writer);
-//                writer.WriteCloseBrace();
-//                info.WritePostLoop(writer);
-//            }
         }
     }
 }

@@ -88,7 +88,7 @@ namespace SharpNative.Compiler
                 //TypeState.Instance.DerivesFromObject = bases.Count == interfaces.Count;
 
                 var @namespace = first.Symbol.ContainingNamespace.FullName();
-                var genericArgs = Context.Instance.Type.TypeParameters.ToList();
+                var genericArgs = Context.Instance.Type.TypeParameters.Select(l=>l as ITypeSymbol).ToList();
 
 
                 //Module name = namespace + "." + typename;
@@ -209,9 +209,10 @@ namespace SharpNative.Compiler
                          //   List<string> genArgs = new List<string>();
                             foreach (var @base in bases)
                             {
-                                foreach (var arg in (@base as INamedTypeSymbol).TypeParameters)
+                                foreach (var arg in (@base as INamedTypeSymbol).TypeArguments)
                                 {
                                     
+                                    if(arg.TypeKind==TypeKind.TypeParameter)
                                     if (!genericArgs.Any(k=>k.Name==arg.Name))
                                     {
                                         genericArgs.Add(arg);
@@ -413,7 +414,8 @@ namespace SharpNative.Compiler
                         foreach (var member in fields)
                         {
                             pack = 1;
-                            writer.WriteLine("align (" + pack + "): //Pack = " + pack + " C# default");
+                            //TODO: on mac osx and mono this is required, on windows, it causes and issue
+//                            writer.WriteLine("align (" + pack + "): //Pack = " + pack + " C# default");
                             //                    writer.WriteLine();
                             Core.Write(writer, member);
                         }
@@ -428,7 +430,8 @@ namespace SharpNative.Compiler
                     foreach (var member in fields)
                     {
                         var pack = 1;
-                        writer.WriteLine("align (" + pack + "): //Pack = " + pack + "C# default");
+                        //TODO: on mac osx and mono this is required, on windows, it causes and issue
+                        //                        writer.WriteLine("align (" + pack + "): //Pack = " + pack + "C# default");
                         //                    writer.WriteLine();
                         Core.Write(writer, member);
                     }

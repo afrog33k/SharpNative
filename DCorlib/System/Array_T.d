@@ -57,7 +57,7 @@ class ArrayIterator(T):IEnumerator_T!(T)
       
       Console.WriteLine(fiver.Ranks);
 */
-public class Array_T(T=NObject) :  NObject, ICollection_T!(T) 
+public class Array_T(T=NObject) :  Array, ICollection_T!(T) 
 //if(!is(T:void))
 {
 	private int index_;
@@ -70,12 +70,12 @@ public class Array_T(T=NObject) :  NObject, ICollection_T!(T)
 		return _items;
 	}
 
-	int Rank() @property
+override	int Rank() @property
 	{
 		return cast(int)_dims.length;
 	}
 
-	int GetLength(int dimension=0)
+override	int GetLength(int dimension=0)
 	{
 
 		if(Rank==1)
@@ -92,7 +92,7 @@ public class Array_T(T=NObject) :  NObject, ICollection_T!(T)
 
 	}
 
-	int GetUpperBound(int dimension=0)
+override	int GetUpperBound(int dimension=0)
 	{
 
 		if(Rank==1)
@@ -110,7 +110,7 @@ public class Array_T(T=NObject) :  NObject, ICollection_T!(T)
 	}
 
 
-	int GetLowerBound(int dimension=0)
+override	int GetLowerBound(int dimension=0)
 	{
 		//we can add support later, but its really an unoptimization
 		return 0;
@@ -172,7 +172,7 @@ public class Array_T(T=NObject) :  NObject, ICollection_T!(T)
 		_iter = new ArrayIterator!(T)(this);
 	}
 	
-	public	int Length() @property 
+override	public	int Length() @property 
 	{
 		return cast(int) _items.length;
 	}

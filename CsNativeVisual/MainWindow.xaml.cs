@@ -18,6 +18,7 @@ using ICSharpCode.AvalonEdit.CodeCompletion;
 using ICSharpCode.AvalonEdit.Folding;
 using ICSharpCode.AvalonEdit.Highlighting;
 using MahApps.Metro.Controls;
+using Ookii.Dialogs.Wpf;
 using SharpNative.Compiler;
 using Color = System.Drawing.Color;
 using Timer = System.Timers.Timer;
@@ -234,7 +235,7 @@ namespace CsNativeVisual
             byte[] bytes = File.ReadAllBytes(exeName);
             Assembly assembly = Assembly.Load(bytes);
             MethodInfo main = assembly.EntryPoint;
-            main.Invoke(null, null);
+            main.Invoke(null, new object[] {});
         }
 
 
@@ -569,6 +570,96 @@ namespace CsNativeVisual
 
             }
 
+        }
+
+        private void RunAllTests(object sender, RoutedEventArgs e)
+        {
+            
+
+
+            VistaFolderBrowserDialog dialog = new VistaFolderBrowserDialog();
+            dialog.Description = "Please select a folder.";
+            dialog.UseDescriptionForTitle = true; // This applies to the Vista style dialog only, not the old dialog.
+          
+           
+
+            if ((bool)dialog.ShowDialog(this))
+            {
+              
+          
+                var filename = dialog.SelectedPath; // will switch to .Url later
+                                                   //				var newText = File.ReadAllText (filename);
+                                                   //				CSharpFilename.StringValue = Path.GetFileName (filename);
+                                                   //				CSharpTextEditor.Replace (new NSRange (0, CSharpTextEditor.Value.Length), newText);
+                                                   //				ViewModel.SourceCode = newText;
+                                                   //				ViewModel.RecompileSource ();
+
+                Func<string, string> strip = i => Regex.Replace(i ?? "", "[\r\n \t]+", " ").Trim();
+
+                ViewModel.CompilerErrors = "\r\r" + ("Running all tests in : " + filename) + "\r\r";
+                int passCount = 0;
+                //			if (ResetStatus != null)
+                //				ResetStatus.Stop();
+                List<string> failedTestNames = new List<string>();
+                ThreadPool.QueueUserWorkItem((h) =>
+                    {
+
+                        var allTests = Directory.EnumerateFiles(filename).Where(u => Path.GetExtension(u) == ".cs");
+
+                        foreach (var file in allTests)
+                        {
+
+                            var shortName = Path.GetFileName(file);
+                            Console.WriteLine("-------------------------Running Test: " + shortName + "-------------------------");
+                            ViewModel.CompilerErrors += "-------------------------Running Test: " + shortName + "-------------------------";
+                            Dispatcher.Invoke(() =>
+                            {
+                                CurrentSourceFile = file;
+                                  TextEditor.Text = File.ReadAllText(CurrentSourceFile);
+//                                ViewModel.Recompile(CurrentSourceFile);
+
+//                                CSharpFilename.StringValue = Path.GetFileName(file);
+
+//                                CSharpTextEditor.Value = Extensions.ReadFile(file);
+                            });
+
+                            CSharpOutput = "Z..)";
+                            CppOutput = "A..)";
+                            //							ViewModel.CompileAndRunCode(shortName,File.ReadAllText(file));
+                            CompileCSharp(false);
+                            CompileCpp();
+
+
+                            if (strip(CSharpOutput) == strip(CppOutput))
+                            {
+                                passCount++;
+                                Dispatcher.Invoke(() =>
+                                {
+                                   
+
+                                    ViewModel.CompilerErrors += String.Format("-------------------------Test {0} Passed:-------------------------\n", shortName);
+                                });
+                            }
+                            else
+                            {
+                                Dispatcher.Invoke(() =>
+                                {
+                               
+                                    ViewModel.CompilerErrors += String.Format("Test {0} Failed:\n", shortName);
+                                    failedTestNames.Add(Path.GetFileNameWithoutExtension(shortName));
+
+                                });
+                            }
+                           
+                        }
+
+                        ViewModel.CompilerErrors += String.Format("Summary \nTotal:{0} \nPass Rate:{1} \nPassed: {2} \nFailed: {3} {4}\n", allTests.Count(), (passCount * 100) / ((float)allTests.Count()), passCount, allTests.Count() - passCount, (allTests.Count() - passCount == 0) ? "" : failedTestNames.Aggregate((k, j) => k + " , " + j));
+
+                    });
+
+
+
+            }
         }
     }
 }

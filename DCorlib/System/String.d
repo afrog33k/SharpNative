@@ -205,7 +205,7 @@ class String : NObject
 
 	this(string source)
 	{
-		text = cast(wstring)source;
+		text = std.conv.to!(wstring)(source);
 	}
 
 	public static bool IsNullOrEmpty(String value) 
@@ -251,7 +251,7 @@ class String : NObject
 
 	Array_T!(wchar) ToCharArray()
 	{
-		return new Array_T!(wchar)(__CC(cast(wchar[])text));
+		return  new Array_T!(wchar)(__CC(cast(wchar[])text)); // Make this dup later
 	}
 
 
@@ -355,18 +355,8 @@ class String : NObject
 		return std.conv.to!string(text);
 	}
 
-	final U opCast(U)() if(is(U:wchar*))// && is(T:string))
+	final U opCast(U)() if(is(U:wchar*))
     {
-		////throw new Exception("Sibitegeera");
-		////exit(0);
-		////copy with real addresses so the array can be modified
-		//char[][] charArray = new char[][Items.length];
-
-		//foreach(elem; Items)
-		//{
-		////  Console.WriteLine(elem);
-		//  charArray = charArray ~ cast(char[])(cast(string)elem);
-		//}
 
 		return cast(U) text;
     }

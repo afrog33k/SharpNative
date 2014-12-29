@@ -73,12 +73,12 @@ public static void WriteLine(T)(T value) if(is(T==float))
 }
 
 
-public static void WriteLine(char[] value)
+public static void WriteLine(wchar[] value)
 {
-	writeln(cast(string)value);		
+	writeln(cast(wstring)value);		
 }
 
-public static void WriteLine(string value)
+public static void WriteLine(wstring value)
 {
 	writeln(value);		
 }
@@ -109,7 +109,7 @@ public static void WriteLine(string value)
 		writeln();
 	}
 
-	public static void WriteLine(Array_T!(char) anything)//if(!is(T==double) && !is(T==float) && !is(T==int)) 
+	public static void WriteLine(Array_T!(wchar) anything)//if(!is(T==double) && !is(T==float) && !is(T==int)) 
 	{
 		writeln(anything.Items);
 	}
