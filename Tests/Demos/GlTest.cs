@@ -1,4 +1,4 @@
-﻿//GLTest only works on mac osx (tested 10.10)
+//GLTest only works on mac osx (tested 10.10)
 using System;
 using System.Runtime.InteropServices;
 
@@ -128,6 +128,7 @@ namespace OpengGLTest
             glutDisplayFunc(display);
             glutReshapeFunc(reshape);
             glutMainLoop();
-        }
+        } 
     }
 }
+

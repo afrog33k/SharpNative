@@ -24,6 +24,15 @@ namespace SharpNative.Compiler
 {
     public static class Utility
     {
+
+        public static ISymbol[] GetAllMembers(this ITypeSymbol symbol)
+        {
+            List<ISymbol> members = new List<ISymbol>();
+            members = symbol.GetMembers().Union(symbol.AllInterfaces.SelectMany(j=>j.GetMembers())).ToList();
+            
+
+            return members.ToArray();
+        }
         private static bool WriteArrayElements(InitializerExpressionSyntax initializer, OutputWriter writer,
             Dictionary<int, int> inferred, int level, bool omitbraces = false)
         {
@@ -447,6 +456,10 @@ namespace SharpNative.Compiler
             var type = member as BaseTypeDeclarationSyntax;
             if (type != null)
                 return type.Modifiers;
+
+            var indexer = member as IndexerDeclarationSyntax;
+            if (indexer != null)
+                return indexer.Modifiers;
 
             throw new Exception("Need handler for member of type " + member.GetType().Name);
         }

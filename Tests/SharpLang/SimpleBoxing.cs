@@ -19,5 +19,13 @@ public static class Program
 
         int i2 = 48;
         System.Console.WriteLine((int)(object)i2);
+        
+        try 
+        {
+        	System.Console.WriteLine((long)(object)i2);
+        }catch(System.InvalidCastException ex)
+        {
+        	System.Console.WriteLine("invalidcast"); 
+        }
     }
 }

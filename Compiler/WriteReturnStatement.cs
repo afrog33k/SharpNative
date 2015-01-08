@@ -20,6 +20,10 @@ namespace SharpNative.Compiler
 
             var method = statement.Ancestors().OfType<MethodDeclarationSyntax>().FirstOrDefault();
             var property = statement.Ancestors().OfType<PropertyDeclarationSyntax>().FirstOrDefault();
+            var indexer = statement.Ancestors().OfType<IndexerDeclarationSyntax>().FirstOrDefault();
+            var converter = statement.Ancestors().OfType<ConversionOperatorDeclarationSyntax>().FirstOrDefault();
+            var @operator = statement.Ancestors().OfType<OperatorDeclarationSyntax>().FirstOrDefault();
+
             ITypeSymbol returnTypeSymbol = null;
 
             if (method != null)
@@ -31,6 +35,24 @@ namespace SharpNative.Compiler
             {
                 returnTypeSymbol = TypeProcessor.GetTypeInfo(property.Type).Type;
             }
+
+            if (indexer != null)
+            {
+                returnTypeSymbol = TypeProcessor.GetTypeInfo(indexer.Type).Type;
+            }
+
+            if (converter != null)
+            {
+                returnTypeSymbol = TypeProcessor.GetTypeInfo(converter.Type).Type;
+            }
+
+
+            if (@operator != null)
+            {
+                returnTypeSymbol = TypeProcessor.GetTypeInfo(@operator.ReturnType).Type;
+            }
+           
+
 
             writer.WriteIndent();
             writer.Write("return");
@@ -48,7 +70,12 @@ namespace SharpNative.Compiler
                                      (rightExpressionType.ConvertedType.IsReferenceType)));
                     boxRight = boxRight && (rightExpressionType.Type != returnTypeSymbol);
 
-                    writer.Write(boxRight ? " BOX!(" + TypeProcessor.ConvertType(rightExpressionType.Type) + ")(" : " ");
+                    if (!Equals(returnTypeSymbol, rightExpressionType.Type))
+                    {
+                        writer.Write(" cast(" + TypeProcessor.ConvertType(returnTypeSymbol) + ")");
+                    }
+
+                   writer.Write (boxRight ? " BOX!(" + TypeProcessor.ConvertType(rightExpressionType.Type) + ")(" : " ");
                     Core.Write(writer, statement.Expression);
 
                     writer.Write(boxRight ? ")" : "");

@@ -149,7 +149,7 @@ namespace SharpNative.Compiler
 //
 //            writer.Write(")");
 
-            writer.WriteLine(accessmodifiers + "this" + WriteMethod.GetParameterListAsString(method.ParameterList));
+            writer.WriteLine(accessmodifiers + "this" + WriteMethod.GetParameterListAsString(method.ParameterList.Parameters));
 
             if (isInterface || method.Modifiers.Any(SyntaxKind.AbstractKeyword))
             {

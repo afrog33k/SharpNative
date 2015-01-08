@@ -73,12 +73,7 @@ namespace SharpNative.Compiler
                 }
             }
 
-            //TODO: will handle these separately
-//            if (typeInfo.Type != null && typeInfo.ConvertedType != null)
-//            {
-//                if (isConst == false && typeInfo.ConvertedType.SpecialType ==SpecialType.System_Byte && typeInfo.Type.SpecialType == SpecialType.System_Int32)
-//                    writer.Write(".toByte");
-//            }
+
         }
 
         static string[] realTypeSuffixes =  { "F", "f","D", "d", "M", "m"};

@@ -17,6 +17,8 @@ namespace SharpNative.Compiler
     {
         public static void Write(OutputWriter writer, SyntaxNode node, bool isConst = false)
         {
+            Context.LastNode = node; //Helps with debugging
+            
             //Write Leading Trivia
             TriviaProcessor.WriteLeadingTrivia(writer, node);
 
@@ -28,6 +30,16 @@ namespace SharpNative.Compiler
             Factory(writer, node, isConst);
 
             TriviaProcessor.WriteTrailingTrivia(writer, node);
+        }
+
+        public static string WriteString(SyntaxNode node, bool isConst = false, int indent = 0)
+        {
+            var writer = new TempWriter();
+            writer.Indent = indent;
+
+            Write(writer,node,isConst);
+
+            return writer.ToString();
         }
 
 

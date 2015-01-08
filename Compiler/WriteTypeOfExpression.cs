@@ -15,7 +15,7 @@ namespace SharpNative.Compiler
     {
         public static void Go(OutputWriter writer, TypeOfExpressionSyntax expression)
         {
-            writer.Write("new System.Type!(");
+            writer.Write("__TypeOf!(");
             writer.Write(TypeProcessor.ConvertType(expression.Type));
             writer.Write(")");
         }

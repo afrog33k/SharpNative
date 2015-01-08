@@ -71,67 +71,6 @@ namespace SharpNative.Compiler.DlangAst
             var arguments = new List<ArgumentSyntax>();
             foreach (var parameter in method.Parameters)
             {
-                // params parameters require special handling .. not for D
-//				if (parameter.IsParams)
-//				{
-//					// If there's only one argument for the params parameter, it could be either an array containing
-//					// the the params arguments, or just a single argument.
-//					if (remainingArguments.Count == 1)
-//					{
-//						var argument = remainingArguments.Peek();
-//						var argIndex = args.Length - remainingArguments.Count;
-//
-//						if (isArgumentArray(argument, argIndex))
-//						{
-//							// If it's an array and exported, we just pass it as is, since the argument must ultimately be an array.
-//							//							if (isExported)
-//							//							{
-//							//								arguments.Add(argument);
-//							//							}
-//							// If it's NOT exported, then we simply pass them as ordinary arguments, since that's how this "params"
-//							// concept works over there (it's not abstracted into an array).
-//							//							else
-//							{
-//								//								foreach (var element in ((ArraySy)argument).Elements)
-//								{
-//									//									arguments.Add(element);
-//								}
-//							}
-//							remainingArguments.Dequeue();
-//							continue;
-//						}
-//					}
-                // If exported, then add all the rest of the arguments as an array
-                //					if (isExported)
-                //					{
-                //						arguments.Add(MakeArray(Js.Array(remainingArguments.ToArray()), (IArrayTypeSymbol)parameter.Type));
-                //					}
-                // Otherwise, add all the rest of the arguments as ordinary arguments per the comment earlier about non exported types.
-                //else
-//					{
-//						while (remainingArguments.Any())
-//							arguments.Add(remainingArguments.Dequeue());
-//					}
-//				}
-//				else 
-                if (!remainingArguments.Any())
-                {
-                    // If not exported, then it's a C# to Javascript transfer, and in Javascript land, default arguments are 
-                    // always undefined. Thus we don't want to add default arguments for non-exported methods.
-                    //					if (isExported)
-                    {
-                        //						if (parameter.GetAttributes().Any(x => Equals(x.AttributeClass, Context.Instance.CallerMemberNameAttribute)))
-                        //						{
-                        //							var value = context.GetContainingMemberName();
-                        //							arguments.Add(Js.Literal(value ?? parameter.ExplicitDefaultValue));
-                        //						}
-                        //						else
-                        //						{
-                        //							arguments.Add(Js.Literal(parameter.ExplicitDefaultValue));
-                        //						}
-                    }
-                }
-                else
                     arguments.Add(remainingArguments.Dequeue());
             }
             return arguments.ToArray();

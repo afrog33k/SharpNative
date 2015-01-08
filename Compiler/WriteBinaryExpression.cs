@@ -19,103 +19,80 @@ namespace SharpNative.Compiler
     {
         public static void Go(OutputWriter writer, BinaryExpressionSyntax expression)
         {
-            if (expression.OperatorToken.IsKind(SyntaxKind.AsKeyword))
-            {
-                var typeinfo = TypeProcessor.GetTypeInfo(expression.Right);
+            var leftExpression = expression.Left;
+            var rightExpression = expression.Right;
 
-                var isPtr = typeinfo.Type != null && typeinfo.Type.IsValueType ? "" : "";
-                writer.Write("cast( ");
-                writer.Write(TypeProcessor.ConvertType(expression.Right) + isPtr);
-                writer.Write(" )(");
-                Core.Write(writer, expression.Left);
+            var operatorToken = expression.OperatorToken;
+             
+            WriteIt(writer, operatorToken, rightExpression, leftExpression);
+        }
+
+        public static void WriteIt(OutputWriter writer, SyntaxToken operatorToken, CSharpSyntaxNode rightExpression,
+            CSharpSyntaxNode leftExpression)
+        {
+            if (operatorToken.IsKind(SyntaxKind.AsKeyword))
+            {
+                writer.Write("AsCast!(");
+                writer.Write(TypeProcessor.ConvertType(rightExpression));
+                writer.Write(")(");
+                Core.Write(writer, leftExpression);
                 writer.Write(")");
             }
-            else if (expression.OperatorToken.IsKind(SyntaxKind.IsKeyword)) // isCast
+            else if (operatorToken.IsKind(SyntaxKind.IsKeyword)) // isCast
             {
-                var leftSymbolType = TypeProcessor.GetTypeInfo(expression.Left);
-                var rightSymbolType = TypeProcessor.GetTypeInfo(expression.Right);
+                var leftSymbolType = TypeProcessor.GetTypeInfo(leftExpression);
+                var rightSymbolType = TypeProcessor.GetTypeInfo(rightExpression);
 
                 if (leftSymbolType.Type.IsValueType)
                 {
                     writer.Write("IsCast!(Boxed!(");
-                    writer.Write(TypeProcessor.ConvertType(expression.Right));
+                    writer.Write(TypeProcessor.ConvertType(rightExpression));
                     writer.Write("))");
                     writer.Write("(");
-                    Core.Write(writer, expression.Left);
+                    Core.Write(writer, leftExpression);
                     writer.Write(")");
-
-//						writer.Write("(cast(BOX!(");
-//						writer.Write(TypeProcessor.ConvertType(expression.Right));
-//						writer.Write("))(Boxed!(" + TypeProcessor.ConvertType(leftSymbolType.Type));
-//						writer.Write(")(");
-//						Core.Write(writer, expression.Left);
-//						writer.Write(")) is! null)");
-                    //Todo improve this ... though its silly to do this in the first place
-//					writer.Write("(cast(BOX!(");
-//                    writer.Write(TypeProcessor.ConvertType(expression.Right));
-//					writer.Write("))(Boxed!( " + TypeProcessor.ConvertType(leftSymbolType.Type));
-//					writer.Write(")(");
-//                    Core.Write(writer, expression.Left);
-//					writer.Write(")) is! null)");
                 }
                 else if (rightSymbolType.Type.IsValueType)
                 {
                     writer.Write("IsCast!(Boxed!(");
-                    writer.Write(TypeProcessor.ConvertType(expression.Right));
+                    writer.Write(TypeProcessor.ConvertType(rightExpression));
                     writer.Write("))");
                     writer.Write("(");
-                    Core.Write(writer, expression.Left);
+                    Core.Write(writer, leftExpression);
                     writer.Write(")");
-
-//					writer.Write("(cast(Boxed!( ");
-//                    writer.Write(TypeProcessor.ConvertType(expression.Right));
-//					writer.Write(" ) )(");
-//                    Core.Write(writer, expression.Left);
-//					writer.Write(") is! null)");
                 }
                 else
                 {
-                    var typeinfo = TypeProcessor.GetTypeInfo(expression.Right);
-
-                    var isPtr = typeinfo.Type != null && typeinfo.Type.IsValueType ? "" : "";
                     writer.Write("(IsCast!(");
-                    writer.Write(TypeProcessor.ConvertType(expression.Right) + isPtr);
+                    writer.Write(TypeProcessor.ConvertType(rightExpression));
                     writer.Write(")(");
-                    Core.Write(writer, expression.Left);
+                    Core.Write(writer, leftExpression);
                     writer.Write("))");
                 }
             }
-            else if (expression.OperatorToken.IsKind(SyntaxKind.QuestionQuestionToken))
+            else if (operatorToken.IsKind(SyntaxKind.QuestionQuestionToken))
             {
                 writer.Write("((");
-                Core.Write(writer, expression.Left);
+                Core.Write(writer, leftExpression);
                 writer.Write(")!is null?(");
-                Core.Write(writer, expression.Left);
+                Core.Write(writer, leftExpression);
                 writer.Write("):(");
-                Core.Write(writer, expression.Right);
+                Core.Write(writer, rightExpression);
                 writer.Write("))");
             }
             else
             {
-                //                if (expression.Left is ElementAccessExpressionSyntax && IsAssignmentToken((SyntaxKind) expression.OperatorToken.RawKind))
-                //                {
-                //                    var subExpr = expression.Left.As<ElementAccessExpressionSyntax>();
-                //                    var typeStr = TypeProcessor.GenericTypeName(TypeProcessor.GetTypeInfo(subExpr.Expression).Type);
-                //                 
-                //
-                //             
-                //                }
+                Action<ExpressionSyntax> write = e => Core.Write(writer, e);
 
-                Action<ExpressionSyntax> write = e =>
+                TypeInfo leftExpressionType;
+                if(leftExpression!=null)
+                    leftExpressionType = TypeProcessor.GetTypeInfo(leftExpression);
+                else
                 {
-                        Core.Write(writer, e);
-                };
+                    leftExpressionType = TypeProcessor.GetTypeInfo(rightExpression);
+                }
 
-                var symbolInfoLeft = TypeProcessor.GetSymbolInfo(expression.Left);
-                var symbolInfoRight = TypeProcessor.GetSymbolInfo(expression.Right);
-
-                var leftExpressionType = TypeProcessor.GetTypeInfo(expression.Left);
-                var rightExpressionType = TypeProcessor.GetTypeInfo(expression.Right);
+                var rightExpressionType = TypeProcessor.GetTypeInfo(rightExpression);
 
                 var boxLeft = leftExpressionType.Type != null &&
                               (leftExpressionType.Type.IsValueType && (leftExpressionType.ConvertedType.IsReferenceType));
@@ -123,26 +100,72 @@ namespace SharpNative.Compiler
                 var boxRight = rightExpressionType.ConvertedType != null &&
                                (rightExpressionType.Type != null && (rightExpressionType.Type.IsValueType &&
                                                                      (rightExpressionType.ConvertedType.IsReferenceType)));
-                var derefRight = rightExpressionType.ConvertedType != null &&
-                                 (leftExpressionType.ConvertedType != null &&
-                                  !leftExpressionType.ConvertedType.IsReferenceType &&
-                                  rightExpressionType.ConvertedType.IsReferenceType);
+
+                var rightnull = rightExpression.ToFullString().Trim() == "null";
+                var leftnull = leftExpression != null && leftExpression.ToFullString().Trim() == "null";
+
+                var nullAssignment =  (rightnull || leftnull);
 
                 //Property calls will be fixed in a preprocessor step ... i.e. just call them
-                // var propertyLeft = symbolInfoLeft.Symbol != null && symbolInfoLeft.Symbol.Kind == SymbolKind.Property;
-                // var propertyRight = symbolInfoRight.Symbol != null && symbolInfoRight.Symbol.Kind == SymbolKind.Property;
+                if (nullAssignment)
+                {
+                    if (rightnull)
+                    {
+                        Core.Write(writer, leftExpression);
+
+                        switch (operatorToken.CSharpKind())
+                        {
+                            case SyntaxKind.EqualsEqualsToken:
+                                writer.Write(" is ");
+                                break;
+                            case SyntaxKind.NotEqualsExpression:
+                            case SyntaxKind.ExclamationEqualsToken:
+                                writer.Write(" !is ");
+                                break;
+                            default:
+                                writer.Write(operatorToken.ToString());
+                                break;
+                        }
+
+                        writer.Write("null");
+                        return;
+                    }
+
+                    if (leftnull)
+                    {
+                        writer.Write("null");
+
+
+                        switch (operatorToken.CSharpKind())
+                        {
+                            case SyntaxKind.EqualsEqualsToken:
+                                writer.Write(" is ");
+                                break;
+                            case SyntaxKind.NotEqualsExpression:
+                            case SyntaxKind.ExclamationEqualsToken:
+                                writer.Write(" !is ");
+                                break;
+                            default:
+                                writer.Write(operatorToken.ToString());
+                                break;
+                        }
+
+                        Core.Write(writer, leftExpression);
+
+                        return;
+                    }
+                }
+
 
                 //Do we have an implicit converter, if so, use it
-                if (boxLeft || boxRight)
+                if (leftExpressionType.Type != rightExpressionType.Type && rightExpressionType.Type != null)
                 {
-                    if (boxLeft)
-                    {
+                    
                         bool useType = true;
 
                         //We should start with exact converters and then move to more generic convertors i.e. base class or integers which are implicitly convertible
                         var correctConverter = leftExpressionType.Type.GetImplicitCoversionOp(leftExpressionType.Type,
                             rightExpressionType.Type);
-                        //                            initializerType.Type.GetMembers("op_Implicit").OfType<IMethodSymbol>().FirstOrDefault(h => h.ReturnType == initializerType.Type && h.Parameters[0].Type == initializerType.ConvertedType);
 
                         if (correctConverter == null)
                         {
@@ -150,12 +173,13 @@ namespace SharpNative.Compiler
                             correctConverter =
                                 rightExpressionType.Type.GetImplicitCoversionOp(leftExpressionType.Type,
                                     rightExpressionType.Type);
-                                //.GetMembers("op_Implicit").OfType<IMethodSymbol>().FirstOrDefault(h => h.ReturnType == initializerType.Type && h.Parameters[0].Type == initializerType.ConvertedType);
                         }
 
                         if (correctConverter != null)
                         {
-                            if (useType)
+                        Core.Write(writer, leftExpression);
+                        writer.Write(operatorToken.ToString());
+                        if (useType)
                             {
                                 writer.Write(TypeProcessor.ConvertType(leftExpressionType.Type) + "." + "op_Implicit_" +
                                              TypeProcessor.ConvertType(correctConverter.ReturnType));
@@ -166,58 +190,30 @@ namespace SharpNative.Compiler
                                              TypeProcessor.ConvertType(correctConverter.ReturnType));
                             }
                             writer.Write("(");
-                            Core.Write(writer, expression.Right);
+                            Core.Write(writer, rightExpression);
                             writer.Write(")");
                             return;
                         }
-                    }
-//                    if (shouldBox)
-//                    {
-//                        bool useType = true;
-//                        var correctConverter =
-//                            initializerType.Type.GetCoversionOp(initializerType.ConvertedType, initializerType.Type);//.GetMembers("op_Implicit").OfType<IMethodSymbol>().FirstOrDefault(h => h.ReturnType == initializerType.ConvertedType && h.Parameters[0].Type == initializerType.Type);
-//
-//                        if (correctConverter == null)
-//                        {
-//                            useType = false;
-//                            correctConverter =
-//                                initializerType.ConvertedType.GetCoversionOp(initializerType.ConvertedType,
-//                                    initializerType.Type);
-//                            //.GetMembers("op_Implicit").OfType<IMethodSymbol>().FirstOrDefault(h => h.ReturnType == initializerType.ConvertedType && h.Parameters[0].Type == initializerType.Type);
-//                        }
-//
-//                        if (correctConverter != null)
-//                        {
-//                            if (useType)
-//                                writer.Write(TypeProcessor.ConvertType(initializerType.Type) + "." + "op_Implicit(");
-//                            else
-//                            {
-//                                writer.Write(TypeProcessor.ConvertType(initializerType.ConvertedType) + "." + "op_Implicit(");
-//
-//                            }
-//                            Core.Write(writer, value);
-//                            writer.Write(")");
-//                            return;
-//                        }
-//                    }
+                    
                 }
 
-                if (expression.OperatorToken.CSharpKind() == SyntaxKind.PlusEqualsToken ||
-                    expression.OperatorToken.CSharpKind() == SyntaxKind.MinusEqualsToken)
+                if (operatorToken.CSharpKind() == SyntaxKind.PlusEqualsToken ||
+                    operatorToken.CSharpKind() == SyntaxKind.MinusEqualsToken)
                 {
-                    var isname = expression.Right is NameSyntax;
+                    var isname = rightExpression is NameSyntax;
 
-                    var nameexpression = expression.Right as NameSyntax;
+                    var nameexpression = rightExpression as NameSyntax;
 
-                    var ismemberexpression = expression.Right is MemberAccessExpressionSyntax ||
+                    var ismemberexpression = rightExpression is MemberAccessExpressionSyntax ||
                                              (isname &&
-                                              TypeProcessor.GetSymbolInfo(expression.Right as NameSyntax).Symbol.Kind ==
+                                              TypeProcessor.GetSymbolInfo(rightExpression as NameSyntax).Symbol.Kind ==
                                               SymbolKind.Method);
 
-                    var isdelegateassignment = ismemberexpression &&
-                                               rightExpressionType.ConvertedType.TypeKind == TypeKind.Delegate;
+                    var isdelegateassignment = rightExpressionType.ConvertedType != null && (ismemberexpression &&
+                                                                                             rightExpressionType.ConvertedType
+                                                                                                 .TypeKind == TypeKind.Delegate);
 
-                    var memberaccessexpression = expression.Right as MemberAccessExpressionSyntax;
+                    var memberaccessexpression = rightExpression as MemberAccessExpressionSyntax;
 
                     var isstaticdelegate = isdelegateassignment &&
                                            ((memberaccessexpression != null &&
@@ -226,33 +222,29 @@ namespace SharpNative.Compiler
 
                     if (isdelegateassignment)
                     {
-                        write(expression.Left);
+                        Core.Write(writer,leftExpression);
 
-                        writer.Write(expression.OperatorToken.ToString());
+                        writer.Write(operatorToken.ToString());
 
-                        var createNew = !(expression.Right is ObjectCreationExpressionSyntax);
+                        
                         var typeString = TypeProcessor.ConvertType(rightExpressionType.ConvertedType);
 
-                        if (createNew)
-                        {
-                            if (rightExpressionType.ConvertedType.TypeKind == TypeKind.TypeParameter)
-                                writer.Write(" __TypeNew!(" + typeString + ")(");
-                            else
-                                writer.Write("new " + typeString + "(");
-                        }
+                        if (rightExpressionType.ConvertedType.TypeKind == TypeKind.TypeParameter)
+                            writer.Write(" __TypeNew!(" + typeString + ")(");
+                        else
+                            writer.Write("new " + typeString + "(");
 
                         var isStatic = isstaticdelegate;
                         if (isStatic)
                             writer.Write("__ToDelegate(");
+
                         writer.Write("&");
 
-                        write(expression.Right);
-                        //Core.Write (writer, expression.Right);
+                        Core.Write(writer,rightExpression);
                         if (isStatic)
                             writer.Write(")");
 
-                        if (createNew)
-                            writer.Write(")");
+                        writer.Write(")");
                         return;
                     }
                 }
@@ -263,8 +255,8 @@ namespace SharpNative.Compiler
                         (leftExpressionType.Type != null && leftExpressionType.Type.IsValueType))
                     {
                         writer.Write("/*value type cannot be null*/");
-                        write(expression.Left);
-                        switch (expression.OperatorToken.CSharpKind())
+                        Core.Write(writer, leftExpression);
+                        switch (operatorToken.CSharpKind())
                         {
                             case SyntaxKind.EqualsEqualsToken:
                                 writer.Write("!=");
@@ -273,131 +265,35 @@ namespace SharpNative.Compiler
                                 writer.Write("==");
                                 break;
                             default:
-                                writer.Write(expression.OperatorToken.ToString());
+                                writer.Write(operatorToken.ToString());
                                 break;
                         }
 
-                        write(expression.Right);
+                        Core.Write(writer, rightExpression);
                     }
                     else
                     {
-                        write(expression.Left);
-                        if (expression.OperatorToken.CSharpKind() == SyntaxKind.EqualsEqualsToken)
+                        Core.Write(writer, leftExpression);
+                        if (operatorToken.CSharpKind() == SyntaxKind.EqualsEqualsToken)
                             writer.Write(" is ");
-                        else if (expression.OperatorToken.CSharpKind() == SyntaxKind.ExclamationEqualsToken)
+                        else if (operatorToken.CSharpKind() == SyntaxKind.ExclamationEqualsToken)
                             writer.Write(" !is ");
                         else
-                            writer.Write(expression.OperatorToken.ToString());
+                            writer.Write(operatorToken.ToString());
 
-                        write(expression.Right);
+                        Core.Write(writer, rightExpression);
                     }
                 }
                 else
-//                if (symbolInfoLeft.Symbol != null && (symbolInfoLeft.Symbol.Kind == SymbolKind.Property && expression.OperatorToken.ValueText == "=")) //Assignment of property
-//                {
-//
-//                    write(expression.Left);
-//                    writer.Write("(");
-//                    write(expression.Right);
-//                    writer.Write(")");
-//                }
-//                else
                 {
-//                    writer.Write(derefLeft ? "*(" : "");
                     writer.Write(boxLeft ? "BOX!(" + TypeProcessor.ConvertType(leftExpressionType.Type) + ")(" : "");
-                    write(expression.Left);
-
+                    Core.Write(writer, leftExpression);
                     writer.Write(boxLeft ? ")" : "");
-//                    writer.Write(derefLeft ? ")" : "");
-                    writer.Write(expression.OperatorToken.ToString());
-//                    writer.Write(derefRight ? "(" : "");
+                    writer.Write(operatorToken.ToString());
                     writer.Write(boxRight ? "BOX!(" + TypeProcessor.ConvertType(rightExpressionType.Type) + ")(" : "");
-                    write(expression.Right);
-
+                    Core.Write(writer, rightExpression);
                     writer.Write(boxRight ? ")" : "");
-//                    writer.Write(derefRight ? ")" : "");
                 }
-            }
-        }
-
-
-        //TODO: Add full list here ...
-        private static readonly string[] OverloadableOperators =
-        {
-            "+", "-", "!", "~", "++", "--", //true, false
-            //These unary operators can be overloaded.
-
-            "+", "-", "*", "/", "%", "&", "|", "^", "<<", ">>",
-
-            //These binary operators can be overloaded.
-
-            "==", "!=", "<", ">", "<=", ">=",
-
-            //The comparison operators can be overloaded
-
-            "&&", "||"
-        };
-
-        private static bool CouldBeNullString(SemanticModel model, ExpressionSyntax e)
-        {
-            while (true)
-            {
-                if (model.GetConstantValue(e).HasValue)
-                    return false; //constants are never null
-
-                //For in-line conditions, just recurse on both results.
-                var cond = e as ConditionalExpressionSyntax;
-                if (cond != null)
-                    return CouldBeNullString(model, cond.WhenTrue) || CouldBeNullString(model, cond.WhenFalse);
-
-                var paren = e as ParenthesizedExpressionSyntax;
-                if (paren != null)
-                {
-                    e = paren.Expression;
-                    continue;
-                }
-
-                var invoke = e as InvocationExpressionSyntax;
-
-                if (invoke == null)
-                    return true;
-
-                var methodSymbol = ModelExtensions.GetSymbolInfo(model, invoke).Symbol;
-
-                //Hard-code some well-known functions as an optimization
-                if (methodSymbol.Name == "HtmlEncode" && methodSymbol.ContainingNamespace.FullName() == "System.Web")
-                    return false;
-
-                return methodSymbol.Name != "ToString";
-            }
-        }
-
-
-        private static bool IsException(ITypeSymbol typeSymbol)
-        {
-            while (true)
-            {
-                if (typeSymbol.Name == "Exception" && typeSymbol.ContainingNamespace.FullName() == "System")
-                    return true;
-
-                if (typeSymbol.BaseType == null)
-                    return false;
-                typeSymbol = typeSymbol.BaseType;
-            }
-        }
-
-        private static bool IsAssignmentToken(SyntaxKind syntaxKind)
-        {
-            switch (syntaxKind)
-            {
-                case SyntaxKind.EqualsToken:
-                case SyntaxKind.PlusEqualsToken:
-                case SyntaxKind.MinusEqualsToken:
-                case SyntaxKind.SlashEqualsToken:
-                case SyntaxKind.AsteriskEqualsToken:
-                    return true;
-                default:
-                    return false;
             }
         }
     }

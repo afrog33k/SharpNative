@@ -20,7 +20,7 @@ namespace SharpNative.Compiler
             var tempWriter = new TempWriter();
             if (indent)
                 tempWriter.WriteIndent();
-            tempWriter.Write("if (");
+            tempWriter.Write("if(");
             Core.Write(tempWriter, ifStatement.Condition);
             tempWriter.Write(")");
 

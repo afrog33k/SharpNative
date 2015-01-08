@@ -80,50 +80,6 @@ namespace SharpNative.Compiler
         }
 
 
-        private string ConvertBasicType(string importName)
-        {
-            switch (importName)
-            {
-                case "void":
-                    return "Void";
-
-                case "bool":
-                    return "Boolean";
-
-                case "object":
-                    return "NObject";
-
-                case "long":
-                    return "Int64";
-
-                case "double":
-                    return "Double";
-
-                case "float":
-                    return "Single";
-
-                case "string":
-                    return "String";
-
-                case "int":
-                    return "Int32";
-
-                case "byte":
-                    return "Byte";
-
-                case "short":
-                    return "Int16";
-
-                case "wchar":
-                    return "Char";
-
-                case "System.Namespace.Array":
-                    return "Array_T";
-            }
-
-            return importName;
-        }
-
         public bool IsNamespace;
 
         public void Dispose()
@@ -175,43 +131,21 @@ namespace SharpNative.Compiler
                         if (usedType.TypeKind == TypeKind.PointerType) //No need to import pointer types
                             continue;
 
-                        //                        var importName = usedType.GetFullNameD();
-                        //
-                        //                        importName = ConvertBasicType(importName);
-                        //
-                        //                        if (usedType is IArrayTypeSymbol)
-                        //                            importName = ("System.Namespace.Array_T");
-                        //
-                        //                        //Remove Specializations
-                        //                        importName = Regex.Replace(importName, @" ?!\(.*?\)", string.Empty)
-                        //                            .Replace("(", "")
-                        //                            .Replace(")", "");
-
-                        //                        if (!Imports.Contains(importName))
-                        //                            Imports.Add(importName);
-
-                        //if (!Imports.Any(k=>k.GetFullNameD() == usedType.GetFullNameD()))
+                      
                         if(!Imports.Contains(usedType))  //TODO: change this when "Assemblies" are implemented
                             Imports.Add(usedType);
                     }
 
                                         if (!Imports.Contains(Context.Object))
-//                    if (!Imports.Any(k => k.GetFullNameD() == Context.Object.GetFullNameD()))
                         Imports.Add(Context.Object);//TODO: change this when "Assemblies" are implemented
 
                     var @namespace =
                         Context.Instance.Type.ContainingNamespace.FullName().RemoveFromEndOfString(".Namespace");
-                   // var fullModuleName = FullModuleName();
                     var moduleName = @namespace + "." + Context.Instance.TypeName;
                     finalBuilder.Append("module " + moduleName + ";\n\n");
 
                     Imports.Add(Context.Instance.Type);
 
-//                    if (Context.Instance.Type.TypeKind == TypeKind.Struct)
-//                    {
-//                        Imports.Add(Context.Instance.Type.ContainingNamespace.FullName() + "." + "__Boxed_" +
-//                                    Context.Instance.TypeName); //Starting to reach the limit of mere strings
-//                    }
 
                     if (Imports != null)
                     {
@@ -220,7 +154,6 @@ namespace SharpNative.Compiler
 
                         var importGroups =
                             imports.GroupBy(k => k.ContainingNamespace).Where(j=>j.Key!=null);//.Where(k => k.LastIndexOf('.') != -1)
-                               // .GroupBy(j => j.EndsWith("Namespace") ? j : j.Substring(0, j.LastIndexOf('.')));
                                List<string> currentImports = new List<string>();
                         foreach (var import in importGroups)
                         {
@@ -295,17 +228,23 @@ namespace SharpNative.Compiler
                    module.Name;
         }
 
-        public void OpenBrace()
+        public void OpenBrace(bool showBrace=true)
         {
-            WriteLine("{");
+            if(showBrace)
+                WriteLine("{");
+
             Indent++;
         }
 
-        public void CloseBrace()
+        public void CloseBrace(bool showBrace = true)
         {
             Indent--;
-            WriteLine("}");
+
+            if(showBrace)
+                WriteLine("}");
         }
+
+
 
         public void WriteIndent()
         {

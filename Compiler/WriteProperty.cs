@@ -34,38 +34,51 @@ namespace SharpNative.Compiler
                 property.AccessorList.Accessors.SingleOrDefault(
                     o => o.Keyword.RawKind == (decimal) SyntaxKind.SetKeyword);
 
-            var name = MemberUtilities.GetMethodName(property, ref isInterface);
+            ITypeSymbol iface;
+            ISymbol[] proxies;
+           
+            var name = MemberUtilities.GetMethodName(property, ref isInterface, out iface, out proxies);
 
-            Action<AccessorDeclarationSyntax, bool> writeRegion = (region, get) =>
+            var modifiers = property.Modifiers;
+            var type = TypeProcessor.GetTypeInfo(property).ConvertedType;
+
+            var acccessmodifiers = MemberUtilities.GetAccessModifiers(property, isInterface);
+
+            var typeString = TypeProcessor.ConvertType(type) + " ";
+
+            var hasGetter = getter != null;
+            var getterHasBody = hasGetter && getter.Body != null;
+         
+            var hasSetter = setter != null;
+            var setterHasBody = hasSetter && setter.Body == null;
+
+            string getterbody = null;
+            if (getterHasBody)
+                getterbody = Core.WriteString(getter.Body, false, writer.Indent + 2);
+            string setterbody = null;
+            if (setterHasBody)
+                setterbody = Core.WriteString(setter.Body, false, writer.Indent + 2);
+
+            Action<bool, string> writeRegion = (get, body) =>
             {
-                var accessString = "";
-
-                //                var typeinfo = TypeProcessor.GetTypeInfo(property.Type);
-                var isPtr = "";
-
-                var typeString = TypeProcessor.ConvertType(property.Type) + isPtr + " ";
-
                 //no inline in D
                 if (get)
                     writer.Write(typeString + " ");
                 else
                     writer.Write("void ");
 
-               
-                var explicitHeaderNAme = "";
+
+                writer.Write((name) +
+                             (get ? "("+(iface!=null?(TypeProcessor.ConvertType(iface)+" ig=null") : "")+")" : "(" + typeString + " value " + (iface != null ? (","+TypeProcessor.ConvertType(iface) + " ig=null") : "") + ")") + " @property");
 
                
-
-                writer.Write((!String.IsNullOrEmpty(explicitHeaderNAme) ? explicitHeaderNAme : name) +
-                             (get ? "()" : "( " + typeString + " value )") + " @property");
-
-                if (property.Modifiers.Any(SyntaxKind.AbstractKeyword) || region.Body == null)
+                if (modifiers.Any(SyntaxKind.AbstractKeyword) || body == null)
                     writer.Write(";\r\n");
                 else
                 {
                     writer.WriteLine();
                     writer.OpenBrace();
-                    Core.WriteBlock(writer, region.Body.As<BlockSyntax>(), false);
+                    writer.WriteLine(body);
                     writer.CloseBrace();
                     writer.WriteLine();
                 }
@@ -73,86 +86,87 @@ namespace SharpNative.Compiler
 
             if (getter == null && setter == null)
                 throw new Exception("Property must have either a get or a set");
-            {
-                var type = property.Type;
-                var isPtr = "";
-                var typeString = TypeProcessor.ConvertType(type) + isPtr + " ";
-
-                var acccessmodifiers = MemberUtilities.GetAccessModifiers(property, isInterface);
+        
+            
 
                 //Auto Property
                 var fieldName = "__prop_" + name;
 
-                var isOverride = (property.Modifiers.Any(SyntaxKind.NewKeyword) ||
-                                  property.Modifiers.Any(SyntaxKind.OverrideKeyword)) && !isInterface
+                var isOverride = (modifiers.Any(SyntaxKind.NewKeyword) ||
+                                  modifiers.Any(SyntaxKind.OverrideKeyword)) && !isInterface
                     ? " override "
                     : "";
 
-                if (!isInterface) // Auto property
+        
+
+
+            if (!isInterface) // Auto property
                 {
-                    if ((getter != null && getter.Body == null) &&
-                        (setter != null && setter.Body == null) && (!property.Modifiers.Any(SyntaxKind.AbstractKeyword)))
+                    if ((hasGetter && getterHasBody) &&
+                        (hasSetter && setterHasBody) && (!modifiers.Any(SyntaxKind.AbstractKeyword)))
                         writer.WriteLine("private " + typeString + fieldName + ";");
                 }
 
-                if (getter != null && isProxy)
+                if (hasGetter && isProxy)
                 {
-                    writer.WriteLine(acccessmodifiers  + typeString + "" + name + "() " + "@property " +
+                    writer.WriteLine(acccessmodifiers  + typeString + "" + name + "(" + (iface != null ? (TypeProcessor.ConvertType(iface) + " ig=null") : "") + ") " + "@property " +
                                      "{ return Value." + name + ";}");
                 }
                 else
                     //Getter
-                    if (getter != null && getter.Body == null)
+                    if (hasGetter && !getterHasBody)
                     {
                         if (isProxy)
                         {
                         }
-                        else if (property.Modifiers.Any(SyntaxKind.AbstractKeyword) || isInterface)
+                        else if (modifiers.Any(SyntaxKind.AbstractKeyword) || isInterface)
                         {
-                            writer.WriteLine(acccessmodifiers + typeString + " " + name + "()"  +
+                            writer.WriteLine(acccessmodifiers + typeString + " " + name + "(" + (iface != null ? (TypeProcessor.ConvertType(iface) + " ig=null") : "") + ")" +
                                              " @property;");
                         }
 
                         else
                         {
-                            writer.WriteLine(acccessmodifiers  + typeString + "" + name + "() " +
-                                             "@property " + "{ return " + fieldName + ";}");
+                            writer.WriteLine(acccessmodifiers  + typeString + "" + name + "(" + (iface != null ? (TypeProcessor.ConvertType(iface) + " ig=null") : "") + ")"+" @property " + "{ return " + fieldName + ";}");
                         }
                     }
-                    else if (getter != null)
+                    else if (hasGetter)
                     {
                         writer.WriteIndent();
                         writer.Write(acccessmodifiers);
-                        writeRegion(getter, true);
+                     
+                        writeRegion(true, getterbody);
                     }
 
-                if (setter != null && isProxy)
+                if (hasSetter && isProxy)
                 {
-                    writer.WriteLine(acccessmodifiers + " void " + name + "(" + typeString + " value) @property" +
+                    writer.WriteLine(acccessmodifiers + " void " + name + "(" + typeString + " value" + (iface != null ? ("," + TypeProcessor.ConvertType(iface) + " ig=null") : "") +
+                                             isOverride  + ") @property" +
                                      isOverride + " {  Value." + name + " = value;}");
                 }
                 else
                     //Setter
-                    if (setter != null && setter.Body == null)
+                    if (hasSetter && !setterHasBody)
                     {
-                        if (property.Modifiers.Any(SyntaxKind.AbstractKeyword) || isInterface)
+                        if (modifiers.Any(SyntaxKind.AbstractKeyword) || isInterface)
                         {
-                            writer.WriteLine(acccessmodifiers + " void " + name + "(" + typeString + " value)" +
-                                             isOverride + "" + " @property;");
+                            writer.WriteLine(acccessmodifiers + " void " + name + "(" + typeString + " value" + (iface != null ? ("," + TypeProcessor.ConvertType(iface) + " ig=null") : "")  +
+                                             isOverride  + ") @property;");
                         }
                         else
                         {
-                            writer.WriteLine(acccessmodifiers + " void " + name + "(" + typeString + " value) @property" +
+                            writer.WriteLine(acccessmodifiers + " void " + name + "(" + typeString + " value"+(iface != null ? ("," + TypeProcessor.ConvertType(iface) + " ig=null") : "")+") @property" +
                                              isOverride + " {" + fieldName + " = value;}");
                         }
                     }
-                    else if (setter != null)
+                    else if (hasSetter)
                     {
                         writer.WriteIndent();
                         writer.Write(acccessmodifiers);
-                        writeRegion(setter, false);
-                    }
+                       
+                        writeRegion(true, setterbody);
             }
+            
         }
     }
 }

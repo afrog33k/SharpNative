@@ -10,7 +10,7 @@ namespace CSharpBenchmark._Benchmark
 {
     public static class StringConcatenationTest
     {
-        const int SIZE = 10000;
+        const int SIZE = 1000;
 
             public static void Main() 
   {

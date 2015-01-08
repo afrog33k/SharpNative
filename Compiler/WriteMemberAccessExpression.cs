@@ -51,14 +51,11 @@ namespace SharpNative.Compiler
 
                 if (directInvocationOnBasics)
                 {
-                    //						var extensionNamespace =  symbolInfo.Symbol.ContainingNamespace.FullNameWithDot() + symbolInfo.Symbol.ContainingType.FullName(); //null means it's not an extension method, non-null means it is
 
                     //Extension methods in Dlang are straightforward, although this could lead to clashes without qualification
                     if (methodSymbol.ContainingType != Context.Instance.Type)
                     {
                         var extensionNamespace = TypeProcessor.ConvertType(type, true, false);
-                            // type.ContainingNamespace.FullName() + "." + type.Name;
-                        //memberType.ContainingNamespace.FullName() +"."+ memberType.Name;
 
                         writer.Write(extensionNamespace);
                     }
@@ -68,7 +65,6 @@ namespace SharpNative.Compiler
 
                 if (isLiteral && !isStringLiteral)
                     writer.Write(")"); //Not needed for strings at all
-//                if(symbolInfo.Symbol.ContainingType!=Context.Instance.Type)
                 writer.Write(".");
                 // Ideally Escape analysis should take care of this, but for now all value types are on heap and ref types on stack
             }
@@ -79,43 +75,43 @@ namespace SharpNative.Compiler
                     Equals(methodSymbol.ContainingType.FindImplementationForInterfaceMember(methodSymbol),
                         methodSymbol))
                 {
-                    memberName =
+                   /* memberName =
                         Regex.Replace(
                             TypeProcessor.ConvertType(methodSymbol.ContainingType.OriginalDefinition)
                                 .RemoveFromStartOfString(methodSymbol.ContainingNamespace + ".Namespace.") +
                             "_" + memberName,
-                            @" ?!\(.*?\)", string.Empty);
+                            @" ?!\(.*?\)", string.Empty);*/
                     if (methodSymbol.ContainingType.ContainingType != null)
                         memberName = memberName.RemoveFromStartOfString(methodSymbol.ContainingType.ContainingType.Name + ".");
                 }
 
+                string name = memberName;
                 var interfaceMethods =
                     methodSymbol.ContainingType.AllInterfaces.SelectMany(
                         u =>
-                            u.GetMembers(memberName)).ToArray();
+                            u.GetMembers(name)).ToArray();
 
                 ISymbol interfaceMethod =
                     interfaceMethods.FirstOrDefault(
                         o =>
-                            methodSymbol.ContainingType.FindImplementationForInterfaceMember(o) ==
-                            methodSymbol);
+                            Equals(methodSymbol.ContainingType.FindImplementationForInterfaceMember(o), methodSymbol));
 
                 if (interfaceMethod != null)
 
                 {
-//This is an interface method //TO
+                      //This is an interface method //TO
                     if (methodSymbol.ContainingType.SpecialType == SpecialType.System_Array)
                         writer.Write("");
                     else
                     {
-                        var typenameI =
+                       /* var typenameI =
                             Regex.Replace(
                                 TypeProcessor.ConvertType(interfaceMethod.ContainingType.ConstructedFrom, true),
                                 @" ?!\(.*?\)", string.Empty);
                         //TODO: we should be able to get the original interface name, or just remove all generics from this
                         if (typenameI.Contains('.'))
                             typenameI = typenameI.SubstringAfterLast('.');
-                        writer.Write(typenameI + "_");
+                        writer.Write(typenameI + "_");*/
                     }
                 }
 
@@ -139,7 +135,7 @@ namespace SharpNative.Compiler
             {
                 var gen = expression.Name.As<GenericNameSyntax>();
 
-                writer.Write("!( ");
+                writer.Write("!(");
 
                 bool first = true;
                 foreach (var g in gen.TypeArgumentList.Arguments)
@@ -152,7 +148,7 @@ namespace SharpNative.Compiler
                     writer.Write(TypeProcessor.ConvertType(g));
                 }
 
-                writer.Write(" )");
+                writer.Write(")");
             }
         }
 

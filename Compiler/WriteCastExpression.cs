@@ -50,7 +50,7 @@ namespace SharpNative.Compiler
                     //                            Core.Write(writer, expression.Left);
                     //                            writer.Write(" = ");
                     if (correctConverter.ReturnType != destType)
-                        writer.Write("cast(" + destTypeDlang + (destType.IsValueType ? "" : "") + ")");
+                        writer.Write("Cast!(" + destTypeDlang + (destType.IsValueType ? "" : "") + ")(");
                     if (useType)
                     {
                         writer.Write(TypeProcessor.ConvertType(destType) + "." + "op_Implicit_" +
@@ -64,6 +64,10 @@ namespace SharpNative.Compiler
                     writer.Write("(");
                     Core.Write(writer, expression.Expression);
                     writer.Write(")");
+
+                    if (correctConverter.ReturnType != destType)
+                        writer.Write(")");
+
                     return;
                 }
 
@@ -83,8 +87,9 @@ namespace SharpNative.Compiler
 
                 if (correctConverter != null)
                 {
-                    if (correctConverter.ReturnType != destType)
-                        writer.Write("cast(" + destTypeDlang + (destType.IsValueType ? "" : "") + ")");
+                    var iscast = correctConverter.ReturnType != destType;
+                    if (iscast)
+                        writer.Write("Cast!(" + destTypeDlang  + ")(");
 
                     //                            Core.Write(writer, expression.Left);
                     //                            writer.Write(" = ");
@@ -95,14 +100,15 @@ namespace SharpNative.Compiler
                     writer.Write("(");
                     Core.Write(writer, expression.Expression);
                     writer.Write(")");
+                    if(iscast)
+                        writer.Write(")");
                     return;
                 }
 
                 if (TypeProcessor.IsPrimitiveType(srcTypeDlang) && TypeProcessor.IsPrimitiveType(destTypeDlang))
-                {
-                    writer.Write("(cast(" + destTypeDlang + (destType.IsValueType ? "" : "") + ")");
+                {//primitives can be directly cast
+                    writer.Write("cast(" + destTypeDlang +  ")");
                     Core.Write(writer, expression.Expression);
-                    writer.Write(")");
                 }
 
                 else
@@ -114,20 +120,23 @@ namespace SharpNative.Compiler
                     {
                         //We have to box then cast if not Object
                         if (destType.Name != "Object")
-                            writer.Write("cast(" + destTypeDlang + ")");
+                            writer.Write("Cast!(" + destTypeDlang + ")(");
                         //Box
                         writer.Write("BOX!(" + TypeProcessor.ConvertType(type) + ")(");
                         //When passing an argument by ref or out, leave off the .Value suffix
 //                    writer.Write(" >(");
                         Core.Write(writer, expression.Expression);
                         writer.Write(")");
+                        if (destType.Name != "Object")
+                            writer.Write(")");
+
                     }
                     else if (!type.IsValueType && convertedType.IsValueType)
                     {
                         //UnBox
-//					writer.Write("(cast( Boxed!(" + TypeProcessor.ConvertType(convertedType) + ") )(");
-//                    Core.Write(writer, expression.Expression);
-//					writer.Write(")).Value");
+                        //					writer.Write("(Cast!( Boxed!(" + TypeProcessor.ConvertType(convertedType) + ") )(");
+                        //                    Core.Write(writer, expression.Expression);
+                        //					writer.Write(")).Value");
 
                         writer.Write("UNBOX!(" + TypeProcessor.ConvertType(convertedType) + ")(");
                         Core.Write(writer, expression.Expression);
@@ -136,13 +145,13 @@ namespace SharpNative.Compiler
                     else if (type.IsValueType && convertedType.IsValueType)
                     {
                         //cannot use ascast here, its for boxed types and objects
-                        writer.Write("(cast(" + destTypeDlang + (destType.IsValueType ? "" : "") + ")(");
+                        writer.Write("Cast!(" + destTypeDlang + (destType.IsValueType ? "" : "") + ")(");
                         Core.Write(writer, expression.Expression);
-                        writer.Write("))");
+                        writer.Write(")");
                     }
                     else
                     {
-                        writer.Write("AsCast!(");
+                        writer.Write("Cast!(");
                         writer.Write(destTypeDlang);
                         writer.Write(")(");
                         Core.Write(writer, expression.Expression);

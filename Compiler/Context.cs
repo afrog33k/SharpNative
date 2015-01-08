@@ -54,7 +54,7 @@ namespace SharpNative.Compiler
         public List<ITypeSymbol> UsedTypes = new List<ITypeSymbol>();
 
         public string EntryMethod;
-        public List<AttributeSyntax> DllImports = new List<AttributeSyntax>();
+        public List<string> DllImports = new List<string>();
         public INamedTypeSymbol Type { get; set; }
 
 
@@ -77,7 +77,9 @@ namespace SharpNative.Compiler
         public static INamedTypeSymbol IEnumerator { get; set; }
 
         public static INamedTypeSymbol Object { get; set; }
-    public static void Update( Compilation compilation)
+        public static SyntaxNode LastNode { get; set; }
+
+        public static void Update( Compilation compilation)
         {
             Instance = new Context();
             if (compilation != null)

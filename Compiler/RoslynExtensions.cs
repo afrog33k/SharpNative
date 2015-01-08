@@ -545,7 +545,7 @@ namespace SharpNative.Compiler
             }
         }
 
-        public static void ReportError(this SyntaxNode node, string message)
+        public static string GetDetails(this SyntaxNode node)
         {
             var fileName = node.SyntaxTree.FilePath;
             var text = node.SyntaxTree.GetText();
@@ -553,8 +553,8 @@ namespace SharpNative.Compiler
             var startLine = text.Lines.GetLinePosition(span.Start);
             var endLine = text.Lines.GetLinePosition(span.End);
 
-            Console.WriteLine("{0} ({1},{2},{3},{4}): error: {5}", fileName, startLine.Line + 1, startLine.Character + 1,
-                endLine.Line + 1, endLine.Character + 1, message);
+            return String.Format("{0} (Line {1}:{2}, Line {3}:{4}) node: {5}, Type: {6}", fileName, startLine.Line + 1, startLine.Character + 1,
+                endLine.Line + 1, endLine.Character + 1, node.ToFullString(), node.GetType().Name);
         }
 
         public static bool IsPrimitive(this ITypeSymbol type)

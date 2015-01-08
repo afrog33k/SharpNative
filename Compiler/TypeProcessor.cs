@@ -176,6 +176,8 @@ namespace SharpNative.Compiler
                     ret = ret.RemoveFromStartOfString(name.Name.ToFullString() + ".Namespace.");
             }
 
+            if (ret == "Array_T")
+                return "Array";
             return ret;
         }
 
@@ -240,7 +242,8 @@ namespace SharpNative.Compiler
                     ret = ret.RemoveFromStartOfString(name.Name.ToFullString() + ".Namespace.");
             }
 
-           
+            if (ret == "Array_T")
+                return "Array";
 
             return ret;
 
@@ -310,7 +313,7 @@ namespace SharpNative.Compiler
                         case "Boolean":
                             return "bool";
                         case "Byte":
-                            return "byte";
+                            return "ubyte";
                         case "Short":
                             return "short";
                         case "Float":
@@ -372,6 +375,9 @@ namespace SharpNative.Compiler
                     return "long"; // Looks like d's uint32 is smaller than C#'s
 
                 case "System.Namespace.Byte":
+                    return "ubyte";
+
+                case "System.Namespace.SByte":
                     return "byte";
 
                 case "System.Namespace.Int16":
@@ -381,7 +387,7 @@ namespace SharpNative.Compiler
                     return "wchar";
 
                 case "System.Namespace.Array":
-                    return "Array_T"; //All template (generic) classes have atleast one "_T" appended
+                    return "Array"; //All template (generic) classes have atleast one "_T" appended
 
                 default:
 
@@ -446,6 +452,7 @@ namespace SharpNative.Compiler
             switch (type)
             {
                 case "byte":
+                case "sbyte":
                 case "int":
                 case "float":
                 case "double":

@@ -17,12 +17,13 @@ namespace SharpNative.Compiler
 {
     internal static class WriteMethod
     {
-        public static string GetParameterListAsString(ParameterListSyntax list, bool includeTypes = true)
+        public static string GetParameterListAsString(SeparatedSyntaxList<ParameterSyntax> parameters,  bool includeTypes = true, ITypeSymbol iface=null, bool writebraces = true)
         {
             var writer = new TempWriter(); // Temp Writer
+            if(writebraces)
             writer.Write("(");
             var firstParam = true;
-            foreach (var parameter in list.Parameters)
+            foreach (var parameter in parameters)
             {
                 var refKeyword = "";
 
@@ -53,7 +54,17 @@ namespace SharpNative.Compiler
                 writer.Write(" = ");
                 Core.Write(writer, parameter.Default.Value);
             }
-            writer.Write(")");
+            if (iface != null)
+            {
+                if (firstParam)
+                    firstParam = false;
+                else
+                    writer.Write(", ");
+               
+                writer.Write(TypeProcessor.ConvertType(iface) + " j = null");
+            }
+            if (writebraces)
+                writer.Write(")");
             return writer.ToString();
         }
 
@@ -87,7 +98,9 @@ namespace SharpNative.Compiler
 
             var isInterface = method.Parent is InterfaceDeclarationSyntax;
 
-            var methodName = MemberUtilities.GetMethodName(method, ref isInterface); //
+            ITypeSymbol iface;
+            ISymbol[] proxies;
+            var methodName = MemberUtilities.GetMethodName(method, ref isInterface, out iface, out proxies); //
             if (methodName == "Main" /*&& method.Modifiers.Any(SyntaxKind.PublicKeyword)*/&&
                 method.Modifiers.Any(SyntaxKind.StaticKeyword))
             {
@@ -107,10 +120,6 @@ namespace SharpNative.Compiler
                 accessString = MemberUtilities.GetAccessModifiers(method,isInterface);
             }
 
-            //	        if (isInterface)
-            //	        {
-            //                writer.IsInterface = true;
-            //	        }
 
             var returnTypeString = TypeProcessor.ConvertType(method.ReturnType,true) + " ";
             var methodSignatureString = "";
@@ -118,6 +127,8 @@ namespace SharpNative.Compiler
                 returnTypeString = ("void ");
            
             methodSignatureString += methodName;
+
+            var genericParameters = "";
 
             if (method.TypeParameterList != null)
             {
@@ -132,13 +143,13 @@ namespace SharpNative.Compiler
 
                 if (genericArgs.Count > 0) // && !methodSymbol.ContainingType.IsGenericType) // doesnt matter
                 {
-                    methodSignatureString += ("(");
-                    methodSignatureString += (string.Join(",", genericArgs.Select(o => " " + o)));
-                    methodSignatureString += (")");
+                    genericParameters += ("(");
+                    genericParameters += (string.Join(",", genericArgs.Select(o => o)));
+                    genericParameters += (")");
                 }
             }
-
-            var @params = GetParameterListAsString(method.ParameterList);
+            methodSignatureString += genericParameters;
+            var @params = GetParameterListAsString(method.ParameterList.Parameters, iface: proxies==null? iface :null);
 
             string constraints = GetMethodConstraints(method);
 
@@ -155,7 +166,7 @@ namespace SharpNative.Compiler
 
             if (isProxy)
             {
-                @params = GetParameterListAsString(method.ParameterList, false);
+                @params = GetParameterListAsString(method.ParameterList.Parameters, includeTypes: false);
 
                 if (method.ReturnType.ToString() == "void")
                     writer.WriteLine("Value." + methodName + @params + ";");
@@ -181,6 +192,29 @@ namespace SharpNative.Compiler
             }
 
             writer.CloseBrace();
+
+            if (proxies != null)
+            {
+                foreach (var proxy in proxies)
+                {
+                    //Need to write proxy signature here ...
+
+                    methodSignatureString = methodName + genericParameters;
+                    var @params2 = GetParameterListAsString(method.ParameterList.Parameters, iface: proxy.ContainingType);
+                    var @params3 = GetParameterListAsString(method.ParameterList.Parameters, iface: null, includeTypes:false);
+
+                    writer.WriteLine(accessString + returnTypeString + methodSignatureString + @params2 + constraints);
+
+                    writer.OpenBrace();
+
+                    if (method.ReturnType.ToString() == "void")
+                        writer.WriteLine("" + methodName + @params3 + ";");
+                    else
+                        writer.WriteLine("return " + methodName + @params3 + ";");
+
+                    writer.CloseBrace();
+                }
+            }
         }
 
         private static string GetMethodConstraints(MethodDeclarationSyntax method)
@@ -196,7 +230,7 @@ namespace SharpNative.Compiler
                     {
                         string dlangCondition = condition.ToString();
 
-                        if (dlangCondition == "new()")
+                        if (dlangCondition == "new()") // haven't got around to this yet
                             continue;
                         if (dlangCondition == "class") // TODO: is there a better way to do this ?
                             dlangCondition = "NObject";

@@ -75,7 +75,6 @@ namespace SharpNative.Compiler
 
                 Core.Write(writer, ArgumentOpt.Expression);
 
-                WriteEnum.Check(ArgumentOpt.Expression);
             }
         }
     }

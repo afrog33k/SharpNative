@@ -192,24 +192,32 @@ namespace CsNativeVisual
             {
                 CSharpOutput = "";
              
-                TextWriter originalConsoleOutput = Console.Out;
-                StringWriter writer = new StringWriter();
-                Console.SetOut(writer);
+                //TextWriter originalConsoleOutput = Console.Out;
+                //StringWriter writer = new StringWriter();
+               // Console.SetOut(writer);
 
-                AppDomain appDomain = AppDomain.CreateDomain("Loading Domain");
+                //                AppDomain appDomain = AppDomain.CreateDomain("Loading Domain");
+                //
+                //
+                //
+                                var start = Environment.TickCount;
+                //
+                //                this.Execute(LastCompiledExecutablePath);
+                //                var end = Environment.TickCount - start;
+                //
+                //                AppDomain.Unload(appDomain);
 
 
+                var output = (LastCompiledExecutablePath).ExecuteCommand();
+                //(" -c \"/usr/bin/mono --attach=disable --gc=sgen " + LastCompiledExecutablePath + "\"", "");
+                Console.WriteLine(output);
 
-                var start = Environment.TickCount;
-
-                this.Execute(LastCompiledExecutablePath);
                 var end = Environment.TickCount - start;
 
-                 this.ViewModel.CompilerErrors +=  String.Format("CS time: {0} ms\n", end);
-                AppDomain.Unload(appDomain);
+              //  Console.SetOut(originalConsoleOutput);
+                this.ViewModel.CompilerErrors +=  String.Format("CS time: {0} ms\n", end);
 
-                Console.SetOut(originalConsoleOutput);
-                string result = writer.ToString();
+                string result = output;
                 CSharpOutput = result;
                 this.ViewModel.CompilerErrors += (CSharpOutput);
             }

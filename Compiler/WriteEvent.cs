@@ -171,15 +171,15 @@ namespace SharpNative.Compiler
                 var fieldName = "__evt__" + name;
                 if (!isStatic)
                 {
-                    writer.Write("private " + "Event!(" + typeString + ") " + fieldName + ";\r\n");
+                    writer.Write("private " + "__Event!(" + typeString + ") " + fieldName + ";\r\n");
                         // Internal Field used for event
                     writer.Write(accessString);
-                    writer.WriteLine("Event!(" + typeString + ") " + name + "() @property");
+                    writer.WriteLine("__Event!(" + typeString + ") " + name + "() @property");
                     writer.OpenBrace();
 
                     writer.WriteLine("if (" + fieldName + " is null)");
                     writer.OpenBrace();
-                    writer.Write(fieldName + " =  new " + "Event!(" + typeString + ")(new Action_T!(" + typeString +
+                    writer.Write(fieldName + " =  new " + "__Event!(" + typeString + ")(new Action_T!(" + typeString +
                                  ")(&Add_" + name + "),new Action_T!(" + typeString + ")(&Remove_" + name + ") );");
                     writer.CloseBrace();
                     writer.Write("return " + fieldName + ";");
@@ -188,7 +188,7 @@ namespace SharpNative.Compiler
                 else
                 {
                     writer.Write(IsStatic);
-                    writer.Write("Event!(" + typeString + ") " + name + ";\r\n");
+                    writer.Write("__Event!(" + typeString + ") " + name + ";\r\n");
                 }
 
 //
@@ -255,7 +255,7 @@ namespace SharpNative.Compiler
 
                     staticWriter.Write(name);
 
-                    staticWriter.Write(" =  new " + "Event!(" + typeString + ")(new Action_T!(" + typeString +
+                    staticWriter.Write(" =  new " + "__Event!(" + typeString + ")(new Action_T!(" + typeString +
                                        ")(__ToDelegate(&Add_" + name + ")),new Action_T!(" + typeString +
                                        ")(__ToDelegate(&Remove_" + name + ")) )");
 
@@ -271,7 +271,7 @@ namespace SharpNative.Compiler
 
                     staticWriter.Write(name);
 
-                    staticWriter.Write(" =  new " + "Event!(" + typeString + ")(new Action_T!(" + typeString +
+                    staticWriter.Write(" =  new " + "__Event!(" + typeString + ")(new Action_T!(" + typeString +
                                        ")((&Add_" + name + ")),new Action_T!(" + typeString + ")((&Remove_" + name +
                                        ")) )");
 

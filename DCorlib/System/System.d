@@ -5,17 +5,8 @@ import System.String;
 import std.conv;
 import std.traits;
 import std.typecons;
-//template All()
-//{
-//	import System.Boolean;
-//	import System.String;
-//	alias System.String.String String;
-//}
 
-//mixin All!() ImportAll;
 alias std.typecons.scoped StructAlloc;
-alias long IntPtr;
-alias ulong UIntPtr;
 alias System.NObject.NObject NObject;
 alias System.ICloneable.ICloneable ICloneable;
 alias System.Boolean.Boolean Boolean;
@@ -26,7 +17,7 @@ alias System.Char.Char Char;
 
 alias System.String.String String;
 alias System.Array.Array Array;
-alias System.Array_T.Array_T Array_T; //.Array_T!(T) = Array_T!(T);
+alias System.Array_T.Array_T Array_T;
 alias System.Console.Console Console;
 alias System.Math.Math Math;
 
@@ -40,6 +31,12 @@ import core.sys.posix.dlfcn;
 
 alias std.functional.toDelegate __ToDelegate;
 
+
+struct IntPtr
+{
+	long m_value;
+	public static const IntPtr Zero = IntPtr(0);
+}
 
 
 public static String ToString(T)(T basicType) // Should just implement this on all basic types
@@ -71,10 +68,26 @@ struct __IA(T) //Internal Array Struct, to make array creation easier
 //TODO: Improve this to reuse strings
 public static String _S(wstring text)
 {
+	/*static String[wstring] __stringCache;
+
+	String* aString = text in __stringCache;
+	if(aString !is null)
+		return *aString;
+	else
+	{
+		String aString1 = new String((text));
+		__stringCache[text] = aString1;
+		return aString1;
+	}*/
 	return new String((text));
 }
 
- T __TypeNew(T,U...)(U args)
+public static String _S(String text)
+{
+	return text;
+}
+
+	T __TypeNew(T,U...)(U args)
     if(is(T==class))
     {
        return new T(args);
@@ -84,6 +97,12 @@ public static String _S(wstring text)
     if(is(T==struct))
     {
        return T(args);
+    }
+
+	T __TypeNew(T,U...)(U args)
+    if(is(T==enum))
+    {
+		return T.init;
     }
 
 //http://forum.dlang.org/thread/50992AC2.5020807@webdrake.net ... Simen Kjaeraas
@@ -111,10 +130,10 @@ class GC
 
 }
 
-class Delegate(T):NObject
+class __Delegate(T):NObject
 {
 	T dFunc;
-    Delegate!T[] funcs;
+    __Delegate!T[] funcs;
 
 
 	this()
@@ -185,12 +204,12 @@ class Delegate(T):NObject
 
 	
 
-	 void attach(Delegate!T func) {
+	 void attach(__Delegate!T func) {
         if (func)
             funcs ~= func;
     }
 
-    void detach(Delegate!T func) {
+    void detach(__Delegate!T func) {
         ulong i = -1;
         //Console.WriteLine("Removing " ~ (&(func.Function)).toString);
 	//	Console.WriteLine(((cast(void*)func.Function)).toString);
@@ -223,18 +242,18 @@ class Delegate(T):NObject
 
    
 
-    void opAddAssign(Delegate!T func) {
+    void opAddAssign(__Delegate!T func) {
         attach(func);
     }
 
-    void opSubAssign(Delegate!T func) {
+    void opSubAssign(__Delegate!T func) {
         detach(func);
     }
 
 	
 }
 
-class Event(T):NObject //if(is(T==delegate))
+class __Event(T):NObject //if(is(T==delegate))
 {
    // T handler_t;
 
@@ -370,58 +389,7 @@ public	double NextDouble()
 	}
 }
 
-public static void FreeNativeLibrary(void * handle)
-{
-	version(darwin)
-	{
-		dlclose(handle);
-	}
-}
 
-static void*[string] __dllMap;
-
-public static void *LoadNativeLibrary(string libName)
-{
-	version(darwin)
-	{
-
-	void** handleIn = libName in __dllMap;
-
-	if(handleIn !is null)
-		return __dllMap[libName];
-
-	void* handle = dlopen(cast(char*)libName, RTLD_LAZY);
-	if (!handle)
-	{
-		//throw new Exception("dlopen error: " ~ dlerror());
-		printf("dlopen error: %s\n", dlerror());
-		exit(1);
-	}
-	__dllMap[libName] = handle;
-	return handle;
-	}
-	return null;
-}
-
-static void*[string] __dllFuncMap;
-
-
-public static void *LoadLibraryFunc(void* library, string funcName)
-{
-	version(darwin)
-	{
-		char* error = dlerror();
-		auto func= dlsym(library, cast(char*)funcName);
-	if (error)
-	{
-		printf("dlsym error: %s - %s\n", error, cast(char*)"glutInit");
-		exit(1);
-	}
-
-		return func;
-	}
-	return null;
-}
 
 //Allows equals comparison between most basic types
 public static bool Equals(T)(T object, T other)
@@ -623,10 +591,7 @@ public class Attribute: NObject
 
 }
 
-public class Type: NObject
-{
 
-}
 
 public enum PlatformID 
 {
@@ -1170,17 +1135,17 @@ template Converter(TInput, TOutput) {
 
 template Func_T_TResult( T , TResult )
 {
-	alias Delegate!(TResult delegate(T arg) ) Func_T_TResult;
+	alias __Delegate!(TResult delegate(T arg) ) Func_T_TResult;
 }
 
 
 template Action_T( T )
 {
-	alias Delegate!(void delegate(T arg) ) Action_T;
+	alias __Delegate!(void delegate(T arg) ) Action_T;
 }
 
 
-alias Delegate!(void delegate()) Action;
+alias __Delegate!(void delegate()) Action;
 
 
 /**
@@ -1193,7 +1158,7 @@ alias Delegate!(void delegate()) Action;
 
 template Func_TResult( TResult )
 {
-	alias Delegate!(TResult delegate() ) Func_TResult;
+	alias __Delegate!(TResult delegate() ) Func_TResult;
 }
 
  //alias Delegate(TResult delegate(T obj)) Func_T_TResult;
@@ -1236,23 +1201,24 @@ if(!is(T==class) && !is(T==struct))
 }
 //}
 
-template UNBOX(T)
-{
+//template UNBOX(T)
+//{
 //  static T UNBOX(Boxed!(T) boxed)
 //{
 //	return  boxed.Value;
 //}
 
-static T UNBOX(U)(U nobject) 
+static T UNBOX(T,U)(U nobject) 
 {
 	static if(is(T==class)) // This should never happen /// how did you box a class and why ?
 	{
 		return  cast(T) nobject;
 	}
+	
 	//Im probably going to need to genericise the Boxing operation and all assignments to sth of type object will have to do a cast
 	//static if(is(U:Boxed!(T))) // Generics saved the day ... phew faster comparisons prevent casting issues ... not always applicable e.g. we have to use typeid or object
 	{
-		return (cast(Boxed!(T)) cast(void*)nobject).Value;//(cast(T) cast(void*) obj)
+		return (Cast!(Boxed!(T))(nobject)).Value;//(cast(T) cast(void*) obj)
 
 	}
 	//Comparisons can work if we use typeid .... but that slows down things significantly ... so this could be an option ...
@@ -1281,7 +1247,7 @@ static T UNBOX(U)(U nobject)
 
 
 }
-}
+//}
 
 
 
@@ -1418,23 +1384,53 @@ bool IsCast(T, U)(U obj)  if (is(T == interface))// && is(U :NObject))
 
 	//	return cast(T)(object) !is null;
 	//}
+	
+	static T Cast(T)(NObject object)
+	{
+		auto result = AsCast!(T)(object);
+		if(result is null && object !is null)
+		{
+			throw new InvalidCastException(new String(("Cannot cast " ~ object.stringof ~ " to " ~ T.stringof)));
+		}
+		return result;
+	}
+
+	static T Cast(T,U)(U object)
+	if(!is(U==class) &&!is(U==interface))//is(U==enum) || is(U==struct))
+	{
+		return cast(T)object;
+	}
+
+	static T Cast(T,U)(U object)
+	if(!is(U:NObject) && (is(U==class) ||is(U==interface) ))// && !is(U==enum) && !is(U==struct))
+	{
+		
+		auto result = AsCast!(T,U)(object);
+		if(result is null)// && object !is null) this cannot work with everything
+		{
+			throw new InvalidCastException(new String(("Cannot cast " ~ object.stringof ~ " to " ~ T.stringof)));
+		}
+		return result;
+	}
 
 	static T AsCast(T)(NObject object)
 	{
-			if(cast(T)(object) is null && object !is null)
-			{
-				throw new InvalidCastException(new String(cast(wstring)("Cannot cast " ~ object.classinfo.name ~ " to " ~ T.classinfo.name)));
-			}
 			return cast(T)(object);
 	}
 	
 	static T AsCast(T,U)(U object)
 	if(!is(U:NObject))
 	{
-		if(cast(T)(object) is null && object !is null)
+		static if(is(U:T))
 		{
-			throw new InvalidCastException(new String(cast(wstring)("Cannot cast " ~ object.classinfo.name ~ " to " ~ T.classinfo.name)));
+			return object;
 		}
+		
+		/*static if((U is NObject) && is(T==class))
+		{
+			return object;
+		}*/
+
 		return cast(T)(object);
 	}
 
@@ -1846,5 +1842,213 @@ class OutOfMemoryException : NException {
 }
 
 
+//Basic System.Type, to support for enums for now
+
+public class Type:NObject
+{
+	public Array_T!(String) GetMembers(string name="")
+	{
+		return null;
+	}
 
 
+}
+
+public static Type_T!(T) __TypeOf(T)()
+{
+	//At this point look up / create type info for this type ... Name etc // this way reflection is OnDemand / OnUsage 
+	auto type= new Type_T!(T)(__TypeNew!(T)());
+	type.Name = typeid(T).name;
+	return type;
+}
+
+
+
+public class Type_T(T):Type
+{
+	string Name ="";
+	T Type;
+
+	this(T type)
+	{
+		Type = type;
+	}
+
+	public R GetMember(R)(string name)
+	{
+		return cast(R) [__traits(getMember, T, name)][0];
+	}
+
+	public Array_T!(String) GetMembers(string name="")
+	{
+		if(name=="")
+		{
+			import std.algorithm;
+			import std.array:array;
+			auto membernames = new Array_T!(String)
+				(
+				 __IA!(String[])(
+								 ([__traits(allMembers,T)]
+								 .map!(a=>new String(a))).array
+								 )
+				 );
+			
+			return membernames;
+		}
+		return null;
+	}
+
+	override string toString()
+	{
+		return (typeid(Type)).toString;
+	}
+}
+
+public class Enum : NObject
+{
+	public static Array_T!(String) GetNames(Type type)
+	{
+		//writeln("Calling get members");
+		return  type.GetMembers();
+	}
+
+	public static long Parse(T)(Type_T!(T) type, String name)
+	{
+		enum allMembers = __traits(allMembers, T);
+
+		if(type is null) 
+			throw new ArgumentNullException(_S("type"));
+		if(name is null)
+			throw new ArgumentNullException(_S("name"));
+
+		//auto temp = __TypeNew!(T);
+
+		auto members =  type.GetMembers();
+		auto mname = name.Text;
+
+		foreach(member; members) 
+		{
+			if(member==name)
+			{
+				return type.GetMember!(long)(name);
+				//return __traits(getMember,T,mname);
+			}
+		}
+
+
+		/*for(int i = 0; i < members.Length; i++)
+		{
+			if(members[i]==name)
+			{
+				
+				return __traits(getMember,temp,name.Text);
+			}
+		}*/
+
+		throw new ArgumentException(_S(""));
+	}
+}
+
+//PInvoke Support
+
+public static void __FreeNativeLibrary(void * handle)
+{
+	version(darwin)
+	{
+		dlclose(handle);
+	}
+}
+
+static void*[wstring] __dllMap;
+
+public static void *__LoadNativeLibrary(wstring libName)
+{
+
+	void** handleIn = libName in __dllMap;
+
+	if(handleIn !is null)
+		return __dllMap[libName];
+
+	version(darwin)
+	{
+		void* handle = dlopen(std.conv.to!(char*)(libName), RTLD_LAZY);
+		if (!handle)
+		{
+			//throw new Exception("dlopen error: " ~ dlerror());
+			printf("dlopen error: %s\n", dlerror());
+			exit(1);
+		}
+	//	writeln("successfully loaded " ~ libName);
+		__dllMap[libName] = handle;
+		return handle;
+	}
+	//version(windows)
+	{
+		import core.runtime, core.sys.windows.windows;
+		void* handle = Runtime.loadLibrary(std.conv.to!(char[])(libName));
+		if (!handle)
+		{
+			//throw new Exception("dlopen error: " ~ dlerror());
+			printf("failed to load library");
+			exit(1);
+		}
+		//writeln("successfully loaded " ~ libName);
+		__dllMap[libName] = handle;
+		return handle;
+
+	}
+	return null;
+}
+
+static void*[string] __dllFuncMap;
+
+
+public static void *__LoadLibraryFunc(void* library, wstring funcName)
+{
+	version(darwin)
+	{
+		char* error = dlerror();
+		auto func= dlsym(library, std.conv.to!(char[])(funcName).toStringz);
+		if (error)
+		{
+			printf("dlsym error: %s - %s\n", error, cast(char*)"glutInit");
+			exit(1);
+		}
+
+		return func;
+	}
+	import core.runtime, core.sys.windows.windows;
+	//writeln(library);
+	//writeln(GetProcAddress(library, "MessageBoxW".toStringz));
+	return GetProcAddress(library, std.conv.to!(char[])(funcName).toStringz);//cast(const(char)*)std.conv.to!(char[])(funcName));
+	return null;
+}
+
+static  void* __DllImportMap[wstring];
+
+
+
+static void __SetupDllImport(wstring name)
+{
+	__DllImportMap[name] = __LoadNativeLibrary(name);
+	//writeln(__DllImportMap[name]);
+}
+
+
+static void __FreeDllImports()
+{
+	foreach(lib ; __DllImportMap)
+	{
+        	__FreeNativeLibrary(lib);
+	}
+}
+
+static void __SetupSystem() // Called before entering "main"
+{
+	
+}
+
+static void __EndSystem() // Called after ending "main"
+{
+	__FreeDllImports();
+}

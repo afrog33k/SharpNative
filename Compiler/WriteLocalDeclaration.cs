@@ -33,10 +33,13 @@ namespace SharpNative.Compiler
                         writer.Write(str);
 
                     writer.Write(" ");
+
+
+
                     writer.Write(WriteIdentifierName.TransformIdentifier(variable.Identifier.ValueText));
                     writer.Write(" = ");
 
-                    WriteInitializer(writer, declaration, variable);
+                     WriteInitializer(writer, declaration, variable);
                 }
 
                 writer.Write(";\r\n");
@@ -57,17 +60,19 @@ namespace SharpNative.Compiler
                 var memberaccessexpression = value as MemberAccessExpressionSyntax;
                 var nameexpression = value as NameSyntax;
                 var nullAssignment = value.ToFullString().Trim() == "null";
-                var shouldBox = initializerType.Type != null && initializerType.Type.IsValueType &&
-                                !initializerType.ConvertedType.IsValueType;
-                var shouldUnBox = initializerType.Type != null && !initializerType.Type.IsValueType &&
-                                  initializerType.ConvertedType.IsValueType;
+                var convertedType = initializerType.ConvertedType;
+                var type = initializerType.Type;
+                var shouldBox = type != null && type.IsValueType &&
+                                !convertedType.IsValueType;
+                var shouldUnBox = type != null && !type.IsValueType &&
+                                  convertedType.IsValueType;
                 var isname = value is NameSyntax;
                 var ismemberexpression = value is MemberAccessExpressionSyntax ||
                                          (isname &&
                                           TypeProcessor.GetSymbolInfo(value as NameSyntax).Symbol.Kind ==
                                           SymbolKind.Method);
                 var isdelegateassignment = ismemberexpression &&
-                                           initializerType.ConvertedType.TypeKind == TypeKind.Delegate;
+                                           convertedType.TypeKind == TypeKind.Delegate;
                 var isstaticdelegate = isdelegateassignment &&
                                        ((memberaccessexpression != null &&
                                          TypeProcessor.GetSymbolInfo(memberaccessexpression).Symbol.IsStatic) ||
@@ -76,40 +81,9 @@ namespace SharpNative.Compiler
                 //Do we have an implicit converter, if so, use it
                 if (shouldBox || shouldUnBox)
                 {
-                    {
-                        bool useType = true;
-                        var correctConverter =
-                            initializerType.Type.GetImplicitCoversionOp(initializerType.ConvertedType,
-                                initializerType.Type);
-                          
-
-                        if (correctConverter == null)
-                        {
-                            useType = false;
-                            correctConverter =
-                                initializerType.ConvertedType.GetImplicitCoversionOp(initializerType.ConvertedType,
-                                    initializerType.Type);
-                         
-                        }
-
-                        if (correctConverter != null)
-                        {
-                            if (useType)
-                            {
-                                writer.Write(TypeProcessor.ConvertType(initializerType.Type) + "." + "op_Implicit_" +
-                                             TypeProcessor.ConvertType(correctConverter.ReturnType));
-                            }
-                            else
-                            {
-                                writer.Write(TypeProcessor.ConvertType(initializerType.ConvertedType) + "." +
-                                             "op_Implicit_" + TypeProcessor.ConvertType(correctConverter.ReturnType));
-                            }
-                            writer.Write("(");
-                            Core.Write(writer, value);
-                            writer.Write(")");
-                            return;
-                        }
-                    }
+                    
+                   if (WriteConverter(writer, type, convertedType, value))
+                        return;
                 }
 
                 if (nullAssignment)
@@ -119,55 +93,104 @@ namespace SharpNative.Compiler
                 }
                 if (shouldBox)
                 {
-                    //Box
-                    writer.Write("BOX!(" + TypeProcessor.ConvertType(initializerType.Type) + ")(");
-                    //When passing an argument by ref or out, leave off the .Value suffix
-                    Core.Write(writer, value);
-                    writer.Write(")");
+                    WriteBox(writer, type, value);
                     return;
                 }
                 if (shouldUnBox)
                 {
-                    //UnBox
-                    writer.Write("cast!(" + TypeProcessor.ConvertType(initializerType.Type) + ")(");
-                    Core.Write(writer, value);
-                    writer.Write(")");
-                }
-                if (isdelegateassignment)
-                {
-                    var createNew = !(value is ObjectCreationExpressionSyntax);
-                    var typeString = TypeProcessor.ConvertType(initializerType.ConvertedType);
-
-                    if (createNew)
-                    {
-                        if (initializerType.ConvertedType.TypeKind == TypeKind.TypeParameter)
-                            writer.Write(" __TypeNew!(" + typeString + ")(");
-                        else
-                            writer.Write("new " + typeString + "(");
-                    }
-
-                    var isStatic = isstaticdelegate;
-                    if (isStatic)
-                        writer.Write("__ToDelegate(");
-                    writer.Write("&");
-
-                    Core.Write(writer, value);
-                    if (isStatic)
-                        writer.Write(")");
-
-                    if (createNew)
-                        writer.Write(")");
+                    WriteUnbox(writer, type, value);
                     return;
                 }
-                if (initializerType.Type == null && initializerType.ConvertedType == null)
+
+                if (isdelegateassignment)
+                {
+                    WriteDelegateAssignment(writer, convertedType, isstaticdelegate, value);
+                    return;
+                }
+
+                if (type == null && convertedType == null)
                 {
                     writer.Write("null");
                     return;
                 }
+
                 Core.Write(writer, value);
             }
             else
                 writer.Write(TypeProcessor.DefaultValue(declaration.Declaration.Type));
+        }
+
+        private static void WriteBox(OutputWriter writer, ITypeSymbol type, ExpressionSyntax value)
+        {
+            writer.Write("BOX!(" + TypeProcessor.ConvertType(type) + ")(");
+            Core.Write(writer, value);
+            writer.Write(")");
+        }
+
+        private static void WriteUnbox(OutputWriter writer, ITypeSymbol type, ExpressionSyntax value)
+        {
+            writer.Write("cast!(" + TypeProcessor.ConvertType(type) + ")(");
+            Core.Write(writer, value);
+            writer.Write(")");
+        }
+
+        private static void WriteDelegateAssignment(OutputWriter writer, ITypeSymbol convertedType, bool isstaticdelegate,
+            ExpressionSyntax value)
+        {
+            var typeString = TypeProcessor.ConvertType(convertedType);
+
+            if (convertedType.TypeKind == TypeKind.TypeParameter)
+                writer.Write(" __TypeNew!(" + typeString + ")(");
+            else
+                writer.Write("new " + typeString + "(");
+
+            var isStatic = isstaticdelegate;
+            if (isStatic)
+                writer.Write("__ToDelegate(");
+            writer.Write("&");
+
+            Core.Write(writer, value);
+            if (isStatic)
+                writer.Write(")");
+
+            writer.Write(")");
+            return;
+        }
+
+        private static bool WriteConverter(OutputWriter writer, ITypeSymbol type, ITypeSymbol convertedType,
+            ExpressionSyntax value)
+        {
+            bool useType = true;
+            var correctConverter =
+                type.GetImplicitCoversionOp(convertedType,
+                    type);
+
+            if (correctConverter == null)
+            {
+                useType = false;
+                correctConverter =
+                    convertedType.GetImplicitCoversionOp(convertedType,
+                        type);
+            }
+
+            if (correctConverter != null)
+            {
+                if (useType)
+                {
+                    writer.Write(TypeProcessor.ConvertType(type) + "." + "op_Implicit_" +
+                                 TypeProcessor.ConvertType(correctConverter.ReturnType));
+                }
+                else
+                {
+                    writer.Write(TypeProcessor.ConvertType(convertedType) + "." +
+                                 "op_Implicit_" + TypeProcessor.ConvertType(correctConverter.ReturnType));
+                }
+                writer.Write("(");
+                Core.Write(writer, value);
+                writer.Write(")");
+                return true;
+            }
+            return false;
         }
 
 

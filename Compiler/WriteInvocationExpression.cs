@@ -64,7 +64,7 @@ namespace SharpNative.Compiler
             else
                 subExpressionOpt = null;
 
-            //When the code specifically names generic arguments, include them in the method name ... dlang needs help with inference, so we give it the types anyway
+            //When the code specifically names generic arguments, include them in the method name ... dmd needs help with inference, so we give it the types anyway
             if (methodSymbol.IsGenericMethod)
             {
                 //				var genNameExpression = invocationExpression.Expression as GenericNameSyntax;
@@ -73,7 +73,7 @@ namespace SharpNative.Compiler
                 //				if (genNameExpression != null && genNameExpression.TypeArgumentList.Arguments.Count > 0)
                 typeParameters = "!( " +
                                  string.Join(", ",
-                                     (symbol as IMethodSymbol).TypeArguments.Select(r => TypeProcessor.ConvertType(r))) +
+                                     ((IMethodSymbol) symbol).TypeArguments.Select(r => TypeProcessor.ConvertType(r))) +
                                  " )";
             }
 
@@ -235,11 +235,11 @@ namespace SharpNative.Compiler
                         Equals(methodSymbol.ContainingType.FindImplementationForInterfaceMember(methodSymbol),
                             methodSymbol))
                     {
-                        methodName =
+                    /*    methodName =
                             Regex.Replace(TypeProcessor.ConvertType(methodSymbol.ContainingType.OriginalDefinition)
                                     .RemoveFromStartOfString(methodSymbol.ContainingNamespace + ".Namespace.") + "_" +
                                 methodName,
-                                @" ?!\(.*?\)", string.Empty);
+                                @" ?!\(.*?\)", string.Empty);*/
                         if (methodSymbol.ContainingType.ContainingType != null)
                             methodName = methodName.RemoveFromStartOfString(methodSymbol.ContainingType.ContainingType.Name+".");
                     }
@@ -269,14 +269,14 @@ namespace SharpNative.Compiler
                             writer.Write("");
                         else
                         {
-                            var typenameI =
+                           /* var typenameI =
                                 Regex.Replace(
                                     TypeProcessor.ConvertType(interfaceMethod.ContainingType.ConstructedFrom, true),
                                     @" ?!\(.*?\)", string.Empty);
                                 //TODO: we should be able to get the original interface name, or just remove all generics from this
                             if (typenameI.Contains('.'))
                                 typenameI = typenameI.SubstringAfterLast('.');
-                            writer.Write(typenameI + "_");
+                            writer.Write(typenameI + "_");*/
                         }
                     }
 

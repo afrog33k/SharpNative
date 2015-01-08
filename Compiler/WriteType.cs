@@ -7,6 +7,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -20,13 +21,13 @@ namespace SharpNative.Compiler
 {
     internal static class WriteType
     {
-        static Dictionary<string,string> TypeRenames = new Dictionary<string, string>()
+        static Dictionary<string, string> TypeRenames = new Dictionary<string, string>()
         {
             { "System.Namespace.Object","NObject"},
             { "System.Namespace.Exception","NException"}
-        }; 
+        };
 
-        public static void Go(OutputWriter outputWriter =null)
+        public static void Go(OutputWriter outputWriter = null)
         {
             var partials = Context.Instance.Partials;
             var first = partials.First();
@@ -50,7 +51,7 @@ namespace SharpNative.Compiler
 
             var myUsingDirective = SyntaxFactory.UsingDirective(SyntaxFactory.ParseName(mynamespace));
             var SystemUsingDirective = SyntaxFactory.UsingDirective(SyntaxFactory.ParseName("System"));
-                // Required as certain functions like boxing are in this namespace
+            // Required as certain functions like boxing are in this namespace
             var namespaces = first.Syntax.Parent.DescendantNodes().OfType<UsingDirectiveSyntax>().ToArray();
             var usingStatements = first.Syntax.Parent.DescendantNodes().OfType<UsingStatementSyntax>().ToArray();
             Context.Instance.UsingDeclarations = namespaces
@@ -61,16 +62,16 @@ namespace SharpNative.Compiler
 
             OutputWriter writer = null;
 
-           
-            using (writer = outputWriter == null?new OutputWriter(Context.Instance.Namespace, Context.Instance.TypeName) : new TempWriter())
+
+            using (writer = outputWriter == null ? new OutputWriter(Context.Instance.Namespace, Context.Instance.TypeName) : new TempWriter())
             {
                 if (outputWriter != null)
                 {
                     writer.WriteLine();
-                    writer.Indent = outputWriter.Indent+2;
+                    writer.Indent = outputWriter.Indent + 2;
                     writer.WriteIndent();
                 }
-                
+
                 var bases = partials
                     .Select(o => o.Syntax.BaseList)
                     .Where(o => o != null)
@@ -81,11 +82,11 @@ namespace SharpNative.Compiler
 
                 //                var interfaces = bases.Where(o => o.TypeKind == TypeKind.Interface).ToList();
 
-                    if (  Context.Instance.Type !=Context.Object)
-                if (!bases.Any((j => j.TypeKind != TypeKind.Interface)) &&
-                    !(first.Symbol.TypeKind == TypeKind.Interface || first.Symbol.TypeKind == TypeKind.Struct))
-                    //TODO: fix structs using mixins / alias this
-                    bases.Add(Context.Object);
+                if (Context.Instance.Type != Context.Object)
+                    if (!bases.Any((j => j.TypeKind != TypeKind.Interface)) &&
+                        !(first.Symbol.TypeKind == TypeKind.Interface || first.Symbol.TypeKind == TypeKind.Struct))
+                        //TODO: fix structs using mixins / alias this
+                        bases.Add(Context.Object);
 
                 //                    WriteStandardIncludes.Go(writer);
 
@@ -96,7 +97,7 @@ namespace SharpNative.Compiler
                 //TypeState.Instance.DerivesFromObject = bases.Count == interfaces.Count;
 
                 var @namespace = first.Symbol.ContainingNamespace.FullName();
-                var genericArgs = Context.Instance.Type.TypeParameters.Select(l=>l as ITypeSymbol).ToList();
+                var genericArgs = Context.Instance.Type.TypeParameters.Select(l => l as ITypeSymbol).ToList();
 
 
                 //Module name = namespace + "." + typename;
@@ -192,20 +193,14 @@ namespace SharpNative.Compiler
 
                 if (first.Syntax is TypeDeclarationSyntax)
                 {
-                    //Look for generic arguments 
-                    //                    var genericArgs = partials
-                    //                        .Select(o => o.Syntax)
-                    //                        .Cast<TypeDeclarationSyntax>()
-                    //                        .Where(o => o.TypeParameterList != null)
-                    //                        .SelectMany(o => o.TypeParameterList.Parameters)
-                    //                        .ToList();
+
 
                     //Internal classes/structs are declared static in D to behave correctly
                     if (outputWriter != null)
                     {
                         writer.Write("static ");
                     }
-                        if (Context.Instance.Type.TypeKind == TypeKind.Class)
+                    if (Context.Instance.Type.TypeKind == TypeKind.Class)
                         writer.Write("class ");
                     else if (Context.Instance.Type.TypeKind == TypeKind.Interface)
                         writer.Write("interface ");
@@ -216,30 +211,42 @@ namespace SharpNative.Compiler
                     }
                     else
                         throw new Exception("don't know how to write type: " + Context.Instance.Type.TypeKind);
-                    //writer.Write (((TypeState.Instance.Type.TypeKind== TypeKind.Interface)?" interface ": ) );
-
+                    List<ITypeSymbol> parentTypeParameters;
+                    if (Context.Instance.Type.ContainingType != null)
+                    {
+                        parentTypeParameters = Context.Instance.Type.ContainingType.TypeArguments.ToList();
+                    }
+                    else
+                    {
+                        parentTypeParameters = new List<ITypeSymbol>();
+                    }
                     writer.Write(TypeName(Context.Instance.Type, false));
 
                     if (Context.Instance.Type.IsGenericType)
                     {
 
                         {
-                         //   List<string> genArgs = new List<string>();
                             foreach (var @base in bases)
                             {
-                                foreach (var arg in (@base as INamedTypeSymbol).TypeArguments)
+                                var namedTypeSymbol = @base as INamedTypeSymbol;
+                                if (namedTypeSymbol != null)
                                 {
-                                    
-                                    if(arg.TypeKind==TypeKind.TypeParameter)
-                                    if (!genericArgs.Any(k=>k.Name==arg.Name))
+                                    foreach (var arg in namedTypeSymbol.TypeArguments)
                                     {
-                                        genericArgs.Add(arg);
+
+                                        if (arg.TypeKind == TypeKind.TypeParameter && !parentTypeParameters.Contains(arg))
+                                        {
+                                            if (!genericArgs.Any(k => k.Name == arg.Name))
+                                            {
+                                                genericArgs.Add(arg);
+                                            }
+                                        }
                                     }
                                 }
                             }
                             if (genericArgs.Any())
                             {
-                                writer.Write("("+string.Join(" , ", genericArgs.Select(o => o))+")");
+                                writer.Write("(" + string.Join(" , ", genericArgs.Select(o => o)) + ")");
                             }
                         }
                     }
@@ -252,11 +259,11 @@ namespace SharpNative.Compiler
                         {
                             var convertType = TypeProcessor.ConvertType(baseType);
 
-                         
+
 
                             writer.Write(firstBase ? " : " : " ,");
 
-                            
+
                             writer.Write(convertType);
 
 
@@ -269,176 +276,233 @@ namespace SharpNative.Compiler
 
                 writer.OpenBrace();
 
-                var fields = membersToWrite.OfType<FieldDeclarationSyntax>().ToList();
-                var nonFields = membersToWrite.Except(fields); // also static fields should be separately dealt with
+                var nonFields = WriteFields(membersToWrite, first, writer);
 
-                var structLayout = first.Syntax.GetAttribute(Context.StructLayout);
-                if (structLayout != null)
+                foreach (var member in nonFields)
                 {
-                    LayoutKind value = LayoutKind.Auto;
-                    if (
-                        structLayout.ArgumentList.Arguments.Any(
-                            k => k.NameEquals != null && k.NameEquals.Name.ToFullString().Trim() == "Value"))
-                    {
-                        value =
-                            (LayoutKind)
-                                Enum.Parse(typeof (LayoutKind),
-                                    structLayout.ArgumentList.Arguments.FirstOrDefault(
-                                        k => k.NameEquals != null && k.NameEquals.Name.ToFullString().Trim() == "Value")
-                                        .Expression.ToFullString()
-                                        .SubstringAfterLast('.'));
-                       
-                    }
-                       
-                    else if (structLayout.ArgumentList.Arguments.Count > 0 &&
-                             structLayout.ArgumentList.Arguments[0].NameEquals == null)
-                    {
-                        value =
-                            (LayoutKind)
-                                Enum.Parse(typeof (LayoutKind),
-                                    structLayout.ArgumentList.Arguments[0].Expression.ToFullString()
-                                        .SubstringAfterLast('.'));
-                    }
-                    int pack = -1;
-                    int size = -1;
-                    CharSet charset = CharSet.Auto;
-//					if (structLayout.ArgumentList.Arguments.Count > 1)
-                    {
-                        try
-                        {
-                            if (
-                                structLayout.ArgumentList.Arguments.Any(
-                                    k => k.NameEquals != null && k.NameEquals.Name.ToFullString().Trim() == "CharSet"))
-                            {
-                                charset =
-                                    (CharSet)
-                                        Enum.Parse(typeof (CharSet),
-                                            structLayout.ArgumentList.Arguments.FirstOrDefault(
-                                                k =>
-                                                    k.NameEquals != null &&
-                                                    k.NameEquals.Name.ToFullString().Trim() == "CharSet")
-                                                .Expression.ToFullString()
-                                                .SubstringAfterLast('.'));
-                                //structLayout.ArgumentList.Arguments.Where (k => k.Expression is MemberAccessExpressionSyntax).FirstOrDefault(k=>(k.Expression as MemberAccessExpressionSyntax).Name.ToFullString() == "Value");
-                            }
-                                //structLayout.ArgumentList.Arguments.Where (k => k.Expression is MemberAccessExpressionSyntax).FirstOrDefault(k=>(k.Expression as MemberAccessExpressionSyntax).Name.ToFullString() == "Value");
-                            else if (structLayout.ArgumentList.Arguments.Count > 1 &&
-                                     structLayout.ArgumentList.Arguments[1].NameEquals == null)
-                            {
-                                charset =
-                                    (CharSet)
-                                        Enum.Parse(typeof (CharSet),
-                                            structLayout.ArgumentList.Arguments[1].Expression.ToFullString()
-                                                .SubstringAfterLast('.'));
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                        }
+                    //                    writer.WriteLine();
+                    Core.Write(writer, member);
+                }
 
-                        try
+                WriteConstructors(instanceCtors, writer);
+
+                WriteStaticConstructors(staticCtors, writer);
+
+                //PInvoke is now centralized, so we can call it on all libraries etc without issue
+
+                writer.Indent--;
+                WriteOutNestedTypes(first, writer);
+
+                WriteOutBoxed(writer, genericArgs, bases);
+                writer.CloseBrace();
+
+                WriteEntryMethod(writer);
+
+                if (outputWriter != null)
+                {
+                    outputWriter.Write(writer.ToString());
+                }
+            }
+        }
+
+        private static void WriteStaticConstructors(List<ConstructorDeclarationSyntax> staticCtors, OutputWriter writer)
+        {
+            if (staticCtors.Count == 0)
+            {
+                if (Context.Instance.StaticInits.Count > 0)
+                {
+                    var constructor = SyntaxFactory.ConstructorDeclaration(Context.Instance.TypeName);
+                    constructor =
+                        constructor.WithModifiers(
+                            SyntaxFactory.TokenList(SyntaxFactory.Token(SyntaxKind.StaticKeyword)));
+
+                    WriteConstructorBody.WriteStaticConstructor(writer, constructor, Context.Instance.StaticInits);
+
+                    staticCtors.Add(constructor);
+                }
+            }
+            else
+            {
+                var isFirst = true;
+                foreach (ConstructorDeclarationSyntax constructor in staticCtors)
+                {
+                    if (isFirst)
+                    {
+                        WriteConstructorBody.WriteStaticConstructor(writer, constructor,
+                            Context.Instance.StaticInits);
+                    }
+                    else
+                        WriteConstructorBody.Go(writer, constructor);
+
+                    isFirst = false;
+                }
+            }
+        }
+
+        private static void WriteConstructors(List<ConstructorDeclarationSyntax> instanceCtors, OutputWriter writer)
+        {
+            foreach (var constructor in instanceCtors)
+            {
+                //                    writer.WriteLine();
+                Core.Write(writer, constructor);
+            }
+        }
+
+        private static IEnumerable<MemberDeclarationSyntax> WriteFields(List<MemberDeclarationSyntax> membersToWrite, Context.SyntaxAndSymbol first, OutputWriter writer)
+        {
+            var fields = membersToWrite.OfType<FieldDeclarationSyntax>().ToList();
+            var nonFields = membersToWrite.Except(fields); // also static fields should be separately dealt with
+
+            var structLayout = first.Syntax.GetAttribute(Context.StructLayout);
+            if (structLayout != null)
+            {
+                LayoutKind value = LayoutKind.Auto;
+                if (
+                    structLayout.ArgumentList.Arguments.Any(
+                        k => k.NameEquals != null && k.NameEquals.Name.ToFullString().Trim() == "Value"))
+                {
+                    value =
+                        (LayoutKind)
+                            Enum.Parse(typeof(LayoutKind),
+                                structLayout.ArgumentList.Arguments.FirstOrDefault(
+                                    k => k.NameEquals != null && k.NameEquals.Name.ToFullString().Trim() == "Value")
+                                    .Expression.ToFullString()
+                                    .SubstringAfterLast('.'));
+                }
+
+                else if (structLayout.ArgumentList.Arguments.Count > 0 &&
+                         structLayout.ArgumentList.Arguments[0].NameEquals == null)
+                {
+                    value =
+                        (LayoutKind)
+                            Enum.Parse(typeof(LayoutKind),
+                                structLayout.ArgumentList.Arguments[0].Expression.ToFullString()
+                                    .SubstringAfterLast('.'));
+                }
+                int pack = -1;
+                int size = -1;
+                CharSet charset = CharSet.Auto;
+                //					if (structLayout.ArgumentList.Arguments.Count > 1)
+                {
+                    try
+                    {
+                        if (
+                            structLayout.ArgumentList.Arguments.Any(
+                                k => k.NameEquals != null && k.NameEquals.Name.ToFullString().Trim() == "CharSet"))
                         {
-                            if (
-                                structLayout.ArgumentList.Arguments.Any(
-                                    k => k.NameEquals != null && k.NameEquals.Name.ToFullString().Trim() == "Pack"))
-                            {
-                                pack =
-                                    int.Parse(
+                            charset =
+                                (CharSet)
+                                    Enum.Parse(typeof(CharSet),
                                         structLayout.ArgumentList.Arguments.FirstOrDefault(
                                             k =>
                                                 k.NameEquals != null &&
-                                                k.NameEquals.Name.ToFullString().Trim() == "Pack")
-                                            .Expression.ToFullString());
-                            }
-                                //structLayout.ArgumentList.Arguments.Where (k => k.Expression is MemberAccessExpressionSyntax).FirstOrDefault(k=>(k.Expression as MemberAccessExpressionSyntax).Name.ToFullString() == "Value");
-                            else if (structLayout.ArgumentList.Arguments.Count > 2 &&
-                                     structLayout.ArgumentList.Arguments[2].NameEquals == null)
-                                pack = int.Parse(structLayout.ArgumentList.Arguments[2].Expression.ToFullString());
+                                                k.NameEquals.Name.ToFullString().Trim() == "CharSet")
+                                            .Expression.ToFullString()
+                                            .SubstringAfterLast('.'));
+                            //structLayout.ArgumentList.Arguments.Where (k => k.Expression is MemberAccessExpressionSyntax).FirstOrDefault(k=>(k.Expression as MemberAccessExpressionSyntax).Name.ToFullString() == "Value");
                         }
-                        catch (Exception ex)
+                        //structLayout.ArgumentList.Arguments.Where (k => k.Expression is MemberAccessExpressionSyntax).FirstOrDefault(k=>(k.Expression as MemberAccessExpressionSyntax).Name.ToFullString() == "Value");
+                        else if (structLayout.ArgumentList.Arguments.Count > 1 &&
+                                 structLayout.ArgumentList.Arguments[1].NameEquals == null)
                         {
+                            charset =
+                                (CharSet)
+                                    Enum.Parse(typeof(CharSet),
+                                        structLayout.ArgumentList.Arguments[1].Expression.ToFullString()
+                                            .SubstringAfterLast('.'));
                         }
-
-                        try
-                        {
-                            if (
-                                structLayout.ArgumentList.Arguments.Any(
-                                    k => k.NameEquals != null && k.NameEquals.Name.ToFullString().Trim() == "Size"))
-                            {
-                                size =
-                                    int.Parse(
-                                        structLayout.ArgumentList.Arguments.FirstOrDefault(
-                                            k => k.NameColon != null && k.NameColon.ToFullString().Trim() == "Size")
-                                            .Expression.ToFullString());
-                            }
-                                //structLayout.ArgumentList.Arguments.Where (k => k.Expression is MemberAccessExpressionSyntax).FirstOrDefault(k=>(k.Expression as MemberAccessExpressionSyntax).Name.ToFullString() == "Value");
-                            else if (structLayout.ArgumentList.Arguments.Count > 3 &&
-                                     structLayout.ArgumentList.Arguments[3].NameEquals == null)
-                                size = int.Parse(structLayout.ArgumentList.Arguments[3].Expression.ToFullString());
-                        }
-                        catch (Exception ex)
-                        {
-                        }
-
-//						size = int.Parse (structLayout.ArgumentList.Arguments [3].Expression.ToFullString ());
                     }
-                    //					var pack = structLayout.ArgumentList.Arguments.FirstOrDefault (k => k.NameColon.Name.ToFullString() == "Pack");
-//					var charset = structLayout.ArgumentList.Arguments.FirstOrDefault (k => k.NameColon.Name.ToFullString() == "CharSet");
-//					var size = structLayout.ArgumentList.Arguments.FirstOrDefault (k => k.NameColon.Name.ToFullString() == "Size");
-
-                    if (value == LayoutKind.Explicit)
+                    catch (Exception ex)
                     {
-                        var fieldGroups =
-                            fields.GroupBy(f => f.GetAttribute(Context.FieldOffset).ArgumentList.Arguments[0].ToString())
-                                .OrderBy(k => k.Key);
-                        writer.Indent++;
-
-                        foreach (var group in fieldGroups)
-                        {
-                            writer.WriteLine("//FieldOffset(" + @group.Key + ")");
-                            writer.WriteLine("union {");
-                            foreach (var member in group)
-                                Core.Write(writer, member);
-                            writer.WriteLine("}");
-                        }
-
-//						foreach (var member in fields)
-//						{
-//							//                    writer.WriteLine();
-//							Core.Write (writer, member);
-//						}
                     }
-                    else if (value == LayoutKind.Sequential)
+
+                    try
                     {
-                        fields = SortFields(fields);
-
-                        writer.Indent++;
-
-                        foreach (var member in fields)
+                        if (
+                            structLayout.ArgumentList.Arguments.Any(
+                                k => k.NameEquals != null && k.NameEquals.Name.ToFullString().Trim() == "Pack"))
                         {
-                            if (pack != -1)
-                                writer.WriteLine("align (" + pack + "): //Pack = " + pack);
-                            //                    writer.WriteLine();
+                            pack =
+                                int.Parse(
+                                    structLayout.ArgumentList.Arguments.FirstOrDefault(
+                                        k =>
+                                            k.NameEquals != null &&
+                                            k.NameEquals.Name.ToFullString().Trim() == "Pack")
+                                        .Expression.ToFullString());
+                        }
+                        //structLayout.ArgumentList.Arguments.Where (k => k.Expression is MemberAccessExpressionSyntax).FirstOrDefault(k=>(k.Expression as MemberAccessExpressionSyntax).Name.ToFullString() == "Value");
+                        else if (structLayout.ArgumentList.Arguments.Count > 2 &&
+                                 structLayout.ArgumentList.Arguments[2].NameEquals == null)
+                            pack = int.Parse(structLayout.ArgumentList.Arguments[2].Expression.ToFullString());
+                    }
+                    catch (Exception ex)
+                    {
+                    }
+
+                    try
+                    {
+                        if (
+                            structLayout.ArgumentList.Arguments.Any(
+                                k => k.NameEquals != null && k.NameEquals.Name.ToFullString().Trim() == "Size"))
+                        {
+                            size =
+                                int.Parse(
+                                    structLayout.ArgumentList.Arguments.FirstOrDefault(
+                                        k => k.NameColon != null && k.NameColon.ToFullString().Trim() == "Size")
+                                        .Expression.ToFullString());
+                        }
+                        //structLayout.ArgumentList.Arguments.Where (k => k.Expression is MemberAccessExpressionSyntax).FirstOrDefault(k=>(k.Expression as MemberAccessExpressionSyntax).Name.ToFullString() == "Value");
+                        else if (structLayout.ArgumentList.Arguments.Count > 3 &&
+                                 structLayout.ArgumentList.Arguments[3].NameEquals == null)
+                            size = int.Parse(structLayout.ArgumentList.Arguments[3].Expression.ToFullString());
+                    }
+                    catch (Exception ex)
+                    {
+                    }
+
+                    //						size = int.Parse (structLayout.ArgumentList.Arguments [3].Expression.ToFullString ());
+                }
+                //					var pack = structLayout.ArgumentList.Arguments.FirstOrDefault (k => k.NameColon.Name.ToFullString() == "Pack");
+                //					var charset = structLayout.ArgumentList.Arguments.FirstOrDefault (k => k.NameColon.Name.ToFullString() == "CharSet");
+                //					var size = structLayout.ArgumentList.Arguments.FirstOrDefault (k => k.NameColon.Name.ToFullString() == "Size");
+
+                if (value == LayoutKind.Explicit)
+                {
+                    var fieldGroups =
+                        fields.GroupBy(f => f.GetAttribute(Context.FieldOffset).ArgumentList.Arguments[0].ToString())
+                            .OrderBy(k => k.Key);
+                    writer.Indent++;
+
+                    foreach (var group in fieldGroups)
+                    {
+                        writer.WriteLine("//FieldOffset(" + @group.Key + ")");
+                        writer.WriteLine("union {");
+                        foreach (var member in @group)
                             Core.Write(writer, member);
-                        }
+                        writer.WriteLine("}");
                     }
 
-                    else
-                    {
-                        //Looks like C# aligns to 1 by default ... don't know about D...
-                        fields = SortFields(fields);
+                    //						foreach (var member in fields)
+                    //						{
+                    //							//                    writer.WriteLine();
+                    //							Core.Write (writer, member);
+                    //						}
+                }
+                else if (value == LayoutKind.Sequential)
+                {
+                    fields = SortFields(fields);
 
-                        writer.Indent++;
-                        foreach (var member in fields)
-                        {
-                            pack = 1;
-                            //TODO: on mac osx and mono this is required, on windows, it causes and issue
-//                            writer.WriteLine("align (" + pack + "): //Pack = " + pack + " C# default");
-                            //                    writer.WriteLine();
-                            Core.Write(writer, member);
-                        }
+                    writer.Indent++;
+
+                    foreach (var member in fields)
+                    {
+                        if (pack != -1)
+                            writer.WriteLine("align (" + pack + "): //Pack = " + pack);
+                        //                    writer.WriteLine();
+                        Core.Write(writer, member);
                     }
                 }
+
                 else
                 {
                     //Looks like C# aligns to 1 by default ... don't know about D...
@@ -447,110 +511,33 @@ namespace SharpNative.Compiler
                     writer.Indent++;
                     foreach (var member in fields)
                     {
-                        var pack = 1;
+                        pack = 1;
                         //TODO: on mac osx and mono this is required, on windows, it causes and issue
-                        //                        writer.WriteLine("align (" + pack + "): //Pack = " + pack + "C# default");
+                        //                            writer.WriteLine("align (" + pack + "): //Pack = " + pack + " C# default");
                         //                    writer.WriteLine();
                         Core.Write(writer, member);
                     }
                 }
+            }
+            else
+            {
+                //Looks like C# aligns to 1 by default ... don't know about D...
+                fields = SortFields(fields);
 
-                foreach (var member in nonFields)
+                writer.Indent++;
+                foreach (var member in fields)
                 {
-//                    writer.WriteLine();
+                    var pack = 1;
+                    //TODO: on mac osx and mono this is required, on windows, it causes an issue (sizes are different)
+                    //                        writer.WriteLine("align (" + pack + "): //Pack = " + pack + "C# default");
+                    //                    writer.WriteLine();
                     Core.Write(writer, member);
                 }
-
-                foreach (var constructor in instanceCtors)
-                {
-//                    writer.WriteLine();
-                    Core.Write(writer, constructor);
-                }
-
-                if (staticCtors.Count == 0)
-                {
-                    if (Context.Instance.StaticInits.Count > 0)
-                    {
-                        var constructor = SyntaxFactory.ConstructorDeclaration(Context.Instance.TypeName);
-                        constructor =
-                            constructor.WithModifiers(
-                                SyntaxFactory.TokenList(SyntaxFactory.Token(SyntaxKind.StaticKeyword)));
-
-                        WriteConstructorBody.WriteStaticConstructor(writer, constructor, Context.Instance.StaticInits);
-
-                        staticCtors.Add(constructor);
-                    }
-                }
-                else
-                {
-                    var isFirst = true;
-                    foreach (ConstructorDeclarationSyntax constructor in staticCtors)
-                    {
-                        if (isFirst)
-                        {
-                            WriteConstructorBody.WriteStaticConstructor(writer, constructor,
-                                Context.Instance.StaticInits);
-                        }
-                        else
-                            WriteConstructorBody.Go(writer, constructor);
-
-                        isFirst = false;
-                    }
-                }
-
-                var dllImports = Context.Instance.DllImports;
-                    // This should only be written once ... I guess we have to put the detection logic in Program.cs
-
-                if (Context.Instance.EntryMethod != null)
-                {
-                    if (dllImports.Count > 0)
-                    {
-                        writer.WriteLine();
-
-                        writer.WriteLine(String.Format("static void * __DllImportMap[{0}];", dllImports.Count));
-                        writer.WriteLine("static void __SetupDllImports()");
-
-                        writer.OpenBrace();
-
-                        for (int index = 0; index < dllImports.Count; index++)
-                        {
-                            var dllImport = dllImports[index];
-                            writer.WriteLine(String.Format("__DllImportMap[{0}] = LoadNativeLibrary(cast(string){1});",
-                                index, dllImport.ArgumentList.Arguments.FirstOrDefault(k => k.Expression != null)));
-                        }
-                        writer.CloseBrace();
-                        writer.WriteLine();
-                        writer.WriteLine("static void __FreeDllImports()");
-                        writer.OpenBrace();
-                        writer.WriteLine(String.Format(@"for(int i=0;i<{0};i++)", dllImports.Count));
-                        writer.OpenBrace();
-                        writer.WriteLine("if(__DllImportMap[i]!=null)");
-                        writer.WriteLine("\tFreeNativeLibrary(__DllImportMap[i]);");
-                        writer.CloseBrace();
-                        writer.CloseBrace();
-
-                        //                            if (hModule != null)
-                        //                            {
-                        //    ::FreeLibrary(hModule);
-                        //                            }
-                    }
-                }
-                writer.Indent--;
-                WriteOutNestedTypes(first, writer);
-
-                WriteOutBoxed(writer, genericArgs, bases);
-                writer.CloseBrace();
-
-                WriteEntryMethod(writer, dllImports);
-               
-                if (outputWriter != null)
-                {   
-                    outputWriter.Write(writer.ToString());
-                }
             }
+            return nonFields;
         }
 
-        private static void WriteEntryMethod(OutputWriter writer, List<AttributeSyntax> dllImports)
+        private static void WriteEntryMethod(OutputWriter writer)
         {
             if (Context.Instance.EntryMethod != null)
             {
@@ -561,11 +548,9 @@ namespace SharpNative.Compiler
                 writer.WriteLine("void main(string[] args)");
                 writer.OpenBrace();
 
-                if (dllImports.Count > 0)
-                    writer.WriteLine(Context.Instance.TypeName + ".__SetupDllImports();");
+                writer.WriteLine("__SetupSystem();");
                 writer.WriteLine(Context.Instance.EntryMethod);
-                if (dllImports.Count > 0)
-                    writer.WriteLine(Context.Instance.TypeName + ".__FreeDllImports();");
+                writer.WriteLine("__EndSystem();");
 
                 writer.CloseBrace();
             }
@@ -573,12 +558,12 @@ namespace SharpNative.Compiler
 
         private static void WriteOutBoxed(OutputWriter writer, List<ITypeSymbol> genericArgs, List<ITypeSymbol> bases)
         {
-            //Implement Boxed!Interface
+            //Implement Boxed!T
             if (Context.Instance.Type.TypeKind == TypeKind.Struct)
             {
                 writer.WriteLine();
                 var typeName = TypeName(Context.Instance.Type, false) +
-                               (Context.Instance.Type.IsGenericType
+                               (Context.Instance.Type.IsGenericType && genericArgs.Any()
                                    ? ("!(" + string.Join(" , ", genericArgs.Select(o => o)) + ")")
                                    : "");
 
@@ -592,22 +577,26 @@ namespace SharpNative.Compiler
                 }
 
                 writer.WriteLine("public static class __Boxed_" + " " +
-                                 (genericArgs.Any() ? ("( " + (string.Join(" , ", genericArgs.Select(o => o)) + " )")) : "") +
+                                 //(genericArgs.Any() ? ("( " + (string.Join(" , ", genericArgs.Select(o => o)) + " )")) : "") +//Internal boxed should not be generic
                                  ": Boxed!(" + typeName + ")" + baseString);
 
                 writer.OpenBrace();
 
-                //FIXME:This is giving issues, we will just generate them here
 
-                //					writer.WriteLine ("import Irio.Utilities;");
 
                 writer.WriteLine("import std.traits;");
 
+                var members = new List<ISymbol>();
+
                 foreach (var baseType in bases.Where(o => o.TypeKind == TypeKind.Interface))
                 {
-                    //FIXME:This is giving issues, we will just generate them here
-                    //						writer.WriteLine ("mixin(__ImplementInterface!({0}, Value));",TypeProcessor.ConvertType(baseType,false)); 
-                    var ifacemembers = baseType.GetMembers();
+                    members.AddRange(Utility.GetAllMembers(baseType));
+                }
+
+                    //  foreach (var baseType in bases.Where(o => o.TypeKind == TypeKind.Interface))
+                    //{
+
+                var ifacemembers = members.DistinctBy(k=>k);//Utility.GetAllMembers(Context.Instance.Type);
 
                     foreach (var member in ifacemembers)
                     {
@@ -615,20 +604,17 @@ namespace SharpNative.Compiler
                             Context.Instance.Type.FindImplementationForInterfaceMember(member)
                                 .DeclaringSyntaxReferences.First()
                                 .GetSyntax();
-                        //								.Where(member => !(member is TypeDeclarationSyntax)
-                        //									&& !(member is EnumDeclarationSyntax)
-                        //									&& !(member is DelegateDeclarationSyntax) && !(member is ConstructorDeclarationSyntax))
-                        //								.ToList();
 
-                        //                    writer.WriteLine();
-                        //							Core.Write(writer, member);
+                        var syntax = ifacemethod as MethodDeclarationSyntax;
+                        if (syntax != null)
+                            WriteMethod.WriteIt(writer, syntax);
 
-                        if (ifacemethod is MethodDeclarationSyntax)
-                            WriteMethod.WriteIt(writer, (MethodDeclarationSyntax) ifacemethod);
-                        else if (ifacemethod is PropertyDeclarationSyntax)
-                            WriteProperty.Go(writer, (PropertyDeclarationSyntax) ifacemethod, true);
+                        var property = ifacemethod as PropertyDeclarationSyntax;
+                        if (property != null)
+                            WriteProperty.Go(writer, property, true);
+
                     }
-                }
+                //}
 
                 //This is required to be able to create an instance at runtime / reflection
                 //					this()
@@ -642,7 +628,7 @@ namespace SharpNative.Compiler
                 writer.WriteLine("super({0}.init);", typeName);
                 writer.CloseBrace();
 
-                if (Context.Instance.Type.GetMembers("ToString").Count() >= 1) // Use better matching ?
+                if (Context.Instance.Type.GetMembers("ToString").Any()) // Use better matching ?
                 {
                     //					writer.WriteLine ();
                     writer.WriteLine("override String ToString()");
@@ -692,13 +678,13 @@ namespace SharpNative.Compiler
             {
                 Syntax = o,
                 Symbol = TypeProcessor.GetDeclaredSymbol(o),
-                TypeName = WriteType.TypeName((INamedTypeSymbol) TypeProcessor.GetDeclaredSymbol(o))
-            }).Where(k => k.Symbol.ContainingType ==  Context.Instance.Type) // Ignore all nested delegates
+                TypeName = WriteType.TypeName((INamedTypeSymbol)TypeProcessor.GetDeclaredSymbol(o))
+            }).Where(k => k.Symbol.ContainingType == Context.Instance.Type) // Ignore all nested delegates
                 .GroupBy(o => o.Symbol.ContainingNamespace.FullNameWithDot() + o.TypeName)
                 .ToList();
 
-         
-                delegates.ForEach(type => //.ForEach(type => //.Parallel(type =>
+
+            delegates.ForEach(type => //.ForEach(type => //.Parallel(type =>
             {
                 Context.Instance = new Context
                 {
@@ -708,7 +694,7 @@ namespace SharpNative.Compiler
                             o =>
                                 new Context.DelegateSyntaxAndSymbol
                     {
-                        Symbol = (INamedTypeSymbol) o.Symbol,
+                        Symbol = (INamedTypeSymbol)o.Symbol,
                         Syntax = o.Syntax
                     })
                             .Where(o => !Program.DoNotWrite.ContainsKey(o.Syntax))
@@ -723,11 +709,11 @@ namespace SharpNative.Compiler
             Context.Push();
             var subclasses = first.Syntax.DescendantNodes().OfType<BaseTypeDeclarationSyntax>()
                 .Select(o => new
-                {
-                    Syntax = o,
-                    Symbol = TypeProcessor.GetDeclaredSymbol(o),
-                    TypeName = WriteType.TypeName((INamedTypeSymbol) TypeProcessor.GetDeclaredSymbol(o))
-                }).Where(k => k.Symbol.ContainingType == Context.Instance.Type) // Ignore all nested classes
+            {
+                Syntax = o,
+                Symbol = TypeProcessor.GetDeclaredSymbol(o),
+                TypeName = WriteType.TypeName((INamedTypeSymbol)TypeProcessor.GetDeclaredSymbol(o))
+            }).Where(k => k.Symbol.ContainingType == Context.Instance.Type) // Ignore all nested classes
                 .GroupBy(o => o.Symbol.ContainingNamespace.FullNameWithDot() + o.TypeName)
                 .ToList();
 
@@ -740,10 +726,10 @@ namespace SharpNative.Compiler
                         type.Select(
                             o =>
                                 new Context.SyntaxAndSymbol
-                                {
-                                    Symbol = (INamedTypeSymbol) o.Symbol,
-                                    Syntax = o.Syntax
-                                })
+                    {
+                        Symbol = (INamedTypeSymbol)o.Symbol,
+                        Syntax = o.Syntax
+                    })
                             .Where(o => !Program.DoNotWrite.ContainsKey(o.Syntax))
                             .ToList()
                 };
@@ -775,7 +761,7 @@ namespace SharpNative.Compiler
             var dependencies =
                 fields.ToDictionary(
                     o => TypeProcessor.GetDeclaredSymbol(o.Declaration.Variables.First()).As<IFieldSymbol>(),
-                    o => new {Syntax = o, Dependicies = new List<IFieldSymbol>()});
+                    o => new { Syntax = o, Dependicies = new List<IFieldSymbol>() });
 
             foreach (var dep in dependencies)
             {
@@ -816,29 +802,22 @@ namespace SharpNative.Compiler
             return ret;
         }
 
-      
 
-        private static bool IsStatic(MemberDeclarationSyntax member)
-        {
-            var modifiers = member.GetModifiers();
-            return modifiers.Any(SyntaxKind.StaticKeyword) || modifiers.Any(SyntaxKind.ConstKeyword);
-        }
-
-
-        public static string TypeName(INamedTypeSymbol type, bool appendContainingTypeName=true)
+        public static string TypeName(INamedTypeSymbol type, bool appendContainingTypeName = true)
         {
             var sb =
                 new StringBuilder(string.Join("_",
-                    (new[] {type.Name}).Union(type.TypeArguments.Select(o => o.ToString()))));
+                    (new[] { type.Name }).Union(type.TypeArguments.Select(o => o.ToString()))));
 
-            if(appendContainingTypeName)
-            while (type.ContainingType != null)
-            {
-                type = type.ContainingType;
-                sb.Insert(0, type.Name +
-                    string.Join("_",(type.TypeArguments.Select(o => o.ToString()))) + ".");
-                sb.Append(string.Join("_", type.TypeArguments.Select(o => o)));
-            }
+            if (appendContainingTypeName)
+                while (type.ContainingType != null)
+                {
+                    type = type.ContainingType;
+                    sb.Insert(0, type.Name + (type.TypeArguments.Any() ? (("_" + string.Join("_", type.TypeArguments.Select(o => o)) + "!(" +
+                        string.Join(",", (type.TypeArguments.Select(o => o.ToString())))) + ")") : "") + ".");
+
+                    //                sb.Append(string.Join("_", type.TypeArguments.Select(o => o)));
+                }
 
             return sb.ToString();
         }

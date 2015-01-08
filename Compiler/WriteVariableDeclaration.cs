@@ -116,7 +116,7 @@ namespace SharpNative.Compiler
                 if (shouldBox)
                 {
                     //Box
-                    writer.Write("BOX!( " + TypeProcessor.ConvertType(initializerType.Type) + " )(");
+                    writer.Write("BOX!(" + TypeProcessor.ConvertType(initializerType.Type) + ")(");
                     //When passing an argument by ref or out, leave off the .Value suffix
                     Core.Write(writer, value);
                     writer.Write(")");
@@ -124,18 +124,18 @@ namespace SharpNative.Compiler
                 }
                 if (shouldUnBox)
                 {
-                    //UnBox
-                    writer.Write("cast( " + TypeProcessor.ConvertType(initializerType.Type) + " )(");
-                    Core.Write(writer, value);
-                    writer.Write(")");
-                    return;
+                        writer.Write("cast(" + TypeProcessor.ConvertType(initializerType.Type) + ")(");
+                        Core.Write(writer, value);
+                        writer.Write(")");
+                        return;
+                    
                 }
-                if (initializer.Parent.Parent.Parent is FixedStatementSyntax)
+                if (initializer.Parent.Parent.Parent is FixedStatementSyntax) // Fixed is a bit special
                 {
                     //TODO write a better fix
                     var type = TypeProcessor.GetTypeInfo(declaration.Type);
 
-                    writer.Write("cast( " + TypeProcessor.ConvertType(type.Type) + " )(");
+                    writer.Write("cast(" + TypeProcessor.ConvertType(type.Type) + ")(");
                     Core.Write(writer, value);
                     writer.Write(")");
                     return;

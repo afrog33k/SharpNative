@@ -53,17 +53,12 @@ template Action(T) {
                     writer.WriteIndent();
                 }
 
-                var objectType =
-                    TypeProcessor.GetSemanticModel(partials.First().Syntax)
-                        .Compilation.GetTypeByMetadataName("System.Object");
+              
 
                 WriteBcl.Go(writer);
 
-                var @namespace = first.Symbol.ContainingNamespace.FullName();
-
                 WriteStandardIncludes.Go(writer);
 
-                //Look for generic arguments 
 
                 //Look for generic arguments 
                 var genericArgs = partials.Select(o => o.Syntax)
@@ -76,33 +71,25 @@ template Action(T) {
                 if (genericArgs.Count > 0)
                 {
                     name = "template " + name;
-                    name += ("( ");
+                    name += ("(");
                     name += (string.Join(" , ", genericArgs.Select(o => o)));
-                    name += (" )");
+                    name += (")");
 
-                    writer.Write(name);
+                    writer.WriteLine(name);
 
-                    writer.Write("\r\n");
 
                     writer.OpenBrace();
-                    writer.Indent++;
 
-                    writer.Write("alias Delegate!(" + TypeProcessor.ConvertType(first.Syntax.ReturnType) + " delegate" +
-                                 WriteMethod.GetParameterListAsString(first.Syntax.ParameterList));
+                    writer.WriteLine("alias __Delegate!(" + TypeProcessor.ConvertType(first.Syntax.ReturnType) + " delegate" +
+                                 WriteMethod.GetParameterListAsString(first.Syntax.ParameterList.Parameters)+") " + WriteType.TypeName(Context.Instance.Type, false) + ";");
 
-                    writer.Write(") " + WriteType.TypeName(Context.Instance.Type, false) + ";");
-
-                    writer.Indent--;
-                    writer.Write("\r\n");
                     writer.CloseBrace();
                 }
                 else
                 {
                     //Non-generic
-                    writer.Write("alias Delegate!(" + TypeProcessor.ConvertType(first.Syntax.ReturnType) + " delegate" +
-                                 WriteMethod.GetParameterListAsString(first.Syntax.ParameterList));
-
-                    writer.Write(") " + WriteType.TypeName(Context.Instance.Type, false) + ";");
+                    writer.WriteLine("alias __Delegate!(" + TypeProcessor.ConvertType(first.Syntax.ReturnType) + " delegate" +
+                                 WriteMethod.GetParameterListAsString(first.Syntax.ParameterList.Parameters)+") " + WriteType.TypeName(Context.Instance.Type, false) + ";");
                 }
 
                 if (outputWriter != null)

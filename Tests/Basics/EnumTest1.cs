@@ -56,7 +56,11 @@ public static class Program
 
         PrintEnum(e);
 
-
-
+       // Console.WriteLine(Enum.Parse(typeof(SimpleEnum),"Value3"));
+		//TODO: Partially working
+		/*foreach(var anenum in Enum.GetNames(typeof(SimpleEnum)))
+		{
+			Console.WriteLine(anenum);
+		}*/
     }
 }

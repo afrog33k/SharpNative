@@ -1,20 +1,9 @@
 ﻿module System.Collections.Namespace;
-//import System.Collections.Generic.Namespace;
-//import System.Collections.Generic.ICollection_T;
-//import System.Collections.Generic.IEqualityComparer_T;
-//import System.Collections.Generic.IList_T;
-//import System.Collections.SortedList;
-//import System.Collections.Generic.Dictionary_K_V;
-//import System.Collections.Generic.IEnumerable_T;
-//import juno.base.core,
-//	juno.locale.core,
-//	std.math;
 import std.c.string : memmove, memset;
 import std.math;
 import System.Collections.Generic.IComparer_T;
 
 
-//alias System.Collections.Generic.IEqualityComparer_T.IEqualityComparer_T IEqualityComparer_T ;
 alias System.Collections.Generic.ICollection_T.ICollection_T ICollection_T;
 alias System.Collections.Generic.IList_T.IList_T IList_T;
 alias System.Collections.IList.IList IList;

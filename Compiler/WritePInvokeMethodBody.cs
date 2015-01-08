@@ -8,9 +8,12 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.ComponentModel;
 using System.Linq;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using CSharpExtensions = Microsoft.CodeAnalysis.CSharpExtensions;
 
 #endregion
 
@@ -73,42 +76,74 @@ namespace SharpNative.Compiler
 
             if (pinvokeAttributes != null)
             {
-                int dllImportId = -1;
-                AttributeSyntax import =
-                    Context.Instance.DllImports.FirstOrDefault(
-                        d =>
-                            d.ArgumentList.Arguments.FirstOrDefault(
-                                k =>
-                                    k.Expression != null &&
-                                    k.Expression.ToString() ==
-                                    pinvokeAttributes.ArgumentList.Arguments.FirstOrDefault(g => g.Expression != null)
-                                        .Expression.ToString()) != null);
-                if (import != null)
-                    dllImportId = Context.Instance.DllImports.IndexOf(import);
-
-                if (dllImportId == -1)
-                {
-                    Context.Instance.DllImports.Add(pinvokeAttributes);
-                    dllImportId = Context.Instance.DllImports.IndexOf(pinvokeAttributes);
-                }
+                var attributeArgumentSyntax = pinvokeAttributes.ArgumentList.Arguments.FirstOrDefault(k => k.Expression != null);
+                string dllImport = attributeArgumentSyntax.ToFullString();
+//                AttributeSyntax import =
+//                    Context.Instance.DllImports.FirstOrDefault(
+//                        d =>
+//                            d.ArgumentList.Arguments.FirstOrDefault(
+//                                k =>
+//                                    k.Expression != null &&
+//                                    k.Expression.ToString() ==
+//                                    pinvokeAttributes.ArgumentList.Arguments.FirstOrDefault(g => g.Expression != null)
+//                                        .Expression.ToString()) != null);
+//                if (import != null)
+//                    dllImportId = Context.Instance.DllImports.IndexOf(import);
+//
+//                if (dllImportId == -1)
+//                {
+//                    Context.Instance.DllImports.Add(pinvokeAttributes);
+//                    dllImportId = Context.Instance.DllImports.IndexOf(pinvokeAttributes);
+//                }
 
                 var functionCall = String.Format("extern (C) {0} function ({1})", returnString,
                     GetParameterList(methodSymbol.Parameters));
                 writer.WriteLine("alias " + functionCall + " " + methodName + "_func_alias;");
                 var convertedParameters = ConvertParameters(methodSymbol.Parameters);
-                writer.WriteLine(String.Format("auto {1} = cast({2}) LoadLibraryFunc(__DllImportMap[{0}], \"{1}\");",
-                    dllImportId, methodName, methodName + "_func_alias"));
+
+                if (attributeArgumentSyntax.Expression is IdentifierNameSyntax)
+                {
+                    writer.WriteLine(
+                        String.Format("auto {1} = cast({2}) __LoadLibraryFunc(__DllImportMap[{0}.text], \"{1}\");",
+                            dllImport, methodName, methodName + "_func_alias"));
+                }
+                else
+                {
+                    writer.WriteLine(
+                       String.Format("auto {1} = cast({2}) __LoadLibraryFunc(__DllImportMap[{0}], \"{1}\");",
+                           dllImport, methodName, methodName + "_func_alias"));
+                }
+
                 writer.WriteLine(String.Format((returnString != "void" ? "return " : "") + "{0}({1});", methodName,
                     convertedParameters.Count > 0
                         ? convertedParameters.Select(h => h).Aggregate((k, y) => (k) + " ," + y)
                         : ""));
+
+
+                if (dllImport != null && !Context.Instance.DllImports.Contains(dllImport))
+                {
+                             
+                    var staticWriter = new TempWriter();
+
+                    if (attributeArgumentSyntax.Expression is IdentifierNameSyntax)
+                        staticWriter.WriteLine("__SetupDllImport({0}.text);", dllImport);
+                    else
+                        staticWriter.WriteLine("__SetupDllImport({0});", dllImport);
+
+                    Context.Instance.StaticInits.Add(staticWriter.ToString());
+
+                    Context.Instance.DllImports.Add(dllImport);
+                }
+
             }
             else
             {
                
                 var convertedParameters = ConvertParameters(methodSymbol.Parameters);
                writer.WriteLine("//Extern (Internal) Method Call");
-                writer.WriteLine(String.Format((returnString != "void" ? "return " : "") + "__{0}({1});", methodName,
+                var methodInternalName = TypeProcessor.ConvertType(methodSymbol.ContainingType,false).Replace(".Namespace.","_").Replace(".","_")+ "_" + methodName;
+
+                writer.WriteLine(String.Format((returnString != "void" ? "return " : "") + "{0}({1});", methodInternalName,
                     convertedParameters.Count > 0
                         ? convertedParameters.Select(h => h).Aggregate((k, y) => (k) + " ," + y)
                         : ""));
@@ -176,7 +211,7 @@ namespace SharpNative.Compiler
 
                 if (type.SpecialType == SpecialType.System_String)
                     // Need to detect if we actually want a native string returned
-                    name = "cast(" + ConvertPInvokeType(type) + ")" + name + ".Text";
+                    name = "cast(" + ConvertPInvokeType(type) + ")" + name + "";
                 else if (ConvertPInvokeType(type) == "char**") //TODO: this should not be a special case:
                     name = "cast(" + ConvertPInvokeType(type) + ")" + name + ".Items";
                 if (type.TypeKind == TypeKind.Delegate)

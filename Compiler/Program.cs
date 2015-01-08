@@ -277,7 +277,9 @@ namespace SharpNative.Compiler
                     catch (Exception ex)
                     {
                         //TODO: remove this when done with CorLib 
-                           throw ex;
+                         //  throw ex;
+
+                        Console.WriteLine("An exception occurred: " + ex.Message +"\r\n"+ ex.StackTrace + "\r\nwhile processing node " + Context.LastNode.ToFullString() +" in " + Context.Instance.TypeName + " from " + Context.LastNode.GetDetails());
                     }
                 }
             });
@@ -309,7 +311,12 @@ namespace SharpNative.Compiler
                     catch (Exception ex)
                     {
                         //TODO: remove this when done with CorLib 
-                        throw ex;
+                        //  throw ex;
+
+                        Console.WriteLine("An exception occurred: " + Context.LastNode.GetDetails() + "\r\nDetails:\r\n" +
+                                          ex.Message + "\r\n" + ex.StackTrace + "\r\nwhile processing node " +
+                                          Context.LastNode.ToFullString());
+                            // + " in " + Context.Instance.TypeName + " from " + );
                     }
                 }
             });

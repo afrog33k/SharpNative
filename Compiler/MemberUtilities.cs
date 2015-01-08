@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
@@ -36,17 +37,16 @@ namespace SharpNative.Compiler
 
             bool isoverride = ShouldUseOverrideKeyword(member,isInterface);
             if (isoverride)
-                acccessmodifiers += (" override ");
+                acccessmodifiers += ("override ");
 
             return acccessmodifiers;
         }
 
         private static bool ShouldUseOverrideKeyword(MemberDeclarationSyntax member, bool isInterface)
         {
-            if (member.GetModifiers().Any(SyntaxKind.OverrideKeyword) && !isInterface)
-               return  true;
-
             ISymbol symbol = TypeProcessor.GetDeclaredSymbol(member);
+
+
 
             if (symbol.ContainingType.TypeKind == TypeKind.Struct ||
                 symbol.ContainingType.TypeKind == TypeKind.Interface)
@@ -55,6 +55,11 @@ namespace SharpNative.Compiler
                 // Structs dont have a base class to override (maybe opEquals) ... but that will be handled separately
                 //Interfaces are contracts, so no overriding here// maybe we should compare the methods 
             }
+
+            if (member.GetModifiers().Any(SyntaxKind.OverrideKeyword) && !isInterface)
+                return true;
+
+
             if (member.GetModifiers().Any(SyntaxKind.StaticKeyword))
                 return false;
             //			if (method.Modifiers.Any(SyntaxKind.NewKeyword))
@@ -68,22 +73,29 @@ namespace SharpNative.Compiler
         }
 
 
-        public static string GetMethodName(MemberDeclarationSyntax member, ref bool isInterface)
+        public static string GetMethodName(MemberDeclarationSyntax member, ref bool isInterface, out ITypeSymbol interfaceImplemented, out ISymbol[] proxies)
         {
+            interfaceImplemented = null;
+            proxies = null;
             var methodSymbol = TypeProcessor.GetDeclaredSymbol(member);
             var name = WriteIdentifierName.TransformIdentifier(OverloadResolver.MethodName(methodSymbol));
 
             if (methodSymbol.ContainingType.TypeKind == TypeKind.Interface)
+            {
                 isInterface = true;
+                interfaceImplemented = methodSymbol.ContainingType;
+            }
 
             var isinterfacemethod = Equals(methodSymbol.ContainingType.FindImplementationForInterfaceMember(methodSymbol),
                 methodSymbol);
             if (methodSymbol.ContainingType.TypeKind == TypeKind.Interface ||
                 (isinterfacemethod && methodSymbol.IsOverride))
             {
-                name = Regex.Replace(
+               /* name = Regex.Replace(
                     TypeProcessor.ConvertType(methodSymbol.ContainingType.ConstructedFrom) + "_" + name,
-                    @" ?!\(.*?\)", String.Empty);
+                    @" ?!\(.*?\)", String.Empty);*/
+
+                interfaceImplemented = methodSymbol.ContainingType.ConstructedFrom;
 
                 if (methodSymbol.ContainingType.ContainingType != null)
                     name = name.RemoveFromStartOfString(methodSymbol.ContainingType.ContainingType.Name + ".");
@@ -96,46 +108,78 @@ namespace SharpNative.Compiler
                 name = name.Replace('.', '_');
             }
 
-            var interfaceMethods =
+            var name1 = name;
+            IEnumerable<ISymbol> interfaceMethods =
                 methodSymbol.ContainingType.AllInterfaces.SelectMany(
                     u =>
-                        u.GetMembers(name)).ToArray();
+                        u.GetMembers(name1));
 
-            ISymbol interfaceMethod =
-                interfaceMethods.FirstOrDefault(
-                    o => methodSymbol.ContainingType.FindImplementationForInterfaceMember(o) == methodSymbol);
+             interfaceMethods =
+                interfaceMethods.Where(
+                    o => Equals(methodSymbol.ContainingType.FindImplementationForInterfaceMember(o), methodSymbol));
 
-            if (interfaceMethod == null)
+            var enumerable = interfaceMethods as ISymbol[] ?? interfaceMethods.ToArray();
+            var interfaceMethod = enumerable.FirstOrDefault();
+
+            if (interfaceMethods.Count() > 1)
+                proxies = interfaceMethods.ToArray();
+
+            if (interfaceMethod!=null)
             {
                 //TODO: fix this for virtual method test 7, seems roslyn cannot deal with virtual 
                 // overrides of interface methods ... so i'll provide a kludge
-                if (!member.GetModifiers().Any(SyntaxKind.NewKeyword) && methodSymbol is IMethodSymbol) // This is not neccessary for properties
-                {
-                    interfaceMethod =
-                        interfaceMethods.FirstOrDefault(k => CompareMethods(k as IMethodSymbol, (IMethodSymbol) methodSymbol));
-                }
+//                if (!member.GetModifiers().Any(SyntaxKind.NewKeyword) && methodSymbol is IMethodSymbol) // This is not neccessary for properties
+//                {
+//                    interfaceMethod =
+//                        enumerable.FirstOrDefault(k => CompareMethods(k as IMethodSymbol, (IMethodSymbol) methodSymbol));
+//                }
             }
 
             if (interfaceMethod != null)
             {
-                //This is an interface property //TO
+                //This is an interface method/property //TO
                 if (methodSymbol.ContainingType.SpecialType == SpecialType.System_Array)
                     name += ("");
                 else
                 {
-                    var typenameI =
+                 /*   var typenameI =
                         Regex.Replace(TypeProcessor.ConvertType(interfaceMethod.ContainingType.ConstructedFrom),
-                            @" ?!\(.*?\)", String.Empty);
+                            @" ?!\(.*?\)", String.Empty);*/
                     //TODO: we should be able to get the original interface name, or just remove all generics from this
+                    interfaceImplemented = interfaceMethod.ContainingType.ConstructedFrom;
 
-                    if (typenameI.Contains('.'))
+                  /*  if (typenameI.Contains('.'))
                         typenameI = typenameI.SubstringAfterLast('.');
-                    name = (typenameI + "_") + name;
+                    name = (typenameI + "_") + name;*/
                 }
             }
 
-            if (member.GetModifiers().Any(SyntaxKind.NewKeyword)) //Take care of new
+            if (member.GetModifiers().Any(SyntaxKind.NewKeyword) && methodSymbol.OriginalDefinition.ContainingType.TypeKind != TypeKind.Interface) //Take care of new
                 name += "_";
+
+           if (interfaceImplemented != null)
+           {
+               var methSymbol = methodSymbol as IMethodSymbol;
+                var propSymbol = methodSymbol as IPropertySymbol;
+                if (methSymbol != null && methSymbol.ExplicitInterfaceImplementations.Any())
+               {
+                   interfaceImplemented = methSymbol.ExplicitInterfaceImplementations.FirstOrDefault().ContainingType;
+               }
+               else if (propSymbol != null && propSymbol.ExplicitInterfaceImplementations.Any())
+               {
+                    interfaceImplemented = propSymbol.ExplicitInterfaceImplementations.FirstOrDefault().ContainingType;
+                }
+               else
+               {
+                    ITypeSymbol implemented = interfaceImplemented;
+                    var correctInterface = methodSymbol.ContainingType.AllInterfaces.FirstOrDefault(
+                        o => Equals(o.OriginalDefinition, implemented));
+                    if (correctInterface != null)
+                        interfaceImplemented = correctInterface;
+                }
+             
+              
+           }
 
             return name;
         }

@@ -91,7 +91,7 @@ namespace SharpNative.Compiler
 
             var @event = field is EventFieldDeclarationSyntax;
             if (@event)
-                typeString = ("Event!(" + typeString + ")");
+                typeString = ("__Event!(" + typeString + ")");
 
             writer.Write(typeString);
 //                if (isStatic)

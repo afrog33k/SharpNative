@@ -17,73 +17,37 @@ namespace SharpNative.Compiler
 {
     internal static class WriteOperatorDeclaration
     {
-        public static void WriteParameterList(OutputWriter writer, ParameterListSyntax list)
-        {
-            writer.Write("(");
-            var firstParam = true;
-            foreach (var parameter in list.Parameters)
-            {
-                bool isRef = parameter.Modifiers.Any(SyntaxKind.OutKeyword) ||
-                             parameter.Modifiers.Any(SyntaxKind.RefKeyword);
-                if (firstParam)
-                    firstParam = false;
-                else
-                    writer.Write(", ");
-                var localSymbol = TypeProcessor.GetTypeInfo(parameter.Type);
-                var ptr = (localSymbol.Type != null &&
-                           !(localSymbol.Type.IsValueType || localSymbol.Type.TypeKind == TypeKind.TypeParameter));
-                if (!isRef)
-                {
-                    //  var s = TypeProcessor.ConvertType(parameter.Type) + " " + ptr;
-                    var s = TypeProcessor.ConvertType(parameter.Type) + " ";
-                    writer.Write(s);
-                }
-                else
-                {
-                    //                    var s = "" + TypeProcessor.ConvertType(parameter.Type) + ptr + "& ";
-                    var s = " ref " + TypeProcessor.ConvertType(parameter.Type) + " ";
-                    writer.Write(s);
-                    Program.RefOutSymbols.TryAdd(TypeProcessor.GetDeclaredSymbol(parameter), null);
-                }
-                writer.Write(WriteIdentifierName.TransformIdentifier(parameter.Identifier.ValueText));
-                if (parameter.Default != null)
-                {
-                    writer.Write(" = ");
-                    Core.Write(writer, parameter.Default.Value);
-                }
-            }
-            writer.Write(") ");
-        }
+       
 
 
-        private static readonly string[] binaryOperators =
+        private static readonly string[] BinaryOperators =
         {
             "+", "-", "*", "/", "%", "^^", "&", "|",
             "^", "<<", ">>", ">>>", "~", "in"
         };
 
-        private static readonly string[] unaryOperators =
+        private static readonly string[] UnaryOperators =
         {
             "++", "--"
         };
 
 
-        private static readonly string[] equalsOperators =
+        private static readonly string[] EqualsOperators =
         {
             "==", "!=" // should overload Equal and NotEquals
         };
 
-        private static readonly string[] cmpOperators =
+        private static readonly string[] CmpOperators =
         {
             "<", "<=", ">", ">="
         };
 
-        private static readonly string[] assignOperators =
+        private static readonly string[] AssignOperators =
         {
             "="
         };
 
-        private static readonly string[] assignOpOperators =
+        private static readonly string[] AssignOpOperators =
         {
             "+=", "-=", "*=", "/=", "%=", "^^=", "&=", "|=", "^=", "<<=", ">>=", ">>>=", "~="
         };
@@ -91,40 +55,24 @@ namespace SharpNative.Compiler
         public static void Go(OutputWriter writer, OperatorDeclarationSyntax method)
         {
             var methodSymbol = (IMethodSymbol) TypeProcessor.GetDeclaredSymbol(method);
-            var ActualMethodName = OverloadResolver.MethodName(methodSymbol);
-            //			var methodType = Program.GetModel(method).GetTypeInfo(method);
+            var actualMethodName = OverloadResolver.MethodName(methodSymbol);
 
             writer.Write("\n");
 
-            var isInterface = method.Parent is InterfaceDeclarationSyntax;
-
-            if (method.Modifiers.Any(SyntaxKind.PublicKeyword) || method.Modifiers.Any(SyntaxKind.InternalKeyword) ||
-                method.Modifiers.Any(SyntaxKind.ProtectedKeyword) || method.Modifiers.Any(SyntaxKind.AbstractKeyword) ||
-                isInterface)
-                writer.Write("public ");
 
             var returnType = "";
             if (method.ReturnType.ToString() == "void")
-                writer.Write("void ");
+                returnType = ("void ");
             else
             {
-//				var typeSymbol = TypeProcessor.GetTypeInfo(method.ReturnType).Type;
-
-                //   var isPtr = typeSymbol != null && (typeSymbol.IsValueType || typeSymbol.TypeKind == TypeKind.TypeParameter) ? "" : "";
-                //     var typeString = TypeProcessor.ConvertType(method.ReturnType) + isPtr + " ";
-
-                //	            writer.Write(typeString);
-                //	            writer.HeaderWriter.Write(typeString);
-
-//				var isPtr = typeSymbol != null && (!typeSymbol.IsValueType || typeSymbol.TypeKind == TypeKind.TypeParameter);
                 returnType = TypeProcessor.ConvertType(method.ReturnType) + " ";
 
-                writer.Write(returnType);
+//                writer.Write(returnType);
             }
 
             var methodName = "";
 
-            if (binaryOperators.Contains(method.OperatorToken.ValueText))
+            if (BinaryOperators.Contains(method.OperatorToken.ValueText))
             {
                 methodName = "opBinary";
                 var typeSymbolParam0 = TypeProcessor.GetTypeInfo(method.ParameterList.Parameters[0].Type);
@@ -135,22 +83,21 @@ namespace SharpNative.Compiler
                     methodName += "Right";
             }
 
-            if (unaryOperators.Contains(method.OperatorToken.ValueText))
+            if (UnaryOperators.Contains(method.OperatorToken.ValueText))
                 methodName = "opUnary";
 
-            if (equalsOperators.Contains(method.OperatorToken.ValueText))
+            if (EqualsOperators.Contains(method.OperatorToken.ValueText))
                 methodName = "opEquals";
 
-            if (cmpOperators.Contains(method.OperatorToken.ValueText))
+            if (CmpOperators.Contains(method.OperatorToken.ValueText))
                 methodName = "opCmp";
 
-            if (assignOperators.Contains(method.OperatorToken.ValueText))
+            if (AssignOperators.Contains(method.OperatorToken.ValueText))
                 methodName = "opAssign";
 
-            if (assignOpOperators.Contains(method.OperatorToken.ValueText))
+            if (AssignOpOperators.Contains(method.OperatorToken.ValueText))
                 methodName = "opOpAssign"; // need to remove = from the name
 
-            //method.ParameterList.Parameters[0];
 
             var paramType = method.ParameterList.Parameters[0];
 
@@ -167,19 +114,17 @@ namespace SharpNative.Compiler
             if (methodName == "opOpAssign")
                 token = token.Substring(0, 1);
 
-            writer.Write(methodName +
+            writer.WriteLine("public final " + returnType + " " + methodName +
                          String.Format(
-                             " (string _op) ({0} other)\r\nif(_op==\"{2}\")\r\n{{ \r\nreturn {1}(this,other); \r\n}}\r\n",
-                             TypeProcessor.ConvertType(paramType.Type), ActualMethodName, token));
+                             " (string _op) ({0} other)\r\n\tif(_op==\"{2}\")\r\n\t{{ \r\n\t\treturn {1}(this,other); \r\n\t}}\r\n\r\n",
+                             TypeProcessor.ConvertType(paramType.Type), actualMethodName, token));
 
-            writer.Write("\r\n\r\npublic static " + returnType + " " + ActualMethodName);
+            writer.WriteLine("public static " + returnType + " " + actualMethodName + WriteMethod.GetParameterListAsString(method.ParameterList.Parameters) );
 
-            WriteParameterList(writer, method.ParameterList);
+           
 
-            writer.WriteLine();
 
             writer.OpenBrace();
-            writer.WriteLine();
             if (method.Body != null)
             {
                 foreach (var statement in method.Body.Statements)
@@ -188,9 +133,7 @@ namespace SharpNative.Compiler
                 TriviaProcessor.ProcessTrivias(writer, method.Body.DescendantTrivia());
             }
 
-            writer.WriteLine();
             writer.CloseBrace();
-            writer.WriteLine();
         }
 
 

@@ -40,6 +40,7 @@ namespace SharpNative.Compiler
             if (types.Type is IArrayTypeSymbol)
             {//Lets just for through the array, iterators are slow ... really slow
                 var forIter = "__for" + foreachCount;
+                var forArray = "__varfor" + foreachCount;
 
                 var temp = new TempWriter();
 
@@ -47,12 +48,13 @@ namespace SharpNative.Compiler
 
                 var expressiono = temp.ToString();
 
-                writer.WriteIndent();
+               // writer.WriteIndent();
+                writer.WriteLine("auto {0} = {1};", forArray, expressiono);
                 writer.WriteLine("for (int {0}=0;{0} < {2}.Length; {0}++)", forIter,
-                    WriteIdentifierName.TransformIdentifier(foreachStatement.Identifier.ValueText), expressiono);
+                    WriteIdentifierName.TransformIdentifier(foreachStatement.Identifier.ValueText), forArray);
                
                 writer.OpenBrace();
-                writer.WriteLine("auto {0} = {1}[{2}];", WriteIdentifierName.TransformIdentifier(foreachStatement.Identifier.ValueText), expressiono, forIter);
+                writer.WriteLine("auto {0} = {1}[{2}];", WriteIdentifierName.TransformIdentifier(foreachStatement.Identifier.ValueText), forArray, forIter);
                 Core.WriteStatementAsBlock(writer, foreachStatement.Statement, false);
                 writer.CloseBrace();
                 foreachCount++;

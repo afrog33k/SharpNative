@@ -361,6 +361,12 @@ class String : NObject
 		return cast(U) text;
     }
 
+	final U opCast(U)() if(is(U:char*))
+    {
+		import std.string;
+		return cast(U) std.conv.to!(char[])(text).toStringz;
+    }
+
 	public static String Concat(String self, String other)
 	{
 		self = new String(self.text ~ other.text);

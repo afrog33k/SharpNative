@@ -15,20 +15,11 @@ namespace SharpNative.Compiler
     {
         public static void Go(OutputWriter writer, LockStatementSyntax statement)
         {
-//            if (statement.DescendantNodes().OfType<ReturnStatementSyntax>().Any())
-//                throw new Exception("Cannot return from within a lock statement " + Utility.Descriptor(statement));
-            //synchronized
-            writer.WriteIndent();
-            writer.Write("synchronized("); //All d object implement a lock
-            Core.Write(writer, statement.Expression);
-            writer.Write(")"); //, () =>\r\n");
+            //All d objects implement a lock
+            writer.WriteLine("synchronized(" + Core.WriteString(statement.Expression)+")");
             writer.OpenBrace();
             Core.WriteStatementAsBlock(writer, statement.Statement, false);
-            writer.Indent--;
-            writer.WriteIndent();
             writer.CloseBrace();
-            writer.WriteLine();
-//            writer.Write("};\r\n");
         }
     }
 }

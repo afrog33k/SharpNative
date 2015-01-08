@@ -18,19 +18,15 @@ namespace SharpNative.Compiler
     {
         public static void Go(OutputWriter writer, SwitchStatementSyntax switchStatement)
         {
-            writer.WriteIndent();
+          //  writer.WriteIndent();
             var isStringSwitch = false;
             var symbol = TypeProcessor.GetTypeInfo(switchStatement.Expression);
 
             if (symbol.Type.SpecialType == SpecialType.System_String)
                 isStringSwitch = true;
 
-            writer.Write("switch( ");
-            Core.Write(writer, switchStatement.Expression);
+            writer.WriteLine("switch("+ Core.WriteString(switchStatement.Expression) + (isStringSwitch ? ".Text" : "")+")");
 
-            writer.Write(isStringSwitch ? ".Text" : "");
-
-            writer.Write(" )\n");
             writer.OpenBrace();
 
             //First process all blocks except the section with the default block
@@ -39,24 +35,23 @@ namespace SharpNative.Compiler
                     switchStatement.Sections.Where(
                         o => o.Labels.None(z => z.Keyword.RawKind == (decimal) SyntaxKind.DefaultKeyword)))
             {
-                writer.WriteIndent();
 
                 foreach (var label in section.Labels)
                 {
-                    //Core.Write(writer, label, true);
+                    writer.WriteIndent();
                     WriteLabel.Go(writer, (CaseSwitchLabelSyntax) label, isStringSwitch);
                 }
-                //                writer.Write(" :\r\n");
-                writer.Indent++;
+          
+                writer.OpenBrace(false);
 
                 foreach (var statement in section.Statements)
                 {
                     if (!(statement is BreakStatementSyntax))
-                        Core.Write(writer, statement);
+                        writer.Write(Core.WriteString(statement, false, writer.Indent+2));
                 }
 
-                writer.WriteLine("break;");
-                writer.Indent--;
+                writer.WriteLine("break;\r\n");
+                writer.CloseBrace(false);
             }
 
             //Now write the default section
@@ -65,22 +60,23 @@ namespace SharpNative.Compiler
                     o => o.Labels.Any(z => z.Keyword.RawKind == (decimal) SyntaxKind.DefaultKeyword));
             if (defaultSection != null)
             {
-                // if (defaultSection.Labels.Count > 1)
-                //   throw new Exception("Cannot fall-through into or out of the default section of switch statement " + Utility.Descriptor(defaultSection));
+ 
 
-                writer.WriteLine("default:\r\n");
-                writer.Indent++;
-
+                writer.WriteLine("default:");
+                writer.OpenBrace(false);
                 foreach (var statement in defaultSection.Statements)
                 {
                     if (!(statement is BreakStatementSyntax))
-                        Core.Write(writer, statement);
+                        writer.Write(Core.WriteString(statement,false, writer.Indent+2));
                 }
                 writer.WriteLine("break;");
-                writer.Indent--;
+                writer.CloseBrace(false);
             }
             else
-                writer.WriteLine("default:\r\nbreak;\r\n");
+            {
+                writer.WriteLine("default:");
+                    writer.WriteLine("break;");
+            }
 
             writer.CloseBrace();
         }

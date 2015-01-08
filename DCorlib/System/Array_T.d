@@ -70,6 +70,29 @@ public class Array_T(T=NObject) :  Array, ICollection_T!(T)
 		return _items;
 	}
 
+	void Resize(int newLength)
+	{
+		_items.length = newLength;
+	}
+
+	public int  IndexOf(T item)
+	{
+		return IndexOf(item,0, _items.length);
+	}
+
+	public int IndexOf(T item, int start, ulong count)
+	{
+		if(start+count > _items.length)
+			throw new ArgumentOutOfRangeException();
+
+		for(int i = start; i < (start+count); i++)
+		{
+			if(_items[i]==item)
+				return i;
+		}
+		return -1;
+	}
+
 override	int Rank() @property
 	{
 		return cast(int)_dims.length;
@@ -200,8 +223,6 @@ override	public	int Length() @property
 			other.Items = _items[start..$].dup;
 		else
 			other.Items = _items[start..end+1].dup;
-
-	 //data.CopyTo(temp.data, 0);
 	}
 
 
@@ -250,19 +271,10 @@ override	public	int Length() @property
 		}
 
 
-		final U opCast(U)() if(is(U:T*))// && is(T:string))
+		final U opCast(U)()
+		if(is(U:T*))// && is(T:string))
 		{
-			////throw new Exception("Sibitegeera");
-			////exit(0);
-			////copy with real addresses so the array can be modified
-			//char[][] charArray = new char[][Items.length];
-
-			//foreach(elem; Items)
-			//{
-			////	Console.WriteLine(elem);
-			//	charArray = charArray ~ cast(char[])(cast(string)elem);
-			//}
-
+			//Console.WriteLine("cast... to T*");
 			return cast(U) Items;
 		}
 

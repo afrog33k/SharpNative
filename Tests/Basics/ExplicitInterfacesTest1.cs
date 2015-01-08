@@ -1,15 +1,15 @@
-﻿// explicit2.cs
+// explicit2.cs
 // Declare the English units interface:
 interface IEnglishDimensions
 {
-    float Length();
-    float Width();
+    float Length{get;}
+    float Width{get;}
 }
 // Declare the metric units interface:
 interface IMetricDimensions
 {
-    float Length();
-    float Width();
+     float Length{get;}
+    float Width{get;}
 }
 // Declare the "Box" class that implements the two interfaces:
 // IEnglishDimensions and IMetricDimensions:
@@ -23,22 +23,30 @@ class Box : IEnglishDimensions, IMetricDimensions
         widthInches = width;
     }
     // Explicitly implement the members of IEnglishDimensions:
-    float IEnglishDimensions.Length()
+    float IEnglishDimensions.Length
     {
+    	get{
         return lengthInches;
+        }
     }
-    float IEnglishDimensions.Width()
+    float IEnglishDimensions.Width
     {
+    	get{
         return widthInches;
+        }
     }
     // Explicitly implement the members of IMetricDimensions:
-    float IMetricDimensions.Length()
+    float IMetricDimensions.Length
     {
+    	get{
         return lengthInches * 2.54f;
+        }
     }
-    float IMetricDimensions.Width()
+    float IMetricDimensions.Width
     {
+    	get{
         return widthInches * 2.54f;
+        }
     }
     public static void Main()
     {
@@ -49,10 +57,10 @@ class Box : IEnglishDimensions, IMetricDimensions
         // Declare an instance of the metric units interface:
         IMetricDimensions mDimensions = (IMetricDimensions)myBox;
         // Print dimensions in English units:
-        System.Console.WriteLine(eDimensions.Length());
-        System.Console.WriteLine(eDimensions.Width());
+        System.Console.WriteLine(eDimensions.Length);
+        System.Console.WriteLine(eDimensions.Width);
         // Print dimensions in metric units:
-        System.Console.WriteLine(mDimensions.Length());
-        System.Console.WriteLine(mDimensions.Width());
+        System.Console.WriteLine(mDimensions.Length);
+        System.Console.WriteLine(mDimensions.Width);
     }
 }
