@@ -8,26 +8,26 @@ import System.Collections.Namespace;
 {
   
 
-public     abstract bool  IsReadOnly() @property;
+public     abstract bool  IsReadOnly(IDictionary j =null) @property;
   
 
-public     abstract bool  IsFixedSize() @property;
+public     abstract bool  IsFixedSize(IDictionary j =null) @property;
   
 
-public     abstract ICollection  Keys() @property;
+public     abstract ICollection  Keys(IDictionary j =null) @property;
   
 
-public     abstract ICollection  Values() @property;
+public     abstract ICollection  Values(IDictionary j =null) @property;
   
 
-public    abstract void opIndexAssign( NObject  value, NObject key )  ;
+public    abstract void opIndexAssign( NObject  value, NObject key,IDictionary j =null );
 
-public void Add(NObject key, NObject value) ;
+public void Add(NObject key, NObject value,IDictionary j =null);
 
-public void Clear() ;
+public void Clear(IDictionary j =null);
 
-public bool Contains(NObject key) ;
+public bool Contains(NObject key,IDictionary j =null);
 
-public void Remove(NObject key) ;
+public void Remove(NObject key,IDictionary j =null);
 
 };

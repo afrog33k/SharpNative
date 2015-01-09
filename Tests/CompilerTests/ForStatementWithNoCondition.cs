@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 
 namespace Blargh
 {
     public static class Utilities
     {
-        public static void SomeFunction()
+        public static void Main()
         {
             for(;;)
             {

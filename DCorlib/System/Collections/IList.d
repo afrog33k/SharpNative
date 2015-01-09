@@ -9,28 +9,28 @@ import System.Collections.Namespace;
 
   
 
-public     abstract bool  IList_IsFixedSize() @property;
+public     abstract bool  IsFixedSize( IList k =null) @property;
   
 
-public     abstract bool  IList_IsReadOnly() @property;
+public     abstract bool  IsReadOnly( IList k =null) @property;
   
 
-public    abstract void opIndexAssign( NObject  value, int index );
-public    abstract T opIndex(T)(int index);
+public    abstract void opIndexAssign( NObject  value, int index, IList k =null );
+public    abstract T opIndex(T)(int index, IList k =null);
 
 
-public int IList_Add(NObject value) ;
+public int Add(NObject value, IList k =null);
 
-public void IList_Clear() ;
+public void Clear(IList k =null);
 
-public bool IList_Contains(NObject value) ;
+public bool Contains(NObject value, IList k =null);
 
-public int IList_IndexOf(NObject value) ;
+public int IndexOf(NObject value, IList k =null);
 
-public void IList_Insert(int index, NObject value) ;
+public void Insert(int index, NObject value, IList k =null);
 
-public void IList_Remove(NObject value) ;
+public void Remove(NObject value, IList k =null);
 
-public void IList_RemoveAt(int index) ;
+public void RemoveAt(int index, IList k =null);
 
 };

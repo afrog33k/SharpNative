@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Text;
 
 namespace Blargh
@@ -6,7 +6,7 @@ namespace Blargh
 
     public class Foo
     {
-        public Foo()
+        public static void Main()
         {
             var i = new { Field1 = 3, Field2 = new StringBuilder() };
             Console.WriteLine(i.Field1);

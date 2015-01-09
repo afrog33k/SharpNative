@@ -4,24 +4,24 @@ module System.Collections.Generic.ICollection_T;
 import System.Namespace;
 import System.Collections.Generic.Namespace;
 
- interface ICollection_T( T ) :  IEnumerable_T!(T)
+ interface ICollection_T(T) :  IEnumerable_T!(T)
 {
 
   
 
-public     abstract int  ICollection_T_Count() @property;
+public     abstract int  Count(ICollection_T!(T) j = null) @property;
   
 
-public     abstract bool  ICollection_T_IsReadOnly() @property;
+public     abstract bool  IsReadOnly(ICollection_T!(T) j = null) @property;
 
-public void ICollection_T_Add(T item) ;
+public void Add(T item,ICollection_T!(T) j = null);
 
-public void ICollection_T_Clear() ;
+public void Clear(ICollection_T!(T) j = null);
 
-public bool ICollection_T_Contains(T item) ;
+public bool Contains(T item,ICollection_T!(T) j = null);
 
-public void ICollection_T_CopyTo(Array_T!(T) array, int arrayIndex) ;
+public void CopyTo(Array_T!(T) array, int arrayIndex,ICollection_T!(T) j = null);
 
-public bool ICollection_T_Remove(T item) ;
+public bool Remove(T item,ICollection_T!(T) j = null);
 
 };

@@ -12,7 +12,7 @@ import System.Collections.Namespace;
   Hashtable_EnumeratorType returnType = cast(Hashtable_EnumeratorType) null;
   
 
-public    NObject  IEnumerator_Current() @property  
+public    NObject  Current(IEnumerator j=null) @property  
 {
     {
 
@@ -42,7 +42,7 @@ public    NObject  IEnumerator_Current() @property
 }
 
 
-public bool IEnumerator_MoveNext() 
+public bool MoveNext(IEnumerator j=null) 
   {
     startLoop:
     if (this.temp is null)
@@ -67,7 +67,7 @@ public bool IEnumerator_MoveNext()
     return (true);
   }
 
-public void IEnumerator_Reset() 
+public void Reset(IEnumerator j=null) 
   {
     this.index=-1;
   }

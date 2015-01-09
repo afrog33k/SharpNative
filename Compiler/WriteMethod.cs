@@ -19,11 +19,12 @@ namespace SharpNative.Compiler
     {
         public static string GetParameterListAsString(SeparatedSyntaxList<ParameterSyntax> parameters,  bool includeTypes = true, ITypeSymbol iface=null, bool writebraces = true)
         {
+           
             var writer = new TempWriter(); // Temp Writer
             if(writebraces)
             writer.Write("(");
             var firstParam = true;
-            foreach (var parameter in parameters)
+                foreach (var parameter in parameters)
             {
                 var refKeyword = "";
 

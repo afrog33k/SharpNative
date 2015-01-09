@@ -7,6 +7,6 @@ import System.Collections.Namespace;
  interface IEnumerable
 {
 
-public IEnumerator IEnumerable_GetEnumerator() ;
+public IEnumerator GetEnumerator(IEnumerable j =null);
 
 };

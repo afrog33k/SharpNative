@@ -4,5 +4,5 @@ import std.conv;
 
 public interface ICloneable 
 {
-		NObject ICloneable_Clone();
+		NObject Clone(ICloneable j=null);
 }

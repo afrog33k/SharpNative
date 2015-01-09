@@ -7,11 +7,11 @@ import System.Collections.Namespace;
  interface IEnumerator
 {
 
-public bool IEnumerator_MoveNext() ;
+public bool MoveNext(IEnumerator j=null);
   
 
-public abstract NObject  IEnumerator_Current() @property;
+public abstract NObject  Current(IEnumerator j=null) @property;
 
-public void IEnumerator_Reset() ;
+public void Reset(IEnumerator j=null);
 
 };

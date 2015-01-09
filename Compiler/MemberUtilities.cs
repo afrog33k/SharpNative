@@ -8,8 +8,10 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace SharpNative.Compiler
 {
-    internal class MemberUtilities
+    public static class MemberUtilities
     {
+
+      
         public static string GetAccessModifiers(MemberDeclarationSyntax member, bool isInterface)
         {
             bool isStatic;
@@ -157,31 +159,33 @@ namespace SharpNative.Compiler
             if (member.GetModifiers().Any(SyntaxKind.NewKeyword) && methodSymbol.OriginalDefinition.ContainingType.TypeKind != TypeKind.Interface) //Take care of new
                 name += "_";
 
-           if (interfaceImplemented != null)
-           {
-               var methSymbol = methodSymbol as IMethodSymbol;
+           GetExplicitInterface(ref interfaceImplemented, methodSymbol);
+
+//            if (interfaceMethods.Count() >= 1 && interfaceMethod!=null)
+//                proxies = interfaceMethods.ToArray();
+
+            return name;
+        }
+
+        private static void GetExplicitInterface(ref ITypeSymbol interfaceImplemented, ISymbol methodSymbol)
+        {
+            if (interfaceImplemented != null)
+            {
+                var methSymbol = methodSymbol as IMethodSymbol;
                 var propSymbol = methodSymbol as IPropertySymbol;
                 if (methSymbol != null && methSymbol.ExplicitInterfaceImplementations.Any())
-               {
-                   interfaceImplemented = methSymbol.ExplicitInterfaceImplementations.FirstOrDefault().ContainingType;
-               }
-               else if (propSymbol != null && propSymbol.ExplicitInterfaceImplementations.Any())
-               {
+                    interfaceImplemented = methSymbol.ExplicitInterfaceImplementations.FirstOrDefault().ContainingType;
+                else if (propSymbol != null && propSymbol.ExplicitInterfaceImplementations.Any())
                     interfaceImplemented = propSymbol.ExplicitInterfaceImplementations.FirstOrDefault().ContainingType;
-                }
-               else
-               {
+                else
+                {
                     ITypeSymbol implemented = interfaceImplemented;
                     var correctInterface = methodSymbol.ContainingType.AllInterfaces.FirstOrDefault(
                         o => Equals(o.OriginalDefinition, implemented));
                     if (correctInterface != null)
                         interfaceImplemented = correctInterface;
                 }
-             
-              
-           }
-
-            return name;
+            }
         }
 
         private static bool CompareMethods(IMethodSymbol interfaceMethod, IMethodSymbol methodSymbol)

@@ -1478,7 +1478,7 @@ struct Struct(T...) {
  */
 interface IDisposable {
 	
-	void IDisposable_Dispose();
+	void Dispose(IDisposable j=null);
 	
 }
 
@@ -1491,7 +1491,7 @@ void using(IDisposable obj, void delegate() block) {
 	}
 	finally {
 		if (obj !is null)
-			obj.IDisposable_Dispose();
+			obj.Dispose();
 	}
 }
 

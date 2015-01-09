@@ -8,6 +8,7 @@
 using System;
 using System.Linq;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 #endregion
@@ -68,16 +69,26 @@ namespace SharpNative.Compiler
             if (typeinfo.Type.AllInterfaces.OfType<INamedTypeSymbol>().Any(j => j.MetadataName == "IEnumerable`1") ||
                 typeinfo.Type.MetadataName == "IEnumerable`1")
             {
+
+                var collections = SyntaxFactory.UsingDirective(SyntaxFactory.ParseName("System.Collections.Generic"));
+               
+               
+                Context.Instance.UsingDeclarations = Context.Instance.UsingDeclarations
+                    .Union(new[]
+                {
+                    collections
+                }).ToArray();
+
                 writer.WriteLine("//ForEach");
 //				writer.OpenBrace ();
                 writer.WriteIndent();
                 writer.Write(string.Format("auto {0} = ", foreachIter));
                 Core.Write(writer, foreachStatement.Expression);
-                writer.Write(".IEnumerable_T_GetEnumerator();\r\n");
-                writer.WriteLine(string.Format("while({0}.IEnumerator_MoveNext())", foreachIter));
+                writer.Write(String.Format(".GetEnumerator(cast(IEnumerable_T!({0}))null);\r\n",typeString));
+                writer.WriteLine(string.Format("while({0}.MoveNext())", foreachIter));
                 writer.OpenBrace();
 
-                writer.WriteLine(string.Format("{0}{1} = {2}.IEnumerator_T_Current;", typeString,
+                writer.WriteLine(string.Format("{0}{1} = {2}.Current(cast(IEnumerator_T!({0}))null);", typeString,
                     WriteIdentifierName.TransformIdentifier(foreachStatement.Identifier.ValueText), foreachIter));
 
                 Core.WriteStatementAsBlock(writer, foreachStatement.Statement, false);
@@ -90,15 +101,22 @@ namespace SharpNative.Compiler
             }
             else
             {
+                var collections = SyntaxFactory.UsingDirective(SyntaxFactory.ParseName("System.Collections"));
+                Context.Instance.UsingDeclarations = Context.Instance.UsingDeclarations
+                  .Union(new[]
+                {
+                    collections
+                }).ToArray();
+
                 writer.WriteLine("//ForEach");
                 writer.WriteIndent();
                 writer.Write(string.Format("auto {0} = ", foreachIter));
                 Core.Write(writer, foreachStatement.Expression);
-                writer.Write(".IEnumerable_GetEnumerator();\r\n");
-                writer.WriteLine(string.Format("while({0}.IEnumerator_MoveNext())", foreachIter));
+                writer.Write(".GetEnumerator();\r\n");
+                writer.WriteLine(string.Format("while({0}.MoveNext())", foreachIter));
                 writer.OpenBrace();
 
-                writer.WriteLine(string.Format("{0}{1} = UNBOX!({0})({2}.IEnumerator_Current);", typeString,
+                writer.WriteLine(string.Format("{0}{1} = UNBOX!({0})({2}.Current);", typeString,
                     WriteIdentifierName.TransformIdentifier(foreachStatement.Identifier.ValueText), foreachIter));
 
                 Core.WriteStatementAsBlock(writer, foreachStatement.Statement, false);

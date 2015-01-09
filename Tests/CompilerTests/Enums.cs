@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace Blargh
 {
@@ -21,13 +21,13 @@ namespace Blargh
             var f = MostlyNumbered.One;
             var arr = new UnNumbered[] { UnNumbered.One, UnNumbered.Two, UnNumbered.Three };
             var i = (int)f;
-            var e = (MostlyNumbered)Enum.Parse(typeof(MostlyNumbered), ""One"");
+            var e = (MostlyNumbered)Enum.Parse(typeof(MostlyNumbered), "\"One\"");
             var s = e.ToString();
-            s = e + ""asdf"";
-            s = ""asdf"" + e;
+            s = e + "\"asdf\"";
+            s = "\"asdf\"" + e;
             MostlyNumbered? n = MostlyNumbered.Two;
             var s2 = n.ToString();
-            s2 = ""asdf"" + n;
+            s2 = "\"asdf\"" + n;
             var vals = Enum.GetValues(typeof(MostlyNumbered));
         }
     }

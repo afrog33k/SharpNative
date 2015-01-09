@@ -182,7 +182,20 @@ namespace SharpNative.Compiler
                                     
                             }
                         }
-                    }
+                            //Add usings
+                            foreach (var @anamespace in Context.Instance.UsingDeclarations)
+                            {
+                                var name = @anamespace.Name.ToFullString() + ".Namespace";
+                                if (!currentImports.Contains(name))
+                                {
+                                    finalBuilder.Append("import " + name + ";\n");
+                                    currentImports.Add(name);
+                                }
+                            }
+                        }
+
+                   
+                       
 
                     if (forwardDeclarations.Count > 0)
                         finalBuilder.Append(forwardDeclarations.Aggregate((a, b) => a + "\n" + b));

@@ -7,15 +7,15 @@ import System.Collections.Namespace;
 interface ICollection :  IEnumerable
 {
 
-public void ICollection_CopyTo(Array array, int index) ;
+public void CopyTo(Array array, int index, ICollection j=null) ;
   
 
-public     abstract int  ICollection_Count() @property;
+public     abstract int  Count(ICollection j=null) @property;
   
 
-public     abstract NObject  ICollection_SyncRoot() @property;
+public     abstract NObject  SyncRoot(ICollection j=null) @property;
   
 
-public     abstract bool  ICollection_IsSynchronized() @property;
+public     abstract bool  IsSynchronized(ICollection j=null) @property;
 
 };

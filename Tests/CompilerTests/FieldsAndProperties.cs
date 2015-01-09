@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Text;
 
 namespace Blargh
@@ -27,8 +27,8 @@ namespace Blargh
         public static StringBuilder StaticField = new StringBuilder();
         public const int ConstInt = 24;
         public static readonly int StaticReadonlyInt = 5;
-        public const string WithQuoteMiddle = @""before""""after"";
-        public const string WithQuoteStart = @""""""after"";
+        public const string WithQuoteMiddle = @"""before""""after""";
+        public const string WithQuoteStart = @"""""""after""";
         public int MultipleOne, MultipleTwo;
         public readonly int ReadonlyInt = 3;
         public DateTime UninitializedDate;
@@ -41,12 +41,12 @@ namespace Blargh
 
         static Box()
         {
-            Console.WriteLine(""cctor"");
+            Console.WriteLine("\"cctor\"");
         }
 
         public Box()
         {
-            Console.WriteLine(""ctor"");
+            Console.WriteLine("\"ctor\"");
         }
     }
 }

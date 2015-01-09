@@ -31,7 +31,7 @@ private class List_T_Enumerator_T(T):IEnumerator_T!(T)
     }
 
 
-    bool IEnumerator_MoveNext()
+    bool MoveNext(IEnumerator j=null)
     {
       index++;
       if(index < _list.Count)
@@ -39,12 +39,12 @@ private class List_T_Enumerator_T(T):IEnumerator_T!(T)
       return false;
     }
 
-    NObject IEnumerator_Current() @property
+    NObject Current(IEnumerator j=null) @property
     {
       return BOX!(T)(IEnumerator_T_Current); // BOX should be adjusted to just pass classes as is
     }
 
-    void IEnumerator_Reset()
+    void Reset(IEnumerator j=null)
     {
       index = -1;
     }
@@ -86,10 +86,10 @@ class List_T(T) : IList_T!(T) {
   this(IEnumerable_T!(T) range) {
     _items.length = DEFAULT_CAPACITY;
       
-      auto __foreachIter2 = range.IEnumerable_T_GetEnumerator();
-      while(__foreachIter2.IEnumerator_MoveNext())
+      auto __foreachIter2 = range.GetEnumerator();
+      while(__foreachIter2.MoveNext())
       {
-        ICollection_T_Add(__foreachIter2.IEnumerator_T_Current);
+        ICollection_T_Add(__foreachIter2.Current);
        
       }
 

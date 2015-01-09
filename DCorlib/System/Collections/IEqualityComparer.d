@@ -8,8 +8,8 @@ import System.Collections.Namespace;
 {
 
 
-public bool IEqualityComparer_Equals(NObject x, NObject y) ;
+public bool Equals(NObject x, NObject y, IEqualityComparer k =null) ;
 
-public int IEqualityComparer_GetHashCode(NObject obj) ;
+public int GetHashCode(NObject obj, IEqualityComparer k =null) ;
 
 };

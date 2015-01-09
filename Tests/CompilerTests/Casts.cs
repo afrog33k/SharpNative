@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace Blargh
 {
@@ -14,7 +14,7 @@ namespace Blargh
 
     public static class Test
     {
-        public static void SomeFunction()
+        public static void Main()
         {
             var a = DateTime.Now.As<String>();
             object o = 4;

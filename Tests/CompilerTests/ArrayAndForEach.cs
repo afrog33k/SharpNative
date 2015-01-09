@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace Blargh
 {
     public static class Utilities
     {
-        public static void SomeFunction()
+        public static void Main()
         {
             var ar = new int[] { 1, 2, 3 };
 

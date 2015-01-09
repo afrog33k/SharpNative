@@ -3,6 +3,8 @@ public static class Program
     public interface ITest<T>
     {
         T A();
+        
+        string Name{get;set;}
         string this[int index]
     	{
         	get;
@@ -14,6 +16,8 @@ public static class Program
 
     public class Test1 : ITest<string>, ITest<int>, ITest<long>
     {
+    	public string Name{get;set;}
+    	
     	public void SayIt()
     		{
     		}

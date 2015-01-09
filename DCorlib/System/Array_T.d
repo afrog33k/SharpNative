@@ -16,7 +16,7 @@ class ArrayIterator(T):IEnumerator_T!(T)
 			//writeln(_array.Items[index]);
 		}
 
-		public T  IEnumerator_T_Current()   @property
+		public T  Current(IEnumerator_T!(T) k=null)   @property
 		{
 			//writeln(_array is null);
 			//Console.WriteLine(_S("returning {0}"), BOX!(int)(index));
@@ -26,13 +26,13 @@ class ArrayIterator(T):IEnumerator_T!(T)
 			//return cast(T)null;
 		}
 
-		void IDisposable_Dispose()
+		void Dispose(IDisposable f=null)
 		{
 			_array = null;
 		}
 
 
-		bool IEnumerator_MoveNext()
+		bool MoveNext(IEnumerator j = null)
 		{
 			index++;
 			if(index < _array.Length)
@@ -40,12 +40,12 @@ class ArrayIterator(T):IEnumerator_T!(T)
 			return false;
 		}
 
-		NObject IEnumerator_Current() @property
+		NObject Current(IEnumerator k=null) @property
 		{
-			return BOX!(T)(IEnumerator_T_Current); // BOX should be adjusted to just pass classes as is
+			return BOX!(T)(Current(cast(IEnumerator_T!(T))null)); // BOX should be adjusted to just pass classes as is
 		}
 
-		void IEnumerator_Reset()
+		void Reset(IEnumerator k=null)
 		{
 			index = -1;
 		}
@@ -392,24 +392,24 @@ override	public	int Length() @property
 	ArrayIterator!T _iter;
 
 	//IEnumerator Methods
-	IEnumerator  IEnumerable_GetEnumerator()
+	IEnumerator GetEnumerator(IEnumerable j = null)
 	{
 		if(_iter is null)
 			_iter = new ArrayIterator!(T)(this);
 
-		_iter.IEnumerator_Reset();
+		_iter.Reset();
 
 		return _iter;
 		//return new ArrayIterator!(T)(this); //Highly inefficient
 		
 	}
 
-	IEnumerator_T!(T) IEnumerable_T_GetEnumerator()
+	IEnumerator_T!(T) GetEnumerator(IEnumerable_T!(T) j=null)
 	{
 			if(_iter is null)
 			_iter = new ArrayIterator!(T)(this);
 
-		_iter.IEnumerator_Reset();
+		_iter.Reset();
 		
 		return _iter;
 		//return new ArrayIterator!(T)(this); //Highly inefficient
@@ -419,39 +419,39 @@ override	public	int Length() @property
 
 
 	//ICollection Methods
-	void ICollection_T_Add(T item)
+	void Add(T item, ICollection_T!(T) j=null)
 	{
 		throw new NotSupportedException();
 	}
 
-	public  bool  ICollection_T_IsReadOnly() @property
-	{
-		throw new NotSupportedException();
-	}
-
-
-	bool ICollection_T_Remove(T item)
-	{
-		throw new NotSupportedException();
-	}
-
-	bool ICollection_T_Contains(T item)
-	{
-		throw new NotSupportedException();
-	}
-
-	public void ICollection_T_CopyTo(Array_T!(T) array, int arrayIndex)
+	public  bool  IsReadOnly(ICollection_T!(T) j=null) @property
 	{
 		throw new NotSupportedException();
 	}
 
 
-	void ICollection_T_Clear()
+	bool Remove(T item,ICollection_T!(T) j=null)
 	{
 		throw new NotSupportedException();
 	}
 
-	int ICollection_T_Count() @property
+	bool Contains(T item,ICollection_T!(T) j=null)
+	{
+		throw new NotSupportedException();
+	}
+
+	public void CopyTo(Array_T!(T) array, int arrayIndex,ICollection_T!(T) j=null)
+	{
+		throw new NotSupportedException();
+	}
+
+
+	void Clear(ICollection_T!(T) j=null)
+	{
+		throw new NotSupportedException();
+	}
+
+	int Count(ICollection_T!(T) j=null) @property
 	{
 		return cast(int)_items.length;
 	}

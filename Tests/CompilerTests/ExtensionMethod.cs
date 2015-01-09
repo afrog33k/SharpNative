@@ -1,16 +1,16 @@
-﻿using System;
+using System;
 
 namespace Blargh
 {
     public static class Utilities
     {
-        public static void SomeFunction()
+        public static void Main()
         {
             int i = -3;
-            Console.WriteLine(""false "" + i.IsFour());
+            Console.WriteLine("\"false \"" + i.IsFour());
             i += 6;
             var b = i.IsFour();
-            Console.WriteLine(""true "" + b);
+            Console.WriteLine("\"true \"" + b);
             Utilities.IsFour(5);
         }
 

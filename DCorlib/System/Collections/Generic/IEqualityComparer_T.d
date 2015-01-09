@@ -4,12 +4,12 @@ module System.Collections.Generic.IEqualityComparer_T;
 import System.Namespace;
 import System.Collections.Generic.Namespace;
 
- interface IEqualityComparer_T( T )
+ interface IEqualityComparer_T(T)
 {
 
 
-public bool IEqualityComparer_T_Equals(T x, T y) ;
+public bool Equals(T x, T y, IEqualityComparer_T!(T) j =null);
 
-public int IEqualityComparer_T_GetHashCode(T obj) ;
+public int GetHashCode(T obj, IEqualityComparer_T!(T) j =null);
 
 };

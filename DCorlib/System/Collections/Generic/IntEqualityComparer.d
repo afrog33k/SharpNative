@@ -22,21 +22,18 @@ import System.Collections.Generic.Namespace;
   
 }
 
- override public int IndexOf(Array_T!(int) array, int value, int startIndex, int endIndex) 
-  {
+override public int IndexOf(Array_T!(int) array, int value, int startIndex, int endIndex) 
+{
 
     for (int i = startIndex;i<endIndex;++i)
-      {
+    {
 
-                if (array[i]==value)//Array.UnsafeLoad!( int )(array, i)==value)
+        if (array[i]==value)//Array.UnsafeLoad!( int )(array, i)==value)
         {
-
           return (i);
-        
-}
-      }
-      return (-1);
-    
+		}
+    }
+    return (-1);
 }
 
 };
