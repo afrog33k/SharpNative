@@ -50,7 +50,7 @@ namespace SharpNative.Compiler
         {
             var dType = ConvertType(type);
 
-            if (type.TypeKind == TypeKind.Struct)
+            if (type.TypeKind == TypeKind.Struct || type.TypeKind == TypeKind.Enum)
                 return dType + ".init";
 
             switch (dType)
@@ -77,7 +77,9 @@ namespace SharpNative.Compiler
                     return "false";
 
                 default:
+                    if(type.TypeKind!=TypeKind.TypeParameter)
                     return "cast(" + dType + ") null";
+                    return dType + ".init";
             }
         }
 
@@ -166,15 +168,12 @@ namespace SharpNative.Compiler
             if (ret == null)
                 throw new Exception("Type could not be determined for " + node);
 
-            if (localize) //TODO: We need to check for collisions and thus fully qualify
-            {
-                var name =
-                    Context.Instance.UsingDeclarations.FirstOrDefault(
-                        k => ret.StartsWith(k.Name.ToFullString() + ".Namespace.", StringComparison.Ordinal));
-
-                if (name != null)
-                    ret = ret.RemoveFromStartOfString(name.Name.ToFullString() + ".Namespace.");
-            }
+           
+                if (localize)//TODO: We need to check for collisions and thus fully qualify
+                {
+                    ret = LocalizeName(ret);
+                }
+            
 
             if (ret == "Array_T")
                 return "Array";
@@ -234,12 +233,7 @@ namespace SharpNative.Compiler
 
             if (localize)
             {
-                var name =
-                    Context.Instance.UsingDeclarations.FirstOrDefault(
-                        k => ret.StartsWith(k.Name.ToFullString() + ".Namespace.", StringComparison.Ordinal));
-
-                if (name != null)
-                    ret = ret.RemoveFromStartOfString(name.Name.ToFullString() + ".Namespace.");
+                ret = LocalizeName(ret);
             }
 
             if (ret == "Array_T")
@@ -249,15 +243,44 @@ namespace SharpNative.Compiler
 
         }
 
+        private static string LocalizeName(string ret)
+        {
+            if (String.IsNullOrEmpty(ret))
+                return ret;
+
+            if (ret.StartsWith(Context.Instance.Namespace + "."))
+                ret = ret.RemoveFromStartOfString(Context.Instance.Namespace + ".");
+
+            var name =
+                Context.Instance.UsingDeclarations.FirstOrDefault(
+                    k => ret.StartsWith(k.Name.ToFullString() + ".Namespace.", StringComparison.Ordinal));
+
+
+            if (name != null)
+                ret = ret.RemoveFromStartOfString(name.Name.ToFullString() + ".Namespace.");
+
+         
+            return ret;
+        }
+
         public static string TryConvertType(ITypeSymbol typeInfo, bool localize = true)
         {
-            string cachedValue;
-            if (_cachedTypes.TryGetValue(typeInfo, out cachedValue))
-                return cachedValue;
+            string cachedValue=null;
+            _cachedTypes.TryGetValue(typeInfo, out cachedValue);
 
-            cachedValue = ConvertTypeUncached(typeInfo, localize);
-            _cachedTypes.TryAdd(typeInfo, cachedValue);
+            if (cachedValue == null)
+            {
+                cachedValue = ConvertTypeUncached(typeInfo, localize);
+                _cachedTypes.TryAdd(typeInfo, cachedValue);
+            }
+
+            if (localize)
+            {
+               cachedValue= LocalizeName(cachedValue);
+            }
+           
             return cachedValue;
+
         }
 
         private static string ConvertTypeUncached(ITypeSymbol typeSymbol, bool localize)
@@ -304,9 +327,9 @@ namespace SharpNative.Compiler
                 //Nullable types
                 if (named.TypeArguments.Any())
                 {
-                    var convertedType = TryConvertType(named.TypeArguments.FirstOrDefault());
+                    var convertedType = TryConvertType(named.TypeArguments.FirstOrDefault(),true);
 
-                    switch (convertedType)
+                    /*switch (convertedType)
                     {
                         case "Int":
                             return "int";
@@ -326,7 +349,8 @@ namespace SharpNative.Compiler
                             return "long";
                         default:
                             return convertedType;
-                    }
+                    }*/
+                    return "Nullable_T!(" + convertedType + ")";
                 }
             }
 
@@ -334,8 +358,11 @@ namespace SharpNative.Compiler
 
             if (named != null && named.IsGenericType && !named.IsUnboundGenericType && TypeArguments(named).Any())
             {
-                return TryConvertType(named.ConstructUnboundGenericType()) + "!(" +
-                       string.Join(", ", TypeArguments(named).Select(o => TryConvertType(o))) + ")";
+//                return TryConvertType(named.ConstructUnboundGenericType()) + "!(" +
+//                    named.TypeArguments.Select(o => GetGenericParameterType(named.TypeParameters[named.TypeArguments.IndexOf(o)], o)).Aggregate((a,b)=> a + ", " + b)
+//                    //   string.Join(", ", TypeArguments(named)) 
+//                           + ")";
+                return GetFullGenericName(named);
             }
 
             switch (typeStr)
@@ -399,27 +426,44 @@ namespace SharpNative.Compiler
             }
         }
 
+        private static string GetFullGenericName(INamedTypeSymbol named)
+        {
+            var name = GetGenericTypeNameWithParameters(named); 
+            var type = named.ContainingType;
+            while (type!=null)
+            {
+                name = GetGenericTypeNameWithParameters(type) + "." + name;
+                type = type.ContainingType;
+            }
+
+            return name;
+        }
+
+        private static string GetGenericTypeNameWithParameters(INamedTypeSymbol named)
+        {
+            if (named.IsGenericType)
+            {
+                return named.Name + "_" + named.TypeParameters.Select(k=>k.Name)
+                           .Aggregate((a, b) => a + "_" + b) + "!(" +
+                       named.TypeArguments.Select(
+                           o => GetGenericParameterType(named.TypeParameters[named.TypeArguments.IndexOf(o)], o))
+                           .Aggregate((a, b) => a + ", " + b)
+                       + ")";
+            }
+            else
+            {
+                return named.Name;
+            }
+        }
+
+        public static string GetGenericParameterType(ITypeParameterSymbol o, ITypeSymbol named)
+        {
+            //TODO: seems to cause more trouble than its worth ... moving to generating two methods one for structs and another for classes
+            return TryConvertType(named);// + (named.TypeKind==TypeKind.Struct&& o.ConstraintTypes.Any(k=>k.TypeKind==TypeKind.Interface)  ?".__Boxed_":"");
+        }
+
         private static IEnumerable<ITypeSymbol> TypeArguments(INamedTypeSymbol named)
         {
-            if (named.ContainingType != null)
-            {
-                //Hard-code generic types for dictionaries, since I can't find a way to determine them programatically
-                switch (named.Name)
-                {
-                    case "ValueCollection":
-                        return new[]
-                        {
-                            named.ContainingType.TypeArguments.ElementAt(1)
-                        };
-                    case "KeyCollection":
-                        return new[]
-                        {
-                            named.ContainingType.TypeArguments.ElementAt(0)
-                        };
-                    default:
-                        return named.TypeArguments.ToList();
-                }
-            }
 
             return named.TypeArguments.ToList();
         }

@@ -16,7 +16,7 @@ namespace SharpNative.Compiler
 {
     internal static class WriteLiteralExpression
     {
-        public static void Go(OutputWriter writer, LiteralExpressionSyntax expression, bool isConst)
+		public static void Go(OutputWriter writer, LiteralExpressionSyntax expression, bool isConst, bool inSwitch=false)
         {
             var str = expression.ToString();
 
@@ -46,12 +46,30 @@ namespace SharpNative.Compiler
 
             if (type != null && type.SpecialType == SpecialType.System_String)
             {
+
                 if (str != "null")
-                    writer.Write("_S(" + str + ")");
+				if(inSwitch)
+                    writer.Write(  str );
+				else
+					writer.Write("_S(" + str + ")");
+					
                 else
                 {
-                    writer.Write("null");
+
+					if(inSwitch)
+						writer.Write( "-1");
+					else
+						writer.Write("null");
+
+                    
                 }
+            }
+            else if (type != null && type.Name == "Nullable")//Nullable Support
+            {
+               
+                        var atype = TypeProcessor.ConvertType(type);
+                        writer.Write(atype + "()");
+                
             }
             else
             {
@@ -61,13 +79,15 @@ namespace SharpNative.Compiler
                 {
 
                     //Number literals //TODO: make these convert to D Literal Suffixes
-                    var suffix = realTypeSuffixes.Where(j => str.EndsWith(j)).FirstOrDefault();
+                    var suffix = realTypeSuffixes.FirstOrDefault (j => str.EndsWith (j));
                     if (suffix != null)
-                        str = str.RemoveFromEndOfString(suffix);
-
-                     suffix = integerTypeSuffixes.Where(j => str.EndsWith(j)).FirstOrDefault();
-                    if (suffix != null)
-                        str = str.RemoveFromEndOfString(suffix);
+						str = str.Replace(suffix,drealTypeSuffixes[Array.IndexOf(realTypeSuffixes,suffix)]);
+					else
+					{
+						suffix = integerTypeSuffixes.FirstOrDefault (j => str.EndsWith (j));
+						if (suffix != null)
+							str = str.Replace(suffix,dintegerTypeSuffixes[Array.IndexOf(integerTypeSuffixes,suffix)]);
+					}
 
                     writer.Write(str);
                 }
@@ -77,7 +97,10 @@ namespace SharpNative.Compiler
         }
 
         static string[] realTypeSuffixes =  { "F", "f","D", "d", "M", "m"};
-        static string[] integerTypeSuffixes = { "U", "u", "L" ,"l", "UL", "Ul", "uL", "ul", "LU", "Lu", "lU", "lu" };
+		static string[] drealTypeSuffixes =  { "F", "F","", "", "", ""}; //TODO:Have to add support for decimals
+        static string[] integerTypeSuffixes = {  "UL", "Ul", "uL", "ul", "LU", "Lu", "lU", "lu","U", "u", "L" ,"l" };
+		static string[] dintegerTypeSuffixes = {  "UL", "UL", "UL", "UL", "UL", "UL", "UL", "UL", "U", "U", "L", "L" };
+
 
     }
 }

@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-//Need to Add and fix StructLayour is concerned
+//Need to Add and fix StructLayout is concerned
 struct SimpleStruct2
 {
 	int a,b,c;

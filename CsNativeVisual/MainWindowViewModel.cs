@@ -180,7 +180,7 @@ namespace CsNativeVisual
                 string first = filesFromDisk.FirstOrDefault();
 
                 if (first != null)
-					OutputCode = Extensions.ReadFile(first);
+					OutputCode = FileExtensions.ReadFile(first);
 
                 CompilerErrors += ("\nCsNative took " + (DateTime.Now - csnAtiveStartTime).TotalMilliseconds + "ms\n");
 

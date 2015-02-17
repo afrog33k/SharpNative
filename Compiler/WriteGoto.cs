@@ -22,7 +22,11 @@ namespace SharpNative.Compiler
                 ? method.CaseOrDefaultKeyword.ValueText
                 : "");
             writer.Write(" ");
+
             if (method.Expression != null)
+			if (method.Expression.ToString ().Trim() == "null")
+				writer.Write("-1");
+			else
                 Core.Write(writer, method.Expression);
             writer.Write(";\r\n");
         }

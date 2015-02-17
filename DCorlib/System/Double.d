@@ -2,7 +2,7 @@
 import System.Namespace;
 import std.conv;
 
-class Double : NObject
+class Double : Boxed!double
 {
 
   public static const double MinValue = -1.7976931348623157E+308;
@@ -14,19 +14,35 @@ class Double : NObject
 
 
 
-	this()
+	/*this()
 	{
 		// Constructor code
-	}
+	}*/
+
+	this(double value = 0)
+    {
+        this.__Value = value;
+    }
 
 	public override string toString() {
-		return "";
+		return to!string(__Value);
 	}
 
 	public static String ToString(double value)
 	{
 		return new String(to!wstring(value));
 	}
+
+	public override String ToString()
+	{
+		return new String(to!wstring(this.toString));
+	}
+
+	public override Type GetType()
+	{
+		return __TypeOf!(typeof(this));
+	}
+
 
 }
 

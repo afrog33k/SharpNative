@@ -5,6 +5,7 @@
 
 #region Imports
 
+using System;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -62,7 +63,8 @@ namespace SharpNative.Compiler
                 var nullAssignment = value.ToFullString().Trim() == "null";
                 var convertedType = initializerType.ConvertedType;
                 var type = initializerType.Type;
-                var shouldBox = type != null && type.IsValueType &&
+               
+				var shouldBox = type != null && (type.IsValueType) &&
                                 !convertedType.IsValueType;
                 var shouldUnBox = type != null && !type.IsValueType &&
                                   convertedType.IsValueType;
@@ -88,6 +90,13 @@ namespace SharpNative.Compiler
 
                 if (nullAssignment)
                 {
+                    if(convertedType!=null) //Nullable Support
+                    if (convertedType.Name == "Nullable")
+                    {
+                        var atype = TypeProcessor.ConvertType(convertedType);
+                        writer.Write(atype+"()");
+                    }
+                    else
                     writer.Write("null");
                     return;
                 }
@@ -123,13 +132,17 @@ namespace SharpNative.Compiler
         private static void WriteBox(OutputWriter writer, ITypeSymbol type, ExpressionSyntax value)
         {
             writer.Write("BOX!(" + TypeProcessor.ConvertType(type) + ")(");
+            if (type.TypeKind == TypeKind.Enum)
+            {
+                writer.Write("cast({0})", TypeProcessor.ConvertType(type));
+            }
             Core.Write(writer, value);
             writer.Write(")");
         }
 
         private static void WriteUnbox(OutputWriter writer, ITypeSymbol type, ExpressionSyntax value)
         {
-            writer.Write("cast!(" + TypeProcessor.ConvertType(type) + ")(");
+            writer.Write("Cast!(" + TypeProcessor.ConvertType(type) + ")(");
             Core.Write(writer, value);
             writer.Write(")");
         }
@@ -145,8 +158,8 @@ namespace SharpNative.Compiler
                 writer.Write("new " + typeString + "(");
 
             var isStatic = isstaticdelegate;
-            if (isStatic)
-                writer.Write("__ToDelegate(");
+//            if (isStatic)
+//                writer.Write("__ToDelegate(");
             writer.Write("&");
 
             Core.Write(writer, value);
@@ -163,14 +176,14 @@ namespace SharpNative.Compiler
             bool useType = true;
             var correctConverter =
                 type.GetImplicitCoversionOp(convertedType,
-                    type);
+                    type,true);
 
             if (correctConverter == null)
             {
                 useType = false;
                 correctConverter =
                     convertedType.GetImplicitCoversionOp(convertedType,
-                        type);
+                        type,true);
             }
 
             if (correctConverter != null)

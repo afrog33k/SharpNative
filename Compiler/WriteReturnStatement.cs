@@ -70,7 +70,7 @@ namespace SharpNative.Compiler
                                      (rightExpressionType.ConvertedType.IsReferenceType)));
                     boxRight = boxRight && (rightExpressionType.Type != returnTypeSymbol);
 
-                    if (!Equals(returnTypeSymbol, rightExpressionType.Type))
+					if (!Equals(returnTypeSymbol, rightExpressionType.Type) && !rightExpressionType.Type.IsSubclassOf(returnTypeSymbol))
                     {
                         writer.Write(" cast(" + TypeProcessor.ConvertType(returnTypeSymbol) + ")");
                     }

@@ -66,7 +66,7 @@ template Action(T) {
                     .SelectMany(o => o.TypeParameterList.Parameters)
                     .ToList();
 
-                var name = Context.Instance.TypeName;
+                var name = WriteType.TypeName(Context.Instance.Type, false);//Context.Instance.TypeName;
 
                 if (genericArgs.Count > 0)
                 {

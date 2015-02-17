@@ -90,7 +90,7 @@ namespace SharpNative.Compiler
                 var memberaccessexpression = value as MemberAccessExpressionSyntax;
                 var nameexpression = value as NameSyntax;
                 var nullAssignment = value.ToFullString().Trim() == "null";
-                var shouldBox = initializerType.Type != null && initializerType.Type.IsValueType &&
+				var shouldBox = initializerType.Type != null && (initializerType.Type.IsValueType) &&
                                 !initializerType.ConvertedType.IsValueType;
                 var shouldUnBox = initializerType.Type != null && !initializerType.Type.IsValueType &&
                                   initializerType.ConvertedType.IsValueType;
@@ -110,7 +110,17 @@ namespace SharpNative.Compiler
 
                 if (nullAssignment)
                 {
-                    writer.Write("null");
+                    if (initializerType.Type != null) //Nullable Support
+                    {
+                        if (initializerType.Type.Name == "Nullable")
+                        {
+                            var atype = TypeProcessor.ConvertType(initializerType.Type);
+                            writer.Write(atype + "()");
+                        }
+                    }
+                    else
+                        writer.Write("null");
+                
                     return;
                 }
                 if (shouldBox)
@@ -155,8 +165,8 @@ namespace SharpNative.Compiler
                     }
 
                     var isStatic = isstaticdelegate;
-                    if (isStatic)
-                        writer.Write("__ToDelegate(");
+//                    if (isStatic)
+//                        writer.Write("__ToDelegate(");
                     writer.Write("&");
 
                     Core.Write(writer, value);

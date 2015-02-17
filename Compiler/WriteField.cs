@@ -110,7 +110,7 @@ namespace SharpNative.Compiler
             {
                 if (initializerOpt != null)
                 {
-                    writer.Write(" = ");
+					writer.Write(String.Format(" = cast({0})", typeString));
 
                     if (CSharpExtensions.CSharpKind(initializerOpt.Value) == SyntaxKind.CollectionInitializerExpression ||
                         CSharpExtensions.CSharpKind(initializerOpt.Value) == SyntaxKind.ArrayInitializerExpression)

@@ -97,94 +97,94 @@ public int ComparisonImpl(T)(T a, T b)
 }
 
 /*int indexOf(T)(T[] array, T item, EqualityComparison!(T) comparison = null) {
- if (comparison is null) {
- comparison = (T a, T b) {
- return equalityComparisonImpl(a, b);
- };
- }
+if (comparison is null) {
+comparison = (T a, T b) {
+return equalityComparisonImpl(a, b);
+};
+}
 
- for (auto i = 0; i < array.length; i++) {
- if (comparison(array[i], item))
- return i;
- }
+for (auto i = 0; i < array.length; i++) {
+if (comparison(array[i], item))
+return i;
+}
 
- return -1;
- }*/
+return -1;
+}*/
 
 
 
 
 /**
- * Sorts the elements int a range of element in an _array using the specified Comparison(T).
- * Params:
- *   array = The _array to _sort.
- *   index = The starting _index of the range to _sort.
- *   length = The number of elements in the range to _sort.
- *   comparison = The Comparison(T) to use when comparing element.
- */
+* Sorts the elements int a range of element in an _array using the specified Comparison(T).
+* Params:
+*   array = The _array to _sort.
+*   index = The starting _index of the range to _sort.
+*   length = The number of elements in the range to _sort.
+*   comparison = The Comparison(T) to use when comparing element.
+*/
 public void Sort(T, TIndex = int, TLength = TIndex)(T[] array, TIndex index, TLength length, int delegate(T, T) comparison = null) {
-	
+
 	void quickSortImpl(int left, int right) {
 		if (left >= right)
 			return;
-		
+
 		int i = left, j = right;
 		T pivot = array[i + ((j - i) >> 1)];
-		
+
 		do {
 			while (i < right && comparison(array[i], pivot) < 0)
 				i++;
 			while (j > left && comparison(pivot, array[j]) < 0)
 				j--;
-			
+
 			assert(i >= left && j <= right);
-			
+
 			if (i <= j) {
 				T temp = array[j];
 				array[j] = array[i];
 				array[i] = temp;
-				
+
 				i++;
 				j--;
 			}
 		} while (i <= j);
-		
+
 		if (left < j)
 			quickSortImpl(left, j);
 		if (i < right)
 			quickSortImpl(i, right);
 	}
-	
+
 	if (comparison is null) {
 		comparison = (T a, T b) {
 			return ComparisonImpl(a, b);
 		};
 	}
-	
+
 	quickSortImpl(index, index + length - 1);
 }
 
 /**
- */
+*/
 public void Sort(T)(T[] array, int delegate(T, T) comparison = null) {
 	.Sort(array, 0, array.length, comparison);
 }
 
 /**
- * Searches a range of elements in an _array for a value using the specified Comparison(T).
- * Params:
- *   array = The _array to search.
- *   index = The starting _index of the range to search.
- *   length = The number of elements in the range to search.
- *   comparison = The Comparison(T) to use when comparing elements.
- */
+* Searches a range of elements in an _array for a value using the specified Comparison(T).
+* Params:
+*   array = The _array to search.
+*   index = The starting _index of the range to search.
+*   length = The number of elements in the range to search.
+*   comparison = The Comparison(T) to use when comparing elements.
+*/
 public int BinarySearch(T, TIndex = int, TLength = TIndex)(T[] array, TIndex index, TLength length, T value, int delegate(T, T) comparison = null) {
 	if (comparison is null) {
 		comparison = (T a, T b) {
 			return ComparisonImpl(a, b);
 		};
 	}
-	
+
 	int lo = cast(int)index;
 	int hi = cast(int)(index + length - 1);
 	while (lo <= hi) {
@@ -212,7 +212,7 @@ public void Reverse(T, TIndex = int, TLength = TIndex)(T[] array, TIndex index, 
 }
 
 /**
- */
+*/
 public void Copy(T, TIndex = int, TLength = TIndex)(T[] source, TIndex sourceIndex, T[] target, TIndex targetIndex, TLength length) {
 	if (length > 0)
 		memmove(target.ptr + targetIndex, source.ptr + sourceIndex, length * T.sizeof);
@@ -238,44 +238,44 @@ public TOutput[] ConvertAll(TInput, TOutput)(TInput[] array, Converter!(TInput, 
 
 
 /**
- */
+*/
 class ReadOnlyList(T) : IList!(T) {
-	
+
 	private List!(T) list_;
-	
+
 	this(List!(T) list) {
 		list_ = list;
 	}
-	
+
 	final int indexOf(T item) {
 		return list_.indexOf(item);
 	}
-	
+
 	final bool contains(T item) {
 		return list_.contains(item);
 	}
-	
+
 	final void clear() {
 		list_.clear();
 	}
-	
+
 	final int count() {
 		return list_.count;
 	}
-	
+
 	final T opIndex(int index) {
 		return list_[index];
 	}
-	
+
 	version (UseRanges) {
 		final bool empty() {
 			return list_.empty;
 		}
-		
+
 		final void popFront() {
 			list_.popFront();
 		}
-		
+
 		final T front() {
 			return list_.front;
 		}
@@ -285,31 +285,31 @@ class ReadOnlyList(T) : IList!(T) {
 			return list_.opApply(action);
 		}
 	}
-	
+
 	protected void add(T item) {
 		throw new NotSupportedException;
 	}
-	
+
 	protected void insert(int index, T item) {
 		throw new NotSupportedException;
 	}
-	
+
 	protected bool remove(T item) {
 		throw new NotSupportedException;
 	}
-	
+
 	protected void removeAt(int index) {
 		throw new NotSupportedException;
 	}
-	
+
 	protected void opIndexAssign(T item, int index) {
 		throw new NotSupportedException;
 	}
-	
+
 	protected final IList!(T) list() {
 		return list_;
 	}
-	
+
 }
 
 
@@ -322,51 +322,51 @@ public const int[] PRIMES = [
 	1674319, 2009191, 2411033, 2893249, 3471899, 4166287, 4999559, 5999471, 7199369 ];
 
 public int GetPrime(int min) {
-	
+
 	bool isPrime(int candidate) {
 		if ((candidate & 1) == 0)
 			return candidate == 2;
-		
+
 		int limit = cast(int)sqrt(cast(double)candidate);
 		for (int div = 3; div <= limit; div += 2) {
 			if ((candidate % div) == 0)
 				return false;
 		}
-		
+
 		return true;
 	}
-	
+
 	foreach (p; PRIMES) {
 		if (p >= min)
 			return p;
 	}
-	
+
 	for (int p = min | 1; p < int.max; p += 2) {
 		if (isPrime(p))
 			return p;
 	}
-	
+
 	return min;
 }
 
 /**
- */
+*/
 public class KeyNotFoundException : Exception {
-	
+
 	this(string message = "The key was not present.") {
 		super(message);
 	}
-	
+
 }
 
 /**
- * Provides a base class for implementations of the IEqualityComparer(T) interface.
- */
+* Provides a base class for implementations of the IEqualityComparer(T) interface.
+*/
 abstract class EqualityComparer(T) : IEqualityComparer!(T) {
-	
+
 	/**
-	 * $(I Property.) Returns a default equality comparer for the type specified by the template parameter.
-	 */
+	* $(I Property.) Returns a default equality comparer for the type specified by the template parameter.
+	*/
 	static EqualityComparer instance() 
 	{
 		static EqualityComparer instance_;
@@ -384,34 +384,34 @@ abstract class EqualityComparer(T) : IEqualityComparer!(T) {
 		}
 		return instance_;
 	}
-	
+
 	/**
-	 * Determines whether the specified objects are equal.
-	 * Params:
-	 *   a = The first object to compare.
-	 *   b = The second object to compare.
-	 * Returns: true if the specified objects are equal; otherwise, false.
-	 */
+	* Determines whether the specified objects are equal.
+	* Params:
+	*   a = The first object to compare.
+	*   b = The second object to compare.
+	* Returns: true if the specified objects are equal; otherwise, false.
+	*/
 	abstract bool Equals(T a, T b);
-	
+
 	/**
-	 * Retrieves a hash code for the specified object.
-	 * Params: value = The object for which a hash code is to be retrieved.
-	 * Returns: The hash code for the specified object.
-	 */
+	* Retrieves a hash code for the specified object.
+	* Params: value = The object for which a hash code is to be retrieved.
+	* Returns: The hash code for the specified object.
+	*/
 	abstract uint GetHash(T value);
-	
+
 }
 
 
 /**
- * Provides a base class for implementations of the IComparer(T) interface.
- */
+* Provides a base class for implementations of the IComparer(T) interface.
+*/
 abstract class Comparer(T) : IComparer!(T) {
-	
+
 	/**
-	 * $(I Property.) Retrieves a default comparer for the type specified by the template parameter.
-	 */
+	* $(I Property.) Retrieves a default comparer for the type specified by the template parameter.
+	*/
 	static Comparer Instance() {
 		static Comparer instance_;
 		if (instance_ is null) {
@@ -423,20 +423,73 @@ abstract class Comparer(T) : IComparer!(T) {
 		}
 		return instance_;
 	}
-	
+
 	/**
-	 * Compares two objects and returns a value indicating whether one is less than, equal to, or greater than the other.
-	 * Params:
-	 *   a = The first object to _compare.
-	 *   b = The second object to _compare.
-	 * Returns: 
-	 *   $(TABLE $(TR $(TH Value) $(TH Condition))
-	 *   $(TR $(TD Less than zero) $(TD a is less than b.))
-	 *   $(TR $(TD Zero) $(TD a equals b.))
-	 *   $(TR $(TD Greater than zero) $(TD a is greater than b.)))
-	 */
+	* Compares two objects and returns a value indicating whether one is less than, equal to, or greater than the other.
+	* Params:
+	*   a = The first object to _compare.
+	*   b = The second object to _compare.
+	* Returns: 
+	*   $(TABLE $(TR $(TH Value) $(TH Condition))
+	*   $(TR $(TD Less than zero) $(TD a is less than b.))
+	*   $(TR $(TD Zero) $(TD a equals b.))
+	*   $(TR $(TD Greater than zero) $(TD a is greater than b.)))
+	*/
 	abstract int Compare(T a, T b);
+
+}
+
+import System.Namespace;
+
+public class ArrayList : NObject, IList
+{
+	NObject[] list;
+	void Remove(NObject object)
+	{
+		//std.algorithm.remove(list,object);
+	}
 	
+
+
+
+	IEnumerator GetEnumerator(IEnumerable j = null)
+	{
+		return null;
+	}
+
+	void CopyTo(Array array, int index, ICollection j = null)
+	{
+	}
+
+	int Count(ICollection j = null) @property
+	{
+		return cast(int)list.length;
+	}
+	NObject SyncRoot(ICollection j = null) @property{return this;}
+	bool IsSynchronized(ICollection j = null) @property{return false;}
+	bool IsFixedSize(IList k = null) @property{return false;}
+	bool IsReadOnly(IList k = null) @property{return false;}
+	void opIndexAssign(NObject value, int index, IList k = null){
+	list[index] = value;
+	}
+	int Add(NObject value, IList k = null){
+	list ~= value;
+		return cast(int)list.length;
+	}
+	void Clear(IList k = null){
+	list = null;
+	}
+	bool Contains(NObject value, IList k = null){
+	return false;
+	}
+	int IndexOf(NObject value, IList k = null){
+	return -1;
+	}
+	void Insert(int index, NObject value, IList k = null){
+	
+	}
+	void Remove(NObject value, IList k = null){}
+	void RemoveAt(int index, IList k = null){}
 }
 
 

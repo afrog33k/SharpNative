@@ -51,7 +51,7 @@ namespace SharpNative.Compiler
 
                // writer.WriteIndent();
                 writer.WriteLine("auto {0} = {1};", forArray, expressiono);
-                writer.WriteLine("for (int {0}=0;{0} < {2}.Length; {0}++)", forIter,
+                writer.WriteLine("for (int {0}=0;{0} < {2}.length; {0}++)", forIter, //Special case to support iterating "params" array
                     WriteIdentifierName.TransformIdentifier(foreachStatement.Identifier.ValueText), forArray);
                
                 writer.OpenBrace();

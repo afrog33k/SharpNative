@@ -29,28 +29,28 @@ public class Console :  NObject
 		//}
 public static void Write(T)(T value) if(is(T==float))
 {
-		write(value.toString());		
+		write(value.toString);		
 }
 
 public static void Write(T)(T value) if(is(T==double))
 {
-		write(value.toString());		
+		write(value.toString);		
 }
 
 
 public static void Write(T)(T value) if(is(T==int))
 {
-		write(value.toString());		
+		write(value.toString);		
 }
 
 public static void WriteLine(T)(T value) if(is(T==int))
 {
-		writeln(value.toString());		
+		writeln(value.toString);		
 }
 
 public static void WriteLine(T)(T value) if(is(T==double))
 {
-		writeln(value.toString());		
+		writeln(value.toString);		
 }
 
 
@@ -69,7 +69,7 @@ public static void WriteLine(long value)
 }
 public static void WriteLine(T)(T value) if(is(T==float))
 {
-	writeln(value.toString());		
+	writeln(value.toString);		
 }
 
 
@@ -115,12 +115,12 @@ public static void WriteLine(wstring value)
 	}
 
 	//Generic
-	public static void WriteLine(T)(T anything) if(!is(T==double) && !is(T==float) && !is(T==int)) 
+	public static void WriteLine(T)(T anything) if(!is(T==double) && !is(T==float) && !is(T==int)&&!is(T:NObject)) 
 	{
 		writeln(anything);
 	}
 	
-	public static void Write(T)(T anything) if(!is(T==double) && !is(T==float) && !is(T==int)) 
+	public static void Write(T)(T anything) if(!is(T==double) && !is(T==float) && !is(T==int) &&!is(T:NObject)) 
 	{
 		write(anything);
 	}
@@ -143,26 +143,67 @@ public static void WriteLine(wstring value)
 
 	public static void WriteLine(NObject aString) // All raw string classes should be aware of .Text property
 	{
+		if(aString !is null)
 		writeln(aString.ToString().Text);
 	}
 
 	public static void Write(NObject aString) // All raw string classes should be aware of .Text property
 	{
+		if(aString !is null)
 		write(aString.ToString().Text);
 	}
 
+	
 
-	public static void WriteLine(String format, NObject[] objs ...) // All raw string classes should be aware of .Text property
+
+	public static void WriteLine(String format, Array_T!(NObject) objs) // All raw string classes should be aware of .Text property
 	{
 		String aString = String.Format(format, objs);
 		writeln(aString.Text);
 	}
 
-	public static void Write(String format, NObject[] objs ...) // All raw string classes should be aware of .Text property
+	public static void WriteLine(String format,  NObject a, NObject b, NObject c) // All raw string classes should be aware of .Text property
+	{
+		String aString = String.Format(format, __ARRAY!(NObject)([a,b,c]));
+		writeln(aString.Text);
+	}
+
+	public static void WriteLine(String format,  NObject a) // All raw string classes should be aware of .Text property
+	{
+		String aString = String.Format(format, __ARRAY!(NObject)([a]));
+		writeln(aString.Text);
+	}
+
+	public static void Write(String format,  NObject a) // All raw string classes should be aware of .Text property
+	{
+		String aString = String.Format(format, __ARRAY!(NObject)([a]));
+		write(aString.Text);
+	}
+
+	public static void WriteLine(String format,  NObject a, NObject b) // All raw string classes should be aware of .Text property
+	{
+		String aString = String.Format(format,  __ARRAY!(NObject)([a,b]));
+		writeln(aString.Text);
+	}
+
+//	public static void WriteLine(String format, NObject[] objs ...) // All raw string classes should be aware of .Text property
+//	{
+//		String aString = String.Format(format, objs);
+//		writeln(aString.Text);
+//	}
+
+	public static void Write(String format, Array_T!(NObject) objs) // All raw string classes should be aware of .Text property
 	{
 		String aString = String.Format(format, objs);
 		write(aString.Text);
 	}
+
+
+//	public static void Write(String format, NObject[] objs ...) // All raw string classes should be aware of .Text property
+//	{
+//		String aString = String.Format(format, objs);
+//		write(aString.Text);
+//	}
 	
 	public static void WriteLine(int value)
 	{

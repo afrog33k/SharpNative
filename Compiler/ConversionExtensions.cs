@@ -5,6 +5,7 @@
 
 #region Imports
 
+using System;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 
@@ -35,7 +36,7 @@ namespace SharpNative.Compiler
             foreach (var member in type.GetMembers("op_Implicit")
                 .OfType<IMethodSymbol>().Where(h => h.Parameters[0].Type.IsAssignableFrom(originalTypeSymbol)))
             {
-                var sizediff = member.ReturnType.SizeOf() - returnTypeSymbol.SizeOf();
+                var sizediff = Math.Abs(member.ReturnType.SizeOf() - returnTypeSymbol.SizeOf());
                 if (sizediff <= lastSizeDiff)
                 {
                     lastSizeDiff = sizediff;

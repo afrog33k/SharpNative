@@ -83,8 +83,8 @@
                 <RowDefinition Height="50" />
                 <RowDefinition Height="150" />
             </Grid.RowDefinitions>
-            <StackPanel Grid.Column="0" Grid.Row="0" Orientation="Horizontal">
-                <Label  Style="{StaticResource HeaderStyle}" Content="C# Source Code"/>
+            <StackPanel Grid.Column="0" Grid.Row="0" Orientation="Horizontal" Grid.ColumnSpan="2" Margin="0,0,200.455,489.309" Grid.RowSpan="2">
+                <Label  Style="{StaticResource HeaderStyle}" Content="C#" Margin="5,5,5,19.759" Width="194" FontSize="14"/>
                 <Button BorderThickness="0"  Height="30" Background="Transparent" HorizontalAlignment="Right" Name="RunCSharpButton" Click="RunCSharpButton_Click">
                     <Image Source="Icons/run.png" HorizontalAlignment="Right" />
                 </Button>
@@ -92,12 +92,8 @@
             </StackPanel>
 
             <Border Grid.Column="0" Grid.Row="1" Margin="10,10.241,200.455,10.309" BorderBrush="LightGray" BorderThickness="1" Padding="5" Grid.ColumnSpan="2">
-
-                <avalonEdit:TextEditor x:Name="TextEditor" TextChanged="TextEditor_OnTextChanged"
-								   FontFamily="Consolas" SyntaxHighlighting="C#" WordWrap="True"
-								   ShowLineNumbers="True"  />
-
-
+              
+                <Label x:Name="CSharpFileName" Content="" Margin="-6.031,-6.031,-6.173,446.911"/>
             </Border>
 
             <StackPanel Grid.Column="2" Grid.Row="0" Orientation="Horizontal" Margin="106.545,-8,60.183,7.759">
@@ -107,8 +103,14 @@
                 <Button BorderThickness="0"  Height="30" Background="Transparent" HorizontalAlignment="Right" x:Name="RunCPPButton" Click="RunCPPButton_Click" >
                     <Image Source="Icons/run.png" HorizontalAlignment="Right" />
                 </Button>
-            </StackPanel>
 
+              
+            </StackPanel>
+  <Border Grid.Column="0" Grid.Row="1" Margin="10,10.241,200.455,10.309" BorderBrush="LightGray" BorderThickness="1" Padding="5" Grid.ColumnSpan="2">
+                    <avalonEdit:TextEditor x:Name="TextEditor" TextChanged="TextEditor_OnTextChanged"
+FontFamily="Consolas" SyntaxHighlighting="C#" WordWrap="True"
+ShowLineNumbers="True" />
+                </Border>
             <Border Grid.Column="1" Grid.Row="1" Margin="144.272,10.241,10.183,10.309" BorderBrush="LightGray" BorderThickness="1" Padding="5" Grid.ColumnSpan="2">
                 <avalonEdit:TextEditor x:Name="Output"
 								   FontFamily="Consolas" SyntaxHighlighting="C++" WordWrap="True"

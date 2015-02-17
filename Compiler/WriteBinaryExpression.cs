@@ -165,14 +165,14 @@ namespace SharpNative.Compiler
 
                         //We should start with exact converters and then move to more generic convertors i.e. base class or integers which are implicitly convertible
                         var correctConverter = leftExpressionType.Type.GetImplicitCoversionOp(leftExpressionType.Type,
-                            rightExpressionType.Type);
+                            rightExpressionType.Type,true);
 
                         if (correctConverter == null)
                         {
                             useType = false;
                             correctConverter =
                                 rightExpressionType.Type.GetImplicitCoversionOp(leftExpressionType.Type,
-                                    rightExpressionType.Type);
+                                    rightExpressionType.Type,true);
                         }
 
                         if (correctConverter != null)
@@ -235,8 +235,8 @@ namespace SharpNative.Compiler
                             writer.Write("new " + typeString + "(");
 
                         var isStatic = isstaticdelegate;
-                        if (isStatic)
-                            writer.Write("__ToDelegate(");
+//                        if (isStatic)
+//                            writer.Write("__ToDelegate(");
 
                         writer.Write("&");
 

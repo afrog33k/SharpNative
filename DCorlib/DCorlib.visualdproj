@@ -252,31 +252,50 @@
     <File path="System\IO\File.d" />
     <File path="System\IO\System.IO.Namespace.d" />
    </Folder>
+   <Folder name="Reflection">
+    <File path="System\Reflection\Namespace.d" />
+   </Folder>
    <Folder name="Runtime">
+    <Folder name="CompilerServices">
+     <File path="System\Runtime\CompilerServices\Namespace.d" />
+    </Folder>
     <Folder name="InteropServices">
-     <File path="System\Runtime\InteropServices\InteropServices.d" />
+     <File path="System\Runtime\InteropServices\Namespace.d" />
     </Folder>
    </Folder>
    <Folder name="Text">
     <File path="System\Text\IFormatProvider.d" />
+    <File path="System\Text\Namespace.d" />
     <File path="System\Text\StringBuilder.d" />
-    <File path="System\Text\Text.d" />
+   </Folder>
+   <Folder name="__Internal">
+    <File path="System\__Internal\Namespace.d" />
+    <File path="System\__Internal\xxhash.d" />
    </Folder>
    <File path="System\Array.d" />
    <File path="System\Array_T.d" />
    <File path="System\Boolean.d" />
+   <File path="System\Byte.d" />
    <File path="System\Char.d" />
    <File path="System\Console.d" />
+   <File path="System\Decimal.d" />
    <File path="System\Double.d" />
    <File path="System\EmptyArray_T.d" />
    <File path="System\Environment.d" />
+   <File path="System\GC.d" />
    <File path="System\ICloneable.d" />
+   <File path="System\Int16.d" />
    <File path="System\Int32.d" />
+   <File path="System\Int64.d" />
    <File path="System\Math.d" />
+   <File path="System\Namespace.d" />
    <File path="System\NObject.d" />
+   <File path="System\SByte.d" />
    <File path="System\Single.d" />
    <File path="System\String.d" />
-   <File path="System\System.d" />
+   <File path="System\UInt16.d" />
+   <File path="System\UInt32.d" />
+   <File path="System\UInt64.d" />
   </Folder>
  </Folder>
 </DProject>

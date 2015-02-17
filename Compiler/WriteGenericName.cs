@@ -16,19 +16,19 @@ namespace SharpNative.Compiler
         public static void Go(OutputWriter writer, GenericNameSyntax name)
         {
             writer.Write(WriteIdentifierName.TransformIdentifier(name.Identifier.ValueText));
-            writer.Write("[");
+            writer.Write("!(");
 
             bool first = true;
-            foreach (var gen in name.TypeArgumentList.Arguments)
+            foreach (var type in name.TypeArgumentList.Arguments)
             {
                 if (first)
                     first = false;
                 else
                     writer.Write(", ");
 
-                writer.Write(TypeProcessor.ConvertType(gen));
+                writer.Write(TypeProcessor.ConvertType(type));
             }
-            writer.Write("]");
+            writer.Write(")");
         }
     }
 }

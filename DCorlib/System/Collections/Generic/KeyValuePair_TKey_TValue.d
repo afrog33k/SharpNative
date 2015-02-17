@@ -57,7 +57,7 @@ public   void Value( TValue  value ) @property  {
 public String ToString() 
   {
 
-    return ( (new String ("["))+((this.Key !is null) ? (Key.ToString()) : (String.Empty))+ (new String (", "))+((this.Value !is null) ? (Value.ToString()) : (String.Empty))+ (new String ("]")));
+    return ( (new String ("["))+((this.Key !is null) ? (Key.ToString()) : (String.Empty))+ (new String (", "))+((this.Value !is null) ? (Value.ToString()) : (String.Empty))+ new String ("]"));
   
 }
 

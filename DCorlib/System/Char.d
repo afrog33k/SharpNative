@@ -2,8 +2,12 @@
 import System.Namespace;
 import std.conv;
 import std.ascii;
-class Char : NObject
+
+class Char : Boxed!wchar
 {
+
+	public static const wchar MaxValue = wchar.max;
+	public static const wchar MinValue = wchar.min;
 
 // Note that this array must be ordered, because binary searching is used on it.
 		 static const wchar[] WhiteChars = [
@@ -41,13 +45,13 @@ public static bool IsWhiteSpace(String str, int index) {
 		}
 
 
-	this()
-	{
-		// Constructor code
-	}
+	this(wchar value = 0)
+    {
+        this.__Value = value;
+    }
 
 	public override string toString() {
-		return "";
+		return to!string(__Value);
 	}
 
 	public static String ToString(wchar value)
@@ -55,9 +59,14 @@ public static bool IsWhiteSpace(String str, int index) {
 		return new String(to!wstring(value));
 	}
 
-	static this()
+	public override String ToString()
 	{
-		
+		return new String(to!wstring(this.toString));
+	}
+
+	public override Type GetType()
+	{
+		return __TypeOf!(typeof(this));
 	}
 
 }

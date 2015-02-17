@@ -5,6 +5,7 @@
 
 #region Imports
 
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 #endregion
@@ -51,15 +52,23 @@ namespace SharpNative.Compiler
                     //                            writer.Write(" = ");
                     if (correctConverter.ReturnType != destType)
                         writer.Write("Cast!(" + destTypeDlang + (destType.IsValueType ? "" : "") + ")(");
-                    if (useType)
+
+                    if (castingFrom.SpecialType == SpecialType.System_Decimal && destType.IsPrimitiveInteger())
                     {
-                        writer.Write(TypeProcessor.ConvertType(destType) + "." + "op_Implicit_" +
-                                     TypeProcessor.ConvertType(correctConverter.ReturnType));
+                       
                     }
                     else
                     {
-                        writer.Write(TypeProcessor.ConvertType(castingFrom) + "." + "op_Implicit_" +
-                                     TypeProcessor.ConvertType(correctConverter.ReturnType));
+                        if (useType)
+                        {
+                            writer.Write(TypeProcessor.ConvertType(destType) + "." + "op_Implicit_" +
+                                         TypeProcessor.ConvertType(correctConverter.ReturnType));
+                        }
+                        else
+                        {
+                            writer.Write(TypeProcessor.ConvertType(castingFrom) + "." + "op_Implicit_" +
+                                         TypeProcessor.ConvertType(correctConverter.ReturnType));
+                        }
                     }
                     writer.Write("(");
                     Core.Write(writer, expression.Expression);
@@ -93,10 +102,19 @@ namespace SharpNative.Compiler
 
                     //                            Core.Write(writer, expression.Left);
                     //                            writer.Write(" = ");
-                    if (useType)
+
+                    if (castingFrom.SpecialType == SpecialType.System_Decimal && destType.IsPrimitiveInteger())
+                    {
+
+                    }
+                    else
+                    {
+                         if (useType)
                         writer.Write(TypeProcessor.ConvertType(destType) + "." + "op_Explicit");
                     else
                         writer.Write(TypeProcessor.ConvertType(castingFrom) + "." + "op_Explicit");
+                    }
+                   
                     writer.Write("(");
                     Core.Write(writer, expression.Expression);
                     writer.Write(")");

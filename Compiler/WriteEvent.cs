@@ -13,7 +13,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 #endregion
 
-namespace SharpNative.Compiler
+namespace SharpNative.Compiler //TODO: clean up this code and its output
 {
     internal static class WriteEvent
     {
@@ -256,8 +256,8 @@ namespace SharpNative.Compiler
                     staticWriter.Write(name);
 
                     staticWriter.Write(" =  new " + "__Event!(" + typeString + ")(new Action_T!(" + typeString +
-                                       ")(__ToDelegate(&Add_" + name + ")),new Action_T!(" + typeString +
-                                       ")(__ToDelegate(&Remove_" + name + ")) )");
+                                       ")(&Add_" + name + "),new Action_T!(" + typeString +
+                                       ")(&Remove_" + name + ") )");
 
                     staticWriter.Write(";");
 
@@ -267,7 +267,7 @@ namespace SharpNative.Compiler
                 }
                 else
                 {
-                    var staticWriter = new OutputWriter("", "", false);
+                    /*var staticWriter = new OutputWriter("", "", false); //Not needed, event initiates itself if null
 
                     staticWriter.Write(name);
 
@@ -279,7 +279,7 @@ namespace SharpNative.Compiler
 
                     staticWriter.WriteLine();
 
-                    Context.Instance.InstanceInits.Add(staticWriter.ToString());
+                    Context.Instance.InstanceInits.Add(staticWriter.ToString());*/
                 }
 //						if (CSharpExtensions.CSharpKind (initializerOpt.Value) == SyntaxKind.CollectionInitializerExpression || CSharpExtensions.CSharpKind (initializerOpt.Value) == SyntaxKind.ArrayInitializerExpression)
 //						{

@@ -13,7 +13,7 @@ import System.Collections.Generic.Namespace;
 public this()
   {
 
-    super( (new String ("The given key was not present in the dictionary.")));
+    super(new String ("The given key was not present in the dictionary."));
   
 }
 

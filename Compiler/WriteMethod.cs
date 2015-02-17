@@ -45,9 +45,23 @@ namespace SharpNative.Compiler
                 else
                     writer.Write(", ");
 
-                var s = refKeyword + TypeProcessor.ConvertType(parameter.Type) + " ";
-                if (includeTypes)
-                    writer.Write(s);
+                var isParams = parameter.Modifiers.Any(SyntaxKind.ParamsKeyword);
+
+                //if (!isParams)
+                {
+                    var s = refKeyword + TypeProcessor.ConvertType(parameter.Type) + " ";
+                    if (includeTypes)
+                        writer.Write(s);
+                }
+               /* else //Framework depends too much on managed arrays even for params
+                {
+                    var type = (TypeProcessor.GetTypeInfo(parameter.Type).Type ?? TypeProcessor.GetTypeInfo(parameter.Type).ConvertedType) as IArrayTypeSymbol;
+                    var s = refKeyword + TypeProcessor.ConvertType(type.ElementType) + "[]";
+
+                    if (includeTypes)
+                        writer.Write(s);
+
+                }*/
 
                 writer.Write(WriteIdentifierName.TransformIdentifier(parameter.Identifier.ValueText));
                 if (parameter.Default == null)
@@ -62,7 +76,7 @@ namespace SharpNative.Compiler
                 else
                     writer.Write(", ");
                
-                writer.Write(TypeProcessor.ConvertType(iface) + " j = null");
+                writer.Write(TypeProcessor.ConvertType(iface) + " __j = null");
             }
             if (writebraces)
                 writer.Write(")");
@@ -170,9 +184,9 @@ namespace SharpNative.Compiler
                 @params = GetParameterListAsString(method.ParameterList.Parameters, includeTypes: false);
 
                 if (method.ReturnType.ToString() == "void")
-                    writer.WriteLine("Value." + methodName + @params + ";");
+                    writer.WriteLine("__Value." + methodName + @params + ";");
                 else
-                    writer.WriteLine("return Value." + methodName + @params + ";");
+                    writer.WriteLine("return __Value." + methodName + @params + ";");
             }
             else
             {
@@ -240,7 +254,8 @@ namespace SharpNative.Compiler
                             constraints += ((isFirst ? "" : "&&") + " !is(" + constraint.Name + " : NObject)");
                         else
                         {
-                            constraints += ((isFirst ? "" : "&&") + " is(" + constraint.Name + " : " + dlangCondition +
+							//TODO: fix this up better
+							constraints += ((isFirst ? "" : "&&") + " is(" + constraint.Name + " : " + dlangCondition.Replace("<","!(").Replace(">",")") +
                                             ")");
                         }
 

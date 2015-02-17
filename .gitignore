@@ -80,3 +80,5 @@ SharpNative.sln.ide/edbtmp.log
 SharpNative.sln.ide/storage.ide
 SharpNative.v12.suo
 Tests/AlterNative-Tests
+.DS_Store
+*.exe.config

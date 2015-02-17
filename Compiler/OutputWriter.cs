@@ -39,6 +39,7 @@ namespace SharpNative.Compiler
             var dir = Path.Combine(Program.OutDir, str.Replace(".", Path.DirectorySeparatorChar.ToString()));
             if (!Directory.Exists(dir))
                 Directory.CreateDirectory(dir);
+           
             _path = Path.Combine(dir, typeName + ".d");
             _writer = new StringWriter(_builder);
         }
@@ -63,9 +64,14 @@ namespace SharpNative.Compiler
             _writer.WriteLine();
         }
 
-        public void Write(string s)
+        public void Write(string s, params object[] objects)
         {
-            _writer.Write(s);
+            if(objects!=null && objects.Length > 0)
+                _writer.Write(String.Format(s,objects));
+            else
+            {
+                _writer.Write((s));
+            }
         }
 
         public void Write(OutputWriter s)
@@ -209,7 +215,7 @@ namespace SharpNative.Compiler
                         File.WriteAllText(_path, finalBuilder.ToString());
 
                         //Set read-only on generated files
-                        File.SetAttributes(_path, FileAttributes.ReadOnly);
+//                        File.SetAttributes(_path, FileAttributes.ReadOnly);
                     }
                 }
             }
@@ -220,7 +226,7 @@ namespace SharpNative.Compiler
                     File.WriteAllText(_path, _builder.ToString());
 
                     //Set read-only on generated files
-                    File.SetAttributes(_path, FileAttributes.ReadOnly);
+//                    File.SetAttributes(_path, FileAttributes.ReadOnly);
                 }
             }
             _writer.Dispose();

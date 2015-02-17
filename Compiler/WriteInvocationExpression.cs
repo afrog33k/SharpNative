@@ -12,6 +12,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using CSharpExtensions = Microsoft.CodeAnalysis.CSharpExtensions;
+using VisualBasicExtensions = Microsoft.CodeAnalysis.VisualBasic.VisualBasicExtensions;
 
 #endregion
 
@@ -67,14 +68,18 @@ namespace SharpNative.Compiler
             //When the code specifically names generic arguments, include them in the method name ... dmd needs help with inference, so we give it the types anyway
             if (methodSymbol.IsGenericMethod)
             {
-                //				var genNameExpression = invocationExpression.Expression as GenericNameSyntax;
-                //				if (genNameExpression == null && memberReferenceExpressionOpt != null)
-                //					genNameExpression = memberReferenceExpressionOpt.Name as GenericNameSyntax;
-                //				if (genNameExpression != null && genNameExpression.TypeArgumentList.Arguments.Count > 0)
-                typeParameters = "!( " +
-                                 string.Join(", ",
-                                     ((IMethodSymbol) symbol).TypeArguments.Select(r => TypeProcessor.ConvertType(r))) +
-                                 " )";
+
+                //return TryConvertType(named) + (named.TypeKind == TypeKind.Struct && o.ConstraintTypes.Any(k => k.TypeKind == //TypeKind.Interface) ? ".__Boxed_" : "");
+
+                var named = ((IMethodSymbol)symbol);
+                typeParameters = "!(" +
+                    named.TypeArguments.Select(o => TypeProcessor.GetGenericParameterType(named.TypeParameters[named.TypeArguments.IndexOf(o)], o)).Aggregate((a, b) => a + ", " + b)
+                           + ")";
+
+//                typeParameters = "!( " +
+//                                 string.Join(", ",
+//                                     ((IMethodSymbol) symbol).TypeArguments.Select(r => TypeProcessor.ConvertType(r)  )) +
+//                                 " )";
             }
 
             //Determine if it's an extension method called in a non-extension way.  In this case, just pretend it's not an extension method
@@ -306,6 +311,9 @@ namespace SharpNative.Compiler
 
             var arguments = invocationExpression.ArgumentList.Arguments;
 
+            ITypeSymbol typeSymbol = null;
+
+            bool isOverloaded =methodSymbol.ContainingType.GetMembers(methodSymbol.Name).OfType<IMethodSymbol>().Any(j => j.TypeParameters == methodSymbol.TypeParameters && ParameterMatchesWithRefOutIn(methodSymbol,j));
             foreach (var arg in arguments.Select(o => new TransformedArgument(o)))
             {
                 if (firstParameter)
@@ -315,16 +323,21 @@ namespace SharpNative.Compiler
 
                 var argumentType = TypeProcessor.GetTypeInfo(arg.ArgumentOpt.Expression);
 
-                //				if (!inParams && IsParamsArgument (invocationExpression, arg.ArgumentOpt, methodSymbol))
-                //				{
-                //					foundParamsArray = true;
-                //
-                //					if (!TypeProcessor.ConvertType (TypeProcessor.GetTypeInfo (arg.ArgumentOpt.Expression).Type).StartsWith ("System.Array<"))
-                //					{
-                //						inParams = true;
-                //						writer.Write ("Array_T!(");
-                //					}
-                //				}
+                if (!inParams && IsParamsArgument(invocationExpression, arg.ArgumentOpt, methodSymbol))
+                {
+                    foundParamsArray = true;
+					typeSymbol = TypeProcessor.GetTypeInfo(arg.ArgumentOpt.Expression).ConvertedType;
+
+                    if (
+                        !TypeProcessor.ConvertType(typeSymbol)
+                            .StartsWith("Array_T"))
+                    {
+                        inParams = true;
+                       // var elemType = TypeProcessor.ConvertType((typeSymbol as IArrayTypeSymbol).ElementType);
+                        var s =  TypeProcessor.ConvertType(typeSymbol);
+                        writer.Write("__ARRAY!("+s+")([");
+                    }
+                }
 
                 //Not needed for dlang
                 //                if (arg != null
@@ -371,20 +384,48 @@ namespace SharpNative.Compiler
                 //                    else
                 //                        arg.Write(writer);
                 //                }
+                ProcessArgument(writer, arg.ArgumentOpt,isOverloaded && argumentType.Type.IsValueType && (arg.ArgumentOpt.RefOrOutKeyword.RawKind==(decimal) SyntaxKind.None));
+            }
+            if (inParams)
+            {
+                writer.Write("])");
+            }
+            if (!foundParamsArray && methodSymbol.Parameters.Any() && methodSymbol.Parameters.Last().IsParams)
+            {
+                if (typeSymbol != null)
+                {
+                    var s = TypeProcessor.ConvertType(typeSymbol);
+                    writer.Write("__ARRAY!(" + s + ")([])");
 
-                ProcessArgument(writer, arg.ArgumentOpt);
+                }
+              else
+                writer.Write("null"); //params method called without any params argument.  Send null.
+
+
             }
 
-            //			if (inParams)
-            //				writer.Write (")");
-            //			 if (!foundParamsArray && methodSymbol.Parameters.Any () && methodSymbol.Parameters.Last ().IsParams)
-            //				writer.Write (", null"); //params method called without any params argument.  Send null.
-
+        
             writer.Write(")");
         }
 
+        private static bool ParameterMatchesWithRefOutIn(IMethodSymbol methodSymbol, IMethodSymbol methodSymbol1)
+        {
+            if (methodSymbol.Parameters.Count() != methodSymbol1.Parameters.Count())
+                return false;
+            for (int index = 0; index < methodSymbol.Parameters.Count(); index++)
+            {
+                var parameterSymbol = methodSymbol.Parameters[index];
+                if(parameterSymbol.Type != methodSymbol1.Parameters[index].Type)
+                    return false;
 
-        private static void ProcessArgument(OutputWriter writer, ArgumentSyntax variable)
+                if (parameterSymbol.RefKind == methodSymbol1.Parameters[index].RefKind)
+                    return false;
+            }
+            return true;
+        }
+
+
+        private static void ProcessArgument(OutputWriter writer, ArgumentSyntax variable, bool isOverloaded=false)
         {
             if (variable != null)
             {
@@ -399,8 +440,8 @@ namespace SharpNative.Compiler
                 var memberaccessexpression = value.Expression as MemberAccessExpressionSyntax;
                 var nameexpression = value.Expression as NameSyntax;
                 var nullAssignment = value.ToFullString().Trim() == "null";
-                var shouldBox = initializerType.Type != null && initializerType.Type.IsValueType &&
-                                !initializerType.ConvertedType.IsValueType;
+				var shouldBox = initializerType.Type != null && ((initializerType.Type.IsValueType || initializerType.Type.TypeKind==TypeKind.TypeParameter) &&
+					(!initializerType.ConvertedType.IsValueType));
                 var shouldUnBox = initializerType.Type != null && !initializerType.Type.IsValueType &&
                                   initializerType.ConvertedType.IsValueType;
                 var isname = value.Expression is NameSyntax;
@@ -415,6 +456,11 @@ namespace SharpNative.Compiler
                                          TypeProcessor.GetSymbolInfo(memberaccessexpression).Symbol.IsStatic) ||
                                         (isname && TypeProcessor.GetSymbolInfo(nameexpression).Symbol.IsStatic));
 
+                if (isOverloaded)
+                {
+                    writer.Write("cast(const({0}))",TypeProcessor.ConvertType(initializerType.Type));
+                }
+
                 if (nullAssignment)
                 {
                     writer.Write("null");
@@ -427,7 +473,7 @@ namespace SharpNative.Compiler
 
                     //We should start with exact converters and then move to more generic convertors i.e. base class or integers which are implicitly convertible
                     var correctConverter = initializerType.Type.GetImplicitCoversionOp(initializerType.ConvertedType,
-                        initializerType.Type);
+                        initializerType.Type,true);
                     //                            initializerType.Type.GetMembers("op_Implicit").OfType<IMethodSymbol>().FirstOrDefault(h => h.ReturnType == initializerType.Type && h.Parameters[0].Type == initializerType.ConvertedType);
 
                     if (correctConverter == null)
@@ -435,7 +481,7 @@ namespace SharpNative.Compiler
                         useType = false;
                         correctConverter =
                             initializerType.ConvertedType.GetImplicitCoversionOp(initializerType.ConvertedType,
-                                initializerType.Type);
+                                initializerType.Type,true);
                             //.GetMembers("op_Implicit").OfType<IMethodSymbol>().FirstOrDefault(h => h.ReturnType == initializerType.Type && h.Parameters[0].Type == initializerType.ConvertedType);
                     }
 
@@ -463,7 +509,7 @@ namespace SharpNative.Compiler
 
                     //We should start with exact converters and then move to more generic convertors i.e. base class or integers which are implicitly convertible
                     var correctConverter = initializerType.Type.GetImplicitCoversionOp(initializerType.Type,
-                        initializerType.ConvertedType);
+                        initializerType.ConvertedType,true);
                     //                            initializerType.Type.GetMembers("op_Implicit").OfType<IMethodSymbol>().FirstOrDefault(h => h.ReturnType == initializerType.Type && h.Parameters[0].Type == initializerType.ConvertedType);
 
                     if (correctConverter == null)
@@ -471,7 +517,7 @@ namespace SharpNative.Compiler
                         useType = false;
                         correctConverter =
                             initializerType.ConvertedType.GetImplicitCoversionOp(initializerType.Type,
-                                initializerType.ConvertedType);
+                                initializerType.ConvertedType,true);
                             //.GetMembers("op_Implicit").OfType<IMethodSymbol>().FirstOrDefault(h => h.ReturnType == initializerType.Type && h.Parameters[0].Type == initializerType.ConvertedType);
                     }
 
@@ -506,7 +552,7 @@ namespace SharpNative.Compiler
                 if (shouldUnBox)
                 {
                     //UnBox
-                    writer.Write("cast!(" + TypeProcessor.ConvertType(initializerType.Type) + ")(");
+                    writer.Write("Cast!(" + TypeProcessor.ConvertType(initializerType.Type) + ")(");
                     Core.Write(writer, value.Expression);
                     writer.Write(")");
                 }
@@ -525,8 +571,8 @@ namespace SharpNative.Compiler
                     }
 
                     var isStatic = isstaticdelegate;
-                    if (isStatic)
-                        writer.Write("__ToDelegate(");
+//                    if (isStatic)
+//                        writer.Write("__ToDelegate(");
                     writer.Write("&");
 
                     Core.Write(writer, value.Expression);

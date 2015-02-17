@@ -20,24 +20,26 @@ namespace SharpNative.Compiler
     internal class WriteProperty
     {
 
-        
+        const string _get = "";//"get"; //TODO: Fix these when we have a better impl;
+        private const string _set = "";//"set";
 
-        static void WriteRegion(bool get, string body, ITypeSymbol iface, OutputWriter writer, string typeString, string name, SyntaxTokenList modifiers, string parameters, bool isindexer)
+        static void WriteRegion(bool get, string body, ITypeSymbol iface, OutputWriter writer, string typeString, string name, SyntaxTokenList modifiers, string parameters, bool isindexer, bool hasGetter)
         {
             //no inline in D
-            if (get)
-                writer.Write(typeString + " ");
-            else
-                writer.Write("void ");
+//            if (get)
+                writer.Write((get ? (typeString) : (hasGetter ? typeString : "void")) + " ");
+//            else
+//                writer.Write("void ");
 
             if (!isindexer)
             {
-                writer.Write((name) +
+               
+                writer.Write( (get?(_get+name):(_set+(name))) +
                              (get
-                                 ? "(" + (iface != null ? (TypeProcessor.ConvertType(iface) + " ig=null") : "") + ")"
+                                 ? "(" + (iface != null ? (TypeProcessor.ConvertType(iface) + " __ig=null") : "") + ")"
                                  : "(" + typeString + " value " +
-                                   (iface != null ? ("," + TypeProcessor.ConvertType(iface) + " ig=null") : "") + ")") +
-                             " @property");
+                                   (iface != null ? ("," + TypeProcessor.ConvertType(iface) + " __ig=null") : "") + ")") +
+                             " ");
             }
             else
             {
@@ -75,6 +77,8 @@ namespace SharpNative.Compiler
                 property.AccessorList.Accessors.SingleOrDefault(
                     o => o.Keyword.RawKind == (decimal)SyntaxKind.SetKeyword);
 
+			var isStatic = property.Modifiers.Any (k=>k.IsKind(SyntaxKind.StaticKeyword));
+
             ITypeSymbol iface;
             ISymbol[] proxies;
 
@@ -86,7 +90,7 @@ namespace SharpNative.Compiler
 
             var acccessmodifiers = MemberUtilities.GetAccessModifiers(property, isInterface);
 
-            var typeString = TypeProcessor.ConvertType(type) + " ";
+            var typeString = TypeProcessor.ConvertType(type);
 
             var hasGetter = getter != null;
             var getterHasBody = hasGetter && getter.Body != null;
@@ -94,12 +98,30 @@ namespace SharpNative.Compiler
             var hasSetter = setter != null;
             var setterHasBody = hasSetter && setter.Body != null;
 
+
+
+			var indexerDeclarationSyntax = property as IndexerDeclarationSyntax;
+			var isindexer = indexerDeclarationSyntax != null;
             string getterbody = null;
             if (getterHasBody)
                 getterbody = Core.WriteString(getter.Body, false, writer.Indent + 2);
             string setterbody = null;
-            if (setterHasBody)
-                setterbody = Core.WriteString(setter.Body, false, writer.Indent + 2);
+			if (setterHasBody)
+			{
+				setterbody = Core.WriteString (setter.Body, false, writer.Indent + 2);
+				if (isindexer)
+				{
+					setterbody += "return value;";
+				}
+				else
+				{
+				    if (hasGetter)
+				    {
+				        setterbody += "return " + name + ";";
+				    }
+
+				}
+			}
 
             if (getter == null && setter == null)
                 throw new Exception("Property must have either a get or a set");
@@ -109,7 +131,7 @@ namespace SharpNative.Compiler
             var fieldName = WriteAutoFieldName(writer, name, modifiers, isInterface, hasGetter, getterHasBody,
                     hasSetter, setterHasBody, typeString, out isOverride, (property is IndexerDeclarationSyntax));
 
-            var indexerDeclarationSyntax = property as IndexerDeclarationSyntax;
+
             BracketedParameterListSyntax @params = null;
 
             if (indexerDeclarationSyntax != null)
@@ -125,7 +147,29 @@ namespace SharpNative.Compiler
 
             WriteGetter(writer, isProxy, hasGetter, acccessmodifiers, typeString, name,  proxies == null ? iface : null, getterHasBody, modifiers, isInterface, fieldName, getterbody, parameters, indexerDeclarationSyntax != null);
 
-            WriteSetter(writer, isProxy, hasSetter, acccessmodifiers, name, typeString, proxies == null ? iface : null, isOverride, setterHasBody, modifiers, isInterface, fieldName, setterbody, parameters, indexerDeclarationSyntax!=null);
+            WriteSetter(writer, isProxy, hasSetter, acccessmodifiers, name, typeString, proxies == null ? iface : null, isOverride, setterHasBody, modifiers, isInterface, fieldName, setterbody, parameters, isindexer,hasGetter);
+
+//			if (!isindexer && !isInterface) //TODO: Find a better solution
+//			{
+//				var fieldacccessmodifiers = acccessmodifiers.Replace ("abstract", "").Replace ("virtual","").Replace("override","");
+//
+//				writer.WriteLine(fieldacccessmodifiers +  "__Property!(" + typeString + ")" + name + ";");
+//				if (isStatic)
+//				{
+//					var staticWriter = new TempWriter ();
+//
+//					staticWriter.WriteLine (name + String.Format (" = __Property!(" + typeString + ")(__ToDelegate(&set{0}), __ToDelegate(&get{0}));", name));
+//					Context.Instance.StaticInits.Add (staticWriter.ToString ());
+//				}
+//				else
+//				{
+//					var instanceWriter = new TempWriter ();
+//
+//					instanceWriter.WriteLine (name + String.Format (" = __Property!(" + typeString + ")((&set{0}), (&get{0}));", name));
+//					Context.Instance.InstanceInits.Add (instanceWriter.ToString ());
+//				}
+//			}
+
 
             if (proxies != null)
             {
@@ -146,7 +190,7 @@ namespace SharpNative.Compiler
                            // parameters2 = WriteMethod.GetParameterListAsString(@params.Parameters, iface: proxies == null ? iface : null, writebraces: false);
                         }
 
-                        setterbody = " opIndexAssign(value," + parameters2 + ");";// + "=" + "value" + ";";
+                        setterbody = " return opIndexAssign(value," + parameters2 + ");";// + "=" + "value" + ";";
                         getterbody = " return opIndex(" + parameters2 + ");";
                     }
 
@@ -157,35 +201,30 @@ namespace SharpNative.Compiler
                         parameters = WriteMethod.GetParameterListAsString(@params.Parameters, iface: proxy.ContainingType, writebraces: false);
                     }
 
-                    WriteGetter(writer, isProxy, hasGetter, acccessmodifiers, typeString, name, proxy.ContainingType, getterHasBody, modifiers, isInterface, fieldName, getterbody, parameters, indexerDeclarationSyntax != null);
+                    WriteGetter(writer, isProxy, hasGetter, acccessmodifiers, typeString, name, proxy.ContainingType, getterHasBody, modifiers, isInterface, fieldName, getterbody, parameters, isindexer);
 
-                    WriteSetter(writer, isProxy, hasSetter, acccessmodifiers, name, typeString, proxy.ContainingType, isOverride, setterHasBody, modifiers, isInterface, fieldName, setterbody, parameters, indexerDeclarationSyntax != null);
+					WriteSetter (writer, isProxy, hasSetter, acccessmodifiers, name, typeString, proxy.ContainingType, isOverride, setterHasBody, modifiers, isInterface, fieldName, setterbody, parameters, isindexer,hasGetter);
                 }
             }
 
         }
 
-        private static void WriteSetter(OutputWriter writer, bool isProxy, bool hasSetter, string acccessmodifiers, string name, string typeString, ITypeSymbol iface, string isOverride, bool setterHasBody, SyntaxTokenList modifiers, bool isInterface, string fieldName, string setterbody, string parameters, bool isindexer)
+        private static void WriteSetter(OutputWriter writer, bool isProxy, bool hasSetter, string acccessmodifiers, string name, string typeString, ITypeSymbol iface, string isOverride, bool setterHasBody, SyntaxTokenList modifiers, bool isInterface, string fieldName, string setterbody, string parameters, bool isindexer,bool hasGetter)
         {
 
             if (isindexer)
                 name = "opIndexAssign";
 
+            var args = _set;
             if (hasSetter && isProxy)
             {
                 if (!isindexer)
                 {
-                    writer.WriteLine(acccessmodifiers + " void " + name + "(" + typeString + " value" +
-                                     (iface != null ? ("," + TypeProcessor.ConvertType(iface) + " ig=null") : "") +
-                                     isOverride + ") @property" +
-                                     isOverride + " {  Value." + name + " = value;}");
+					writer.WriteLine (string.Format ("{0} {2} {5}{1}({2} value{3}{4}){4} {{  __Value.{1} = value; return value;}}", acccessmodifiers, name, hasGetter ? typeString : "void", (iface != null ? ("," + TypeProcessor.ConvertType (iface) + " __ig=null") : ""), isOverride, args));
                 }
                 else
                 {
-                    writer.WriteLine(acccessmodifiers + " void " + name + "(" + typeString + " value," +
-                                   parameters +
-                                    isOverride + ") " +
-                                    isOverride + " {  Value." + name + " = value;}");
+					writer.WriteLine (string.Format ("{0} {2} {1}({2} value,{3}{4}) {4} {{  __Value.{1} = value;return value;}}", acccessmodifiers, name, typeString, parameters, isOverride));
                 }
             }
             else if (hasSetter && !setterHasBody) //Setter
@@ -194,31 +233,25 @@ namespace SharpNative.Compiler
                 {
                     if (!isindexer)
                     {
-                        writer.WriteLine(acccessmodifiers + " void " + name + "(" + typeString + " value" +
-                                          (iface != null ? ("," + TypeProcessor.ConvertType(iface) + " ig=null") : "")  +
-                                         isOverride + ") @property;");
+						writer.WriteLine (string.Format ("{0} {2} {5}{1}({2} value{3}{4});", acccessmodifiers, name, hasGetter ? typeString : "void", (iface != null ? ("," + TypeProcessor.ConvertType (iface) + " __ig=null") : ""), isOverride, args));
                     }
                     else
                     {
-                        writer.WriteLine(acccessmodifiers + " void " + name + "(" + typeString + " value," +
-                                        parameters +
-                                        isOverride + ");");
+						writer.WriteLine (string.Format ("{0} {2} {1}({2} value,{3}{4});", acccessmodifiers, name, typeString, parameters, isOverride));
                     }
                 }
                 else
                 {
                     if (!isindexer)
                     {
-                        writer.WriteLine(acccessmodifiers + " void " + name + "(" + typeString + " value"+
-                                          (iface != null ? ("," + TypeProcessor.ConvertType(iface) + " ig=null") : "") + 
-                                         ") @property" +
-                                         isOverride + " {" + fieldName + " = value;}");
+                        var returnValue = hasGetter ? "return value;" :"";
+                        writer.WriteLine (string.Format("{0} {2} {6}{1}({2} value{3}){4} {{{5} = value;{7}}}", acccessmodifiers, name, hasGetter?typeString :"void", (iface != null ? ("," + TypeProcessor.ConvertType (iface) + " __ig=null") : ""), isOverride, fieldName, args,returnValue));
                     }
                     else
                     {
-                        writer.WriteLine(acccessmodifiers + " void " + name + "(" + typeString + " value," +parameters +
-                                         ")" +
-                                         isOverride + " {" + fieldName + " = value;}");
+                        var returnValue = hasGetter ? "return value;" : "";
+
+                        writer.WriteLine (string.Format("{0} {2} {1}({2} value,{3}){4} {{{5} = value;{6}}}" , acccessmodifiers, name, typeString, parameters, isOverride, fieldName, returnValue));
                     }
                 }
             }
@@ -227,7 +260,7 @@ namespace SharpNative.Compiler
                 writer.WriteIndent();
                 writer.Write(acccessmodifiers);
 
-                WriteRegion(false, setterbody, iface, writer, typeString, name, modifiers,parameters,isindexer);
+                WriteRegion(false, setterbody, iface, writer, typeString, name, modifiers,parameters,isindexer,hasGetter);
             }
         }
 
@@ -236,20 +269,16 @@ namespace SharpNative.Compiler
             if (isindexer)
                 name = "opIndex";
 
+            var args =_get;
             if (hasGetter && isProxy)
             {
                 if (!isindexer)
                 {
-                    writer.WriteLine(acccessmodifiers + typeString + "" + name + "(" +
-                                     (iface != null ? (TypeProcessor.ConvertType(iface) + " ig=null") : "")  +
-                                     ")" + " @property " +
-                                     "{ return Value." + name + ";}");
+					writer.WriteLine (string.Format ("{0}{1} {4}{2}({3}) {{ return __Value.{2};}}", acccessmodifiers, typeString, name, (iface != null ? (TypeProcessor.ConvertType (iface) + " __ig=null") : ""), args));
                 }
                 else
                 {
-                    writer.WriteLine(acccessmodifiers + typeString + "" + name + "(" + parameters  +
-                                    ")" + "  " +
-                                    "{ return Value." + name + ";}");
+					writer.WriteLine (string.Format ("{0}{1} {2}({3})  {{ return __Value.{2};}}", acccessmodifiers, typeString, name, parameters));
                 }
             }
             else if (hasGetter && !getterHasBody) //Getter
@@ -258,15 +287,11 @@ namespace SharpNative.Compiler
                 {
                     if (!isindexer)
                     {
-                        writer.WriteLine(acccessmodifiers + typeString + " " + name + "(" +
-                                         (iface != null ? (TypeProcessor.ConvertType(iface) + " ig=null") : "") + ")" +
-                                         " @property;");
+						writer.WriteLine (string.Format ("{0}{1} {4}{2}({3});", acccessmodifiers, typeString, name, (iface != null ? (TypeProcessor.ConvertType (iface) + " __ig=null") : ""), args));
                     }
                     else
                     {
-                        writer.WriteLine(acccessmodifiers + typeString + " " + name + "(" +
-                                        parameters+ ")" +
-                                        ";");
+						writer.WriteLine (string.Format ("{0}{1} {2}({3});", acccessmodifiers, typeString, name, parameters));
                     }
                 }
 
@@ -274,14 +299,11 @@ namespace SharpNative.Compiler
                 {
                     if (!isindexer)
                     {
-                        writer.WriteLine(acccessmodifiers + typeString + "" + name + "(" +
-                                         (iface != null ? (TypeProcessor.ConvertType(iface) + " ig=null") : "") + ")" +
-                                         " @property " + "{ return " + fieldName + ";}");
+						writer.WriteLine (string.Format ("{0}{1} {5}{2}({3}) {{ return {4};}}", acccessmodifiers, typeString, name, (iface != null ? (TypeProcessor.ConvertType (iface) + " __ig=null") : ""), fieldName, args));
                     }
                     else
                     {
-                        writer.WriteLine(acccessmodifiers + typeString + "" + name + "(" + parameters+ ")" +
-                                         "  " + "{ return " + fieldName + ";}");
+						writer.WriteLine (string.Format ("{0}{1} {2}({3})  {{ return {4};}}", acccessmodifiers, typeString, name, parameters, fieldName));
                     }
                 }
             }
@@ -289,7 +311,7 @@ namespace SharpNative.Compiler
             {
                 writer.WriteIndent();
                 writer.Write(acccessmodifiers);
-                WriteRegion(true, getterbody, iface, writer, typeString, name, modifiers,parameters,isindexer);
+                WriteRegion(true, getterbody, iface, writer, typeString, name, modifiers,parameters,isindexer,hasGetter);
             }
         }
 
@@ -308,7 +330,7 @@ namespace SharpNative.Compiler
             {
                 if ((hasGetter && !getterHasBody) &&
                     (hasSetter && !setterHasBody) && (!modifiers.Any(SyntaxKind.AbstractKeyword)))
-                    writer.WriteLine("private " + typeString + fieldName + ";");
+                    writer.WriteLine("private " + typeString + " " + fieldName + ";");
             }
             return fieldName;
         }

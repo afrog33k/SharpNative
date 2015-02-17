@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="6154.17" systemVersion="14A329f" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
+    <dependencies>
+        <deployment defaultVersion="101000" identifier="macosx"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="6154.17"/>
+    </dependencies>
+    <objects>
+        <customObject id="-2" userLabel="File's Owner" customClass="MyDocument">
+            <connections>
+                <outlet property="CPPFilename" destination="U7y-FQ-ykx" id="Tjl-Lc-XvH"/>
+                <outlet property="CPPRunButton" destination="Cgp-m7-7Tq" id="Fz3-qp-Zne"/>
+                <outlet property="CPPTextEditor" destination="UwF-YS-M2a" id="XZf-Sw-oXt"/>
+                <outlet property="CSharpFilename" destination="VII-ZN-Q19" id="dhv-WQ-MzR"/>
+                <outlet property="CSharpRunButton" destination="76k-D3-D0w" id="Nle-Df-daD"/>
+                <outlet property="CSharpTextEditor" destination="gJa-9E-3Ql" id="v2Q-qz-23L"/>
+                <outlet property="ConsoleText" destination="gEQ-m4-fpe" id="DgT-Qt-cLb"/>
+                <outlet property="CppFileList" destination="esn-NW-ad7" id="wJy-zm-Vdb"/>
+                <outlet property="OpenFileButton" destination="kcQ-2u-Ewa" id="HrI-Pu-toH"/>
+                <outlet property="RunAllTests" destination="RuV-re-Xy3" id="F4X-rW-TiG"/>
+                <outlet property="TestButton" destination="a5W-3W-k9p" id="mle-FK-YWJ"/>
+                <outlet property="TestStatusButton" destination="XEu-nG-2wJ" id="vzA-Ho-FIW"/>
+                <outlet property="window" destination="1" id="6"/>
+            </connections>
+        </customObject>
+        <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
+        <customObject id="-3" userLabel="Application"/>
+        <window title="Window" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" animationBehavior="default" id="1" userLabel="Window">
+            <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
+            <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
+            <rect key="contentRect" x="133" y="235" width="842" height="559"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1280" height="778"/>
+            <value key="minSize" type="size" width="94" height="86"/>
+            <view key="contentView" id="2">
+                <rect key="frame" x="0.0" y="0.0" width="842" height="559"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <splitView appearanceType="aqua" dividerStyle="thin" id="d46-xv-7Vh">
+                        <rect key="frame" x="0.0" y="0.0" width="842" height="532"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <splitView dividerStyle="thin" vertical="YES" id="6wA-Pj-4pj">
+                                <rect key="frame" x="0.0" y="0.0" width="842" height="239"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                <subviews>
+                                    <customView id="0y8-pU-uAj">
+                                        <rect key="frame" x="0.0" y="0.0" width="421" height="239"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <subviews>
+                                            <scrollView appearanceType="aqua" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" id="g44-YD-53x">
+                                                <rect key="frame" x="0.0" y="0.0" width="421" height="239"/>
+                                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                <clipView key="contentView" id="o0d-5k-BNM">
+                                                    <rect key="frame" x="1" y="1" width="245" height="347"/>
+                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                    <subviews>
+                                                        <textView importsGraphics="NO" findStyle="panel" continuousSpellChecking="YES" allowsUndo="YES" usesRuler="YES" usesFontPanel="YES" verticallyResizable="YES" allowsNonContiguousLayout="YES" quoteSubstitution="YES" dashSubstitution="YES" spellingCorrection="YES" smartInsertDelete="YES" id="gJa-9E-3Ql">
+                                                            <rect key="frame" x="0.0" y="0.0" width="245" height="382"/>
+                                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                            <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                                            <size key="minSize" width="404" height="237"/>
+                                                            <size key="maxSize" width="463" height="10000000"/>
+                                                            <color key="insertionPointColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                            <size key="minSize" width="404" height="237"/>
+                                                            <size key="maxSize" width="463" height="10000000"/>
+                                                        </textView>
+                                                    </subviews>
+                                                    <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                                </clipView>
+                                                <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" doubleValue="1" horizontal="YES" id="wiv-r6-0f8">
+                                                    <rect key="frame" x="-100" y="-100" width="87" height="18"/>
+                                                    <autoresizingMask key="autoresizingMask"/>
+                                                </scroller>
+                                                <scroller key="verticalScroller" verticalHuggingPriority="750" doubleValue="1" horizontal="NO" id="BQR-jK-gEP">
+                                                    <rect key="frame" x="246" y="1" width="15" height="347"/>
+                                                    <autoresizingMask key="autoresizingMask"/>
+                                                </scroller>
+                                            </scrollView>
+                                            <textField appearanceType="aqua" horizontalHuggingPriority="251" verticalHuggingPriority="750" id="VII-ZN-Q19">
+                                                <rect key="frame" x="0.0" y="222" width="421" height="17"/>
+                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="C# Code" drawsBackground="YES" id="ks7-GG-1LI">
+                                                    <font key="font" metaFont="system"/>
+                                                    <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                                                    <color key="backgroundColor" name="alternateSelectedControlColor" catalog="System" colorSpace="catalog"/>
+                                                </textFieldCell>
+                                            </textField>
+                                        </subviews>
+                                    </customView>
+                                    <customView id="Ct4-A0-sux">
+                                        <rect key="frame" x="422" y="0.0" width="420" height="239"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <subviews>
+                                            <scrollView appearanceType="aqua" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" id="DOY-DR-uqv">
+                                                <rect key="frame" x="0.0" y="0.0" width="420" height="239"/>
+                                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                <clipView key="contentView" id="x9W-qi-3ul">
+                                                    <rect key="frame" x="1" y="1" width="245" height="347"/>
+                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                    <subviews>
+                                                        <textView importsGraphics="NO" findStyle="panel" continuousSpellChecking="YES" allowsUndo="YES" usesRuler="YES" usesFontPanel="YES" verticallyResizable="YES" allowsNonContiguousLayout="YES" quoteSubstitution="YES" dashSubstitution="YES" spellingCorrection="YES" smartInsertDelete="YES" id="UwF-YS-M2a">
+                                                            <rect key="frame" x="0.0" y="0.0" width="245" height="382"/>
+                                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                            <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                                            <size key="minSize" width="403" height="237"/>
+                                                            <size key="maxSize" width="463" height="10000000"/>
+                                                            <color key="insertionPointColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                            <size key="minSize" width="403" height="237"/>
+                                                            <size key="maxSize" width="463" height="10000000"/>
+                                                        </textView>
+                                                    </subviews>
+                                                    <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                                </clipView>
+                                                <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" doubleValue="1" horizontal="YES" id="qaJ-s9-5rB">
+                                                    <rect key="frame" x="-100" y="-100" width="87" height="18"/>
+                                                    <autoresizingMask key="autoresizingMask"/>
+                                                </scroller>
+                                                <scroller key="verticalScroller" verticalHuggingPriority="750" doubleValue="1" horizontal="NO" id="pIZ-m4-hz6">
+                                                    <rect key="frame" x="246" y="1" width="15" height="347"/>
+                                                    <autoresizingMask key="autoresizingMask"/>
+                                                </scroller>
+                                            </scrollView>
+                                            <textField appearanceType="aqua" horizontalHuggingPriority="251" verticalHuggingPriority="750" id="U7y-FQ-ykx">
+                                                <rect key="frame" x="0.0" y="222" width="420" height="17"/>
+                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="left" title="CPP Code" drawsBackground="YES" id="6P6-c9-FfS">
+                                                    <font key="font" metaFont="system"/>
+                                                    <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                                                    <color key="backgroundColor" name="alternateSelectedControlColor" catalog="System" colorSpace="catalog"/>
+                                                </textFieldCell>
+                                            </textField>
+                                        </subviews>
+                                    </customView>
+                                </subviews>
+                                <holdingPriorities>
+                                    <real value="250"/>
+                                    <real value="250"/>
+                                </holdingPriorities>
+                            </splitView>
+                            <scrollView appearanceType="aqua" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" id="P5s-MU-Y8x">
+                                <rect key="frame" x="0.0" y="240" width="842" height="292"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <clipView key="contentView" id="yPo-Jv-1ws">
+                                    <rect key="frame" x="1" y="1" width="785" height="112"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                    <subviews>
+                                        <textView importsGraphics="NO" findStyle="panel" continuousSpellChecking="YES" allowsUndo="YES" usesRuler="YES" usesFontPanel="YES" verticallyResizable="YES" allowsNonContiguousLayout="YES" quoteSubstitution="YES" dashSubstitution="YES" spellingCorrection="YES" smartInsertDelete="YES" id="gEQ-m4-fpe">
+                                            <rect key="frame" x="0.0" y="0.0" width="785" height="290.5"/>
+                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                            <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                            <size key="minSize" width="825" height="290"/>
+                                            <size key="maxSize" width="842" height="10000000"/>
+                                            <color key="insertionPointColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                            <size key="minSize" width="825" height="290"/>
+                                            <size key="maxSize" width="842" height="10000000"/>
+                                        </textView>
+                                    </subviews>
+                                    <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                </clipView>
+                                <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" doubleValue="1" horizontal="YES" id="4fS-wp-HZZ">
+                                    <rect key="frame" x="-100" y="-100" width="87" height="18"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                </scroller>
+                                <scroller key="verticalScroller" verticalHuggingPriority="750" doubleValue="1" horizontal="NO" id="DiW-QT-Mg5">
+                                    <rect key="frame" x="786" y="1" width="15" height="112"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                </scroller>
+                            </scrollView>
+                        </subviews>
+                        <holdingPriorities>
+                            <real value="250"/>
+                            <real value="250"/>
+                        </holdingPriorities>
+                    </splitView>
+                    <button appearanceType="aqua" verticalHuggingPriority="750" id="Cgp-m7-7Tq">
+                        <rect key="frame" x="815" y="535" width="29" height="26"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="bevel" bezelStyle="regularSquare" image="NSGoRightTemplate" imagePosition="only" alignment="center" borderStyle="border" inset="2" id="IDO-ai-RaA">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system"/>
+                        </buttonCell>
+                    </button>
+                    <comboBox appearanceType="aqua" verticalHuggingPriority="750" id="esn-NW-ad7">
+                        <rect key="frame" x="466" y="534" width="332" height="26"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <comboBoxCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" borderStyle="bezel" drawsBackground="YES" completes="NO" numberOfVisibleItems="5" id="Z78-QK-sbX">
+                            <font key="font" metaFont="system"/>
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                        </comboBoxCell>
+                    </comboBox>
+                </subviews>
+            </view>
+            <toolbar key="toolbar" implicitIdentifier="942A211D-7112-475D-9266-2D93A9400C4D" autosavesConfiguration="NO" displayMode="iconAndLabel" sizeMode="regular" id="qpS-hL-otv">
+                <allowedToolbarItems>
+                    <toolbarItem implicitItemIdentifier="1EB22500-7027-4EC2-8460-ABFE819EE4D7" label="" paletteLabel="Custom View" id="7Kj-JV-KtE">
+                        <nil key="toolTip"/>
+                        <size key="minSize" width="66" height="32"/>
+                        <size key="maxSize" width="66" height="32"/>
+                        <button key="view" appearanceType="aqua" verticalHuggingPriority="750" id="a5W-3W-k9p">
+                            <rect key="frame" x="320" y="525" width="66" height="32"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                            <buttonCell key="cell" type="push" title="Test" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="lBp-rF-hqF">
+                                <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                <font key="font" metaFont="system"/>
+                            </buttonCell>
+                        </button>
+                    </toolbarItem>
+                    <toolbarItem implicitItemIdentifier="NSToolbarShowColorsItem" id="Ye6-f8-j2U"/>
+                    <toolbarItem implicitItemIdentifier="NSToolbarShowFontsItem" id="PAv-FT-Jgr"/>
+                    <toolbarItem implicitItemIdentifier="NSToolbarPrintItem" id="vsr-3t-8hG"/>
+                    <toolbarItem implicitItemIdentifier="NSToolbarSpaceItem" id="Gw9-v2-GQB"/>
+                    <toolbarItem implicitItemIdentifier="NSToolbarFlexibleSpaceItem" id="DBK-qB-67R"/>
+                    <toolbarItem implicitItemIdentifier="DDACA21C-2AE9-428E-813B-A780681ECDF8" label="" paletteLabel="Custom View" id="7si-1Z-XyC">
+                        <nil key="toolTip"/>
+                        <size key="minSize" width="90" height="32"/>
+                        <size key="maxSize" width="90" height="32"/>
+                        <button key="view" appearanceType="aqua" verticalHuggingPriority="750" id="kcQ-2u-Ewa">
+                            <rect key="frame" x="77" y="529" width="90" height="32"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                            <buttonCell key="cell" type="push" title="Open File" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="MRL-5z-AeA">
+                                <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                <font key="font" metaFont="system"/>
+                            </buttonCell>
+                            <connections>
+                                <action selector="OpenFile:" target="-2" id="1sa-oE-cu2"/>
+                            </connections>
+                        </button>
+                    </toolbarItem>
+                    <toolbarItem implicitItemIdentifier="426C1E73-2E07-4F26-B1EF-D7FAE4333CFA" label="" paletteLabel="Custom View" id="jZV-vF-Okc">
+                        <nil key="toolTip"/>
+                        <size key="minSize" width="65" height="32"/>
+                        <size key="maxSize" width="65" height="32"/>
+                        <button key="view" appearanceType="aqua" verticalHuggingPriority="750" id="76k-D3-D0w">
+                            <rect key="frame" x="223" y="526" width="65" height="32"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                            <buttonCell key="cell" type="push" title="Run" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="u4H-YT-kBk">
+                                <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                <font key="font" metaFont="system"/>
+                            </buttonCell>
+                        </button>
+                    </toolbarItem>
+                    <toolbarItem implicitItemIdentifier="011659AD-45FF-41A3-B9B8-5DC69440C328" label="" paletteLabel="Custom View" id="t2X-43-SE6">
+                        <nil key="toolTip"/>
+                        <size key="minSize" width="80" height="32"/>
+                        <size key="maxSize" width="80" height="32"/>
+                        <button key="view" appearanceType="aqua" verticalHuggingPriority="750" id="XEu-nG-2wJ">
+                            <rect key="frame" x="768" y="529" width="80" height="32"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                            <buttonCell key="cell" type="push" title="Status" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="P59-zQ-yKX">
+                                <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                <font key="font" metaFont="system"/>
+                            </buttonCell>
+                        </button>
+                    </toolbarItem>
+                    <toolbarItem implicitItemIdentifier="E1A45995-51ED-49E6-B11A-77BA31A8DEF4" label="Custom View" paletteLabel="Custom View" id="dYl-pk-LhD">
+                        <nil key="toolTip"/>
+                        <size key="minSize" width="120" height="32"/>
+                        <size key="maxSize" width="120" height="32"/>
+                        <button key="view" appearanceType="aqua" verticalHuggingPriority="750" id="RuV-re-Xy3">
+                            <rect key="frame" x="301" y="531" width="120" height="32"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                            <buttonCell key="cell" type="push" title="Run All Tests" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="4WE-Fh-U2g">
+                                <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                <font key="font" metaFont="system"/>
+                            </buttonCell>
+                        </button>
+                    </toolbarItem>
+                </allowedToolbarItems>
+                <defaultToolbarItems>
+                    <toolbarItem reference="7si-1Z-XyC"/>
+                    <toolbarItem reference="jZV-vF-Okc"/>
+                    <toolbarItem reference="7Kj-JV-KtE"/>
+                    <toolbarItem reference="dYl-pk-LhD"/>
+                    <toolbarItem reference="DBK-qB-67R"/>
+                    <toolbarItem reference="vsr-3t-8hG"/>
+                    <toolbarItem reference="t2X-43-SE6"/>
+                </defaultToolbarItems>
+            </toolbar>
+            <connections>
+                <outlet property="delegate" destination="-2" id="5"/>
+            </connections>
+            <point key="canvasLocation" x="340" y="375.5"/>
+        </window>
+    </objects>
+    <resources>
+        <image name="NSGoRightTemplate" width="9" height="12"/>
+    </resources>
+</document>

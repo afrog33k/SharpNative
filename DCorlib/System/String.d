@@ -87,7 +87,15 @@ class StringHelper
 			  }
 	}
 
-	public static void FormatHelper(StringBuilder result, String format, System.Namespace.NObject[] args) 
+
+
+	
+	public static void FormatHelper(StringBuilder result, String format, Array_T!(NObject) args) 
+	{
+		FormatHelper( result,  format,  args.Items);
+	}
+
+	public static void FormatHelper(StringBuilder result, String format, NObject[] args) 
 	{
 		if (format is null||args is null)
 		{
@@ -176,6 +184,8 @@ class StringHelper
 
 }
 
+
+
 class String : NObject
 {
 	wstring text;
@@ -186,18 +196,41 @@ class String : NObject
 	//		text = source;
 	//	}
 
-	public wstring Text() @property
+	public wstring Text() @property const
 	{
 		return text;
 	}
 
-	public static String Empty;
+	//	static const __typeID = typeid(wstring);
+
+	public override int GetHashCode()
+	{
+		//TODO: need better impl
+		if(text is null)
+			return -1;
+
+		import xxhash;
+		uint hashed = xxhashOf((text));
+		return cast(int) hashed;
+//		return cast(int)text.toHash;
+		//enum type = typeid(wstring);
+
+		//auto hash =  cast(int)type.getHash(&text);
+		//return hash;
+	}
+
+	public __gshared String Empty = new String("");
+	public __gshared String Null =  new String(cast(string)null);
 
 	static this()
 	{
-		Empty =  new String("");
+		//Empty =  new String("");
 	}
 
+	this()
+	{
+		text = "";
+	}
 	this(wstring source)
 	{
 		text = source;
@@ -237,13 +270,24 @@ class String : NObject
 		return Format(null, format, [ obj0, obj1, obj2 ]);
 	}
 
-	public static String Format(String format, NObject[] args ...) {
-		return Format(null, format, args);
+
+	public static String Format(String format, Array_T!(NObject) args1) { // "have to rename argument named args"
+		return Format(null, format, args1);
 	}
 
-	public static String Format(IFormatProvider provider, String format, NObject[] args ...) {
+	public static String Format(String format, NObject[] args1 ...) { // "have to rename argument named args"
+		return Format(null, format, args1);
+	}
+
+	public static String Format(IFormatProvider provider, String format, Array_T!(NObject) args1) {
 		StringBuilder sb = new StringBuilder();
-		StringHelper.FormatHelper(sb, format, args);
+		StringHelper.FormatHelper(sb, format, args1);
+		return sb.ToString();
+	}
+
+	public static String Format(IFormatProvider provider, String format, NObject[] args1 ...) {
+		StringBuilder sb = new StringBuilder();
+		StringHelper.FormatHelper(sb, format, args1);
 		return sb.ToString();
 	}
 
@@ -281,16 +325,22 @@ class String : NObject
 
 	override bool Equals (NObject rhs)
     {
-		//static if(is(rhs : String))
-		// {
-
-		//Console.WriteLine(new String("opEquals: str = {0}, ss = {1}") , this , rhs.ToString() );
+		
         return text == (rhs.ToString()).text;
-		//}
-		//else
-		//  return rhs == this;
-		//return false;
     }
+
+	override bool  opEquals(Object rhs)
+	{
+		 if(cast(String)rhs)
+		{
+			return text==(cast(String)(rhs)).text;
+		}
+		return super.opEquals(rhs);
+			//Console.WriteLine("opEquals");
+		//	return text==(rhs.text);
+		//return false;
+	
+	}
 
 	final wchar opIndex(int index) {
 		if (index >= text.length)
@@ -309,8 +359,9 @@ class String : NObject
 		}
 	}
 
-	String opBinary(wstring op)(String rhs)
+	String opBinary(string op)(String rhs)
 	{
+		//Console.WriteLine(op);
 		static if (op == "+") 
 		{
 			return  new String(text ~ rhs.text);	
@@ -323,9 +374,15 @@ class String : NObject
 	}
 
 
+	String[] Split(Array_T!wchar chars)
+	{
+		return null;
+	}
+
+
 
 	//seems we can overload just like c# yay ;)
-	String opBinaryRight(wstring op)(NObject lhs)
+	String opBinaryRight(string op)(NObject lhs)
 	{
 		static if (op == "+") 
 			return  new String(lhs.ToString().text ~ text);  
@@ -334,8 +391,9 @@ class String : NObject
 
 
 
-	String opBinary(wstring op)(NObject rhs)
+	String opBinary(string op)(NObject rhs)
 	{
+		//Console.WriteLine(op);
 		static if (op == "+") 
 			return  new String(text ~ rhs.ToString().text);  
 		static if (op == "+=") 
@@ -345,14 +403,15 @@ class String : NObject
 		}
 	}
 
-	wstring opCast(T : wstring)() const
+	final T opCast(T)() if(is(T:wstring))
 	{
 		return text;
 	}
 
-	string opCast(T : string)() const
+	final T opCast(T)() if(is(T:string))
 	{
-		return std.conv.to!string(text);
+		import std.string;
+		return std.conv.to!(char[])(text);
 	}
 
 	final U opCast(U)() if(is(U:wchar*))
@@ -367,6 +426,12 @@ class String : NObject
 		return cast(U) std.conv.to!(char[])(text).toStringz;
     }
 
+	final U opCast(U)()
+		if(!is(U:char*) && !is(U:wchar*) && !is(U:string) && !is(U:wstring))
+		{
+			return cast(U)this;
+		}
+
 	public static String Concat(String self, String other)
 	{
 		self = new String(self.text ~ other.text);
@@ -379,6 +444,11 @@ class String : NObject
 		foreach(item; array)
 			self = self ~ item.ToString().text;
 		return new String(self);
+	}
+
+	override Type GetType()
+	{
+		return __TypeOf!(typeof(this));
 	}
 }
 

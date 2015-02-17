@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{A4BF9763-0F27-47F2-AF82-82C6394C92B0}</ProjectGuid>
+    <Compiler>ldc2</Compiler>
+    <PreferOneStepBuild>true</PreferOneStepBuild>
+    <UseDefaultCompiler>true</UseDefaultCompiler>
+    <IncrementalLinking>true</IncrementalLinking>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug</OutputPath>
+    <ObjectsDirectory>obj/Debug</ObjectsDirectory>
+    <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
+    <UnittestMode>false</UnittestMode>
+    <OutputName>DCorlibMD</OutputName>
+    <Target>StaticLibrary</Target>
+    <Externalconsole>true</Externalconsole>
+    <DebugLevel>0</DebugLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <OutputPath>bin\Release</OutputPath>
+    <ObjectsDirectory>obj/Release</ObjectsDirectory>
+    <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
+    <UnittestMode>false</UnittestMode>
+    <OutputName>DCorlibMD</OutputName>
+    <Target>Executable</Target>
+    <Externalconsole>true</Externalconsole>
+    <DebugLevel>0</DebugLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Unittest|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Unittest</OutputPath>
+    <ObjectsDirectory>obj/Unittest</ObjectsDirectory>
+    <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
+    <UnittestMode>true</UnittestMode>
+    <OutputName>DCorlibMD</OutputName>
+    <Target>Executable</Target>
+    <Externalconsole>true</Externalconsole>
+    <DebugLevel>0</DebugLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="main.d" />
+    <Compile Include="..\DCorlib\System\Array.d">
+      <Link>System\Array.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Array_T.d">
+      <Link>System\Array_T.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Boolean.d">
+      <Link>System\Boolean.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Char.d">
+      <Link>System\Char.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Console.d">
+      <Link>System\Console.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Double.d">
+      <Link>System\Double.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\EmptyArray_T.d">
+      <Link>System\EmptyArray_T.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Environment.d">
+      <Link>System\Environment.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\GC.d">
+      <Link>System\GC.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\ICloneable.d">
+      <Link>System\ICloneable.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Int32.d">
+      <Link>System\Int32.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Math.d">
+      <Link>System\Math.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\NObject.d">
+      <Link>System\NObject.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Single.d">
+      <Link>System\Single.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\String.d">
+      <Link>System\String.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\System.d">
+      <Link>System\System.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Collections\Collection.d">
+      <Link>System\Collections\Collection.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Collections\Collections.d">
+      <Link>System\Collections\Collections.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Collections\Hashtable.d">
+      <Link>System\Collections\Hashtable.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Collections\Hashtable_Entry.d">
+      <Link>System\Collections\Hashtable_Entry.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Collections\Hashtable_EnumeratorType.d">
+      <Link>System\Collections\Hashtable_EnumeratorType.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Collections\Hashtable_HashtableEnumerator.d">
+      <Link>System\Collections\Hashtable_HashtableEnumerator.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Collections\Hashtable_KeyCollection.d">
+      <Link>System\Collections\Hashtable_KeyCollection.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Collections\Hashtable_ValueCollection.d">
+      <Link>System\Collections\Hashtable_ValueCollection.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Collections\ICollection.d">
+      <Link>System\Collections\ICollection.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Collections\IDictionary.d">
+      <Link>System\Collections\IDictionary.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Collections\IEnumerable.d">
+      <Link>System\Collections\IEnumerable.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Collections\IEnumerator.d">
+      <Link>System\Collections\IEnumerator.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Collections\IEqualityComparer.d">
+      <Link>System\Collections\IEqualityComparer.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Collections\IList.d">
+      <Link>System\Collections\IList.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Collections\SortedList.d">
+      <Link>System\Collections\SortedList.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Collections\Generic\Comparer_T.d">
+      <Link>System\Collections\Generic\Comparer_T.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Collections\Generic\Comparer_T_DefaultComparerT.d">
+      <Link>System\Collections\Generic\Comparer_T_DefaultComparerT.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Collections\Generic\DefaultComparer_T.d">
+      <Link>System\Collections\Generic\DefaultComparer_T.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Collections\Generic\Dictionary_TKey_TValue.d">
+      <Link>System\Collections\Generic\Dictionary_TKey_TValue.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Collections\Generic\Dictionary_TKey_TValue_EnumeratorTKey_TValue.d">
+      <Link>System\Collections\Generic\Dictionary_TKey_TValue_EnumeratorTKey_TValue.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Collections\Generic\Dictionary_TKey_TValue_KeyCollectionTKey_TValue.d">
+      <Link>System\Collections\Generic\Dictionary_TKey_TValue_KeyCollectionTKey_TValue.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Collections\Generic\Dictionary_TKey_TValue_KeyCollection_EnumeratorTKey_TValue.d">
+      <Link>System\Collections\Generic\Dictionary_TKey_TValue_KeyCollection_EnumeratorTKey_TValue.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Collections\Generic\Dictionary_TKey_TValue_ShimEnumeratorTKey_TValue.d">
+      <Link>System\Collections\Generic\Dictionary_TKey_TValue_ShimEnumeratorTKey_TValue.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Collections\Generic\Dictionary_TKey_TValue_Transform_TRetTKey_TValue.d">
+      <Link>System\Collections\Generic\Dictionary_TKey_TValue_Transform_TRetTKey_TValue.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Collections\Generic\Dictionary_TKey_TValue_ValueCollectionTKey_TValue.d">
+      <Link>System\Collections\Generic\Dictionary_TKey_TValue_ValueCollectionTKey_TValue.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Collections\Generic\Dictionary_TKey_TValue_ValueCollection_EnumeratorTKey_TValue.d">
+      <Link>System\Collections\Generic\Dictionary_TKey_TValue_ValueCollection_EnumeratorTKey_TValue.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Collections\Generic\EnumIntEqualityComparer_T.d">
+      <Link>System\Collections\Generic\EnumIntEqualityComparer_T.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Collections\Generic\EqualityComparer_T.d">
+      <Link>System\Collections\Generic\EqualityComparer_T.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Collections\Generic\GenericComparer_T.d">
+      <Link>System\Collections\Generic\GenericComparer_T.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Collections\Generic\GenericEqualityComparer_T.d">
+      <Link>System\Collections\Generic\GenericEqualityComparer_T.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Collections\Generic\ICollection_T.d">
+      <Link>System\Collections\Generic\ICollection_T.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Collections\Generic\IComparer_T.d">
+      <Link>System\Collections\Generic\IComparer_T.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Collections\Generic\IDictionary_TKey_TValue.d">
+      <Link>System\Collections\Generic\IDictionary_TKey_TValue.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Collections\Generic\IEnumerable_T.d">
+      <Link>System\Collections\Generic\IEnumerable_T.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Collections\Generic\IEnumerator_T.d">
+      <Link>System\Collections\Generic\IEnumerator_T.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Collections\Generic\IEqualityComparer_T.d">
+      <Link>System\Collections\Generic\IEqualityComparer_T.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Collections\Generic\IList_T.d">
+      <Link>System\Collections\Generic\IList_T.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Collections\Generic\IntEqualityComparer.d">
+      <Link>System\Collections\Generic\IntEqualityComparer.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Collections\Generic\InternalStringComparer.d">
+      <Link>System\Collections\Generic\InternalStringComparer.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Collections\Generic\KeyNotFoundException.d">
+      <Link>System\Collections\Generic\KeyNotFoundException.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Collections\Generic\KeyValuePair_TKey_TValue.d">
+      <Link>System\Collections\Generic\KeyValuePair_TKey_TValue.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Collections\Generic\Link.d">
+      <Link>System\Collections\Generic\Link.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Collections\Generic\List_T.d">
+      <Link>System\Collections\Generic\List_T.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Collections\Generic\List_T_EnumeratorT.d">
+      <Link>System\Collections\Generic\List_T_EnumeratorT.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Collections\Generic\System.Collections.Generic.Namespace.d">
+      <Link>System\Collections\Generic\System.Collections.Generic.Namespace.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\IO\File.d">
+      <Link>System\IO\File.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\IO\System.IO.Namespace.d">
+      <Link>System\IO\System.IO.Namespace.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Runtime\InteropServices\InteropServices.d">
+      <Link>System\Runtime\InteropServices\InteropServices.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Text\IFormatProvider.d">
+      <Link>System\Text\IFormatProvider.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Text\StringBuilder.d">
+      <Link>System\Text\StringBuilder.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Text\Text.d">
+      <Link>System\Text\Text.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\__Internal.d">
+      <Link>System\__Internal\__Internal.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\Reflection.d">
+      <Link>System\__Internal\Reflection\Reflection.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System.Reflection.Namespace.d">
+      <Link>System\Reflection\System.Reflection.Namespace.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Decimal.d">
+      <Link>System\Decimal.d</Link>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="System\" />
+    <Folder Include="System\Reflection\" />
+    <Folder Include="System\__Internal\" />
+    <Folder Include="System\__Internal\Reflection\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\DCorlib\System\Collections\.DS_Store">
+      <Link>System\Collections\.DS_Store</Link>
+    </None>
+    <None Include="..\DCorlib\System\Collections\Generic\.DS_Store">
+      <Link>System\Collections\Generic\.DS_Store</Link>
+    </None>
+    <None Include="..\DCorlib\System\Collections\Generic\Old.zip">
+      <Link>System\Collections\Generic\Old.zip</Link>
+    </None>
+    <None Include="..\DCorlib\System\Runtime\.DS_Store">
+      <Link>System\Runtime\.DS_Store</Link>
+    </None>
+  </ItemGroup>
+</Project>

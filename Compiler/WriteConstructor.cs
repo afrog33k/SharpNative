@@ -43,30 +43,16 @@ namespace SharpNative.Compiler
             if (constructor.Modifiers.Any(SyntaxKind.StaticKeyword))
                 WriteStaticConstructor(writer, constructor, null);
             else
-                WriteInstanceConstructor(writer, constructor);
+				WriteInstanceConstructor(writer, constructor,null);
         }
 
-        public static void WriteInstanceConstructor(OutputWriter writer, ConstructorDeclarationSyntax method)
+		public static void WriteInstanceConstructor(OutputWriter writer, ConstructorDeclarationSyntax method,
+			List<string> otherInits)
         {
-            var methodSymbol = (IMethodSymbol) TypeProcessor.GetDeclaredSymbol(method);
-            var methodName = OverloadResolver.MethodName(methodSymbol);
-            //			var methodType = Program.GetModel(method).GetTypeInfo(method);
-
-            //TODO: Improve partial class / method support
-            if (method.Modifiers.Any(SyntaxKind.PartialKeyword) && method.Body == null)
-            {
-                //We only want to render out one of the two partial methods.  If there's another, skip this one.
-                if (Context.Instance.Partials.SelectMany(o => o.Syntax.As<ClassDeclarationSyntax>().Members)
-                    .OfType<ConstructorDeclarationSyntax>()
-                    .Except(method).Any(o => o.Identifier.ValueText == method.Identifier.ValueText))
-                    return;
-            }
-
-            //            if (method.Identifier.ValueText == "GetEnumerator")
-            //                return; //TODO: Support enumerator methods
+           
+           
 
             writer.WriteLine();
-            //            writer.WriteIndent();
 
             var accessmodifiers = "";
 
@@ -80,76 +66,19 @@ namespace SharpNative.Compiler
             if (method.Modifiers.Any(SyntaxKind.PrivateKeyword))
                 accessmodifiers += ("private ");
 
-            if (ShouldUseOverrideKeyword(method, methodSymbol))
-                accessmodifiers += ("override ");
-
-            //D does not use the virtual keyword
-            //                if (method.Modifiers.Any(SyntaxKind.VirtualKeyword) || isInterface)
-            //                    writer.Write("virtual ");
-            //Need to improve performance by labling non virtual methods with "final" ... but we have to check the original definition of the method
-
+          
             if (method.Modifiers.Any(SyntaxKind.StaticKeyword))
                 accessmodifiers += ("static ");
 
-            if (isInterface)
-            {
-//                writer.IsInterface = true;
-            }
+          
+			var constructorName = "this";
 
-            //Constructors in d dont have return types
-//            writer.Write("void ");
-//            writer.HeaderWriter.Write("void ");
+			if (Context.Instance.Type.TypeKind == TypeKind.Struct) // Struct
+			{
+				constructorName = " void __init";
+			}
 
-//            writer.Write("this"); 
-
-//            writer.Write("(");
-
-//            var firstParam = true;
-//            foreach (var parameter in method.ParameterList.Parameters)
-//            {
-//                bool isRef = parameter.Modifiers.Any(SyntaxKind.OutKeyword) ||
-//                             parameter.Modifiers.Any(SyntaxKind.RefKeyword);
-//
-//                if (firstParam)
-//                    firstParam = false;
-//                else
-//                {
-//                    writer.Write(", ");
-//                }
-//
-//
-//                var localSymbol = TypeProcessor.GetTypeInfo(parameter.Type);
-//                var ptr = (localSymbol.Type != null && !localSymbol.Type.IsValueType) ? "" : "";
-//
-//                if (!isRef)
-//                {
-//                    var s = TypeProcessor.ConvertType(parameter.Type) + " " + ptr;
-//                    writer.Write(s);
-//                }
-//                else
-//                {
-//
-//
-//
-//                    var s = " ref " + TypeProcessor.ConvertType(parameter.Type) + " "; // Refs in D are simple
-//
-//                    writer.Write(s);
-//
-//                    Program.RefOutSymbols.TryAdd(TypeProcessor.GetDeclaredSymbol(parameter), null);
-//                }
-//
-//                writer.Write(WriteIdentifierName.TransformIdentifier(parameter.Identifier.ValueText));
-//
-//                if (parameter.Default != null)
-//                {
-//                    writer.Write(" = ");
-//                    Core.Write(writer, parameter.Default.Value);
-//                }
-//            }
-//
-//            writer.Write(")");
-
-            writer.WriteLine(accessmodifiers + "this" + WriteMethod.GetParameterListAsString(method.ParameterList.Parameters));
+				writer.WriteLine(accessmodifiers + constructorName + WriteMethod.GetParameterListAsString(method.ParameterList.Parameters));
 
             if (isInterface || method.Modifiers.Any(SyntaxKind.AbstractKeyword))
             {
@@ -163,6 +92,16 @@ namespace SharpNative.Compiler
 
 //            writer.Write("\r\n");
             writer.OpenBrace();
+
+			if (otherInits != null) //We need to write the static initializers before anything else
+			{
+				foreach (var statement in otherInits)
+				{
+					var nodeString = statement;
+
+					if (nodeString != null) writer.WriteLine(nodeString);
+				}
+			}
 
             if (method.Initializer != null)
             {

@@ -43,7 +43,8 @@ namespace SharpNative.Compiler
             }
 
             // + "." + TypeState.Instance.TypeName;
-            Console.WriteLine("Writing out type: " + fullname);
+            if (Driver.Verbose)
+                Console.WriteLine("Writing out type: " + fullname);
             if (fullname ==
                 "System.Namespace.Nullable")
             {
@@ -294,6 +295,41 @@ namespace SharpNative.Compiler
                 WriteOutNestedTypes(first, writer);
 
                 WriteOutBoxed(writer, genericArgs, bases);
+
+
+                if (Context.Instance.Type.TypeKind == TypeKind.Struct)
+                {
+                    writer.WriteLine("public __Boxed_ __Get_Boxed()");
+                    writer.OpenBrace();
+                    writer.WriteLine("return new __Boxed_(this);");
+                    writer.CloseBrace();
+                    writer.WriteLine("alias __Get_Boxed this;");
+                }
+
+                if (Context.Instance.Type.TypeKind != TypeKind.Interface)
+                {
+					if (Context.Instance.Type.TypeKind == TypeKind.Class)
+						writer.WriteLine ("public override Type GetType()");
+//					else if (Context.Instance.Type.TypeKind == TypeKind.Interface) // Messes with GetType overrides of objects
+//					{
+//						writer.WriteLine ("public final Type GetType()");
+//					}
+					else if (Context.Instance.Type.TypeKind == TypeKind.Struct)
+					{
+						writer.WriteLine ("public Type GetType()");
+
+					}
+                    writer.OpenBrace();
+					if (Context.Instance.Type.TypeKind == TypeKind.Class)
+                    	writer.WriteLine("return __TypeOf!(typeof(this));");
+					else
+						writer.WriteLine("return __TypeOf!(__Boxed_);");
+						
+                    writer.CloseBrace();
+                }
+
+
+
                 writer.CloseBrace();
 
                 WriteEntryMethod(writer);
@@ -341,17 +377,76 @@ namespace SharpNative.Compiler
 
         private static void WriteConstructors(List<ConstructorDeclarationSyntax> instanceCtors, OutputWriter writer)
         {
-            foreach (var constructor in instanceCtors)
-            {
-                //                    writer.WriteLine();
-                Core.Write(writer, constructor);
-            }
+
+			int constructorCount = 0;
+			if (instanceCtors.Count == 0)
+			{
+				if (Context.Instance.InstanceInits.Count > 0)
+				{
+					var constructor = SyntaxFactory.ConstructorDeclaration(Context.Instance.TypeName);
+
+					constructor =
+						constructor.WithModifiers(
+							SyntaxFactory.TokenList(SyntaxFactory.Token(SyntaxKind.PublicKeyword)));
+
+
+					WriteConstructorBody.WriteInstanceConstructor(writer, constructor, Context.Instance.InstanceInits);
+
+					instanceCtors.Add(constructor);
+					constructorCount++;
+				}
+			}
+			else
+			{
+				var isFirst = true;
+				foreach (ConstructorDeclarationSyntax constructor in instanceCtors)
+				{
+					//TODO: centralize this to a function
+				//	if (isFirst)
+				//	{
+						WriteConstructorBody.WriteInstanceConstructor(writer, constructor,
+							Context.Instance.InstanceInits);
+				//	}
+				//	else
+				//		WriteConstructorBody.Go(writer, constructor);
+
+					isFirst = false;
+					constructorCount++;
+				}
+			}
+
+			if (constructorCount > 0 && (Context.Instance.Type.TypeKind == TypeKind.Struct)) // struct with constructors
+			{
+				writer.WriteLine ("static {0} opCall(U...)(U args_)",Context.Instance.TypeName);
+				writer.OpenBrace ();
+				writer.WriteLine (" {0} s;",Context.Instance.TypeName);
+				writer.WriteLine ("s.__init(args_);");
+				writer.WriteLine ("return s;");
+				writer.CloseBrace();
+			}
+          
         }
 
         private static IEnumerable<MemberDeclarationSyntax> WriteFields(List<MemberDeclarationSyntax> membersToWrite, Context.SyntaxAndSymbol first, OutputWriter writer)
         {
             var fields = membersToWrite.OfType<FieldDeclarationSyntax>().ToList();
             var nonFields = membersToWrite.Except(fields); // also static fields should be separately dealt with
+
+            if (fields.Count > 0 && fields.Any(j => j.GetModifiers().Any(SyntaxKind.ConstKeyword) ||
+                                                    j.GetModifiers().Any(SyntaxKind.StaticKeyword)))
+            {
+                writer.WriteLine("enum __staticFieldTuple = __Tuple!(" +
+                                 fields.Where(
+                                     j =>
+                                         j.GetModifiers().Any(SyntaxKind.ConstKeyword) ||
+                                         j.GetModifiers().Any(SyntaxKind.StaticKeyword))
+                                     .Select(
+                                         k =>
+                                             "\"" +
+                                             WriteIdentifierName.TransformIdentifier(
+                                                 k.Declaration.Variables[0].Identifier.ValueText) + "\"")
+                                     .Aggregate((i, j) => i + "," + j) + ");//Reflection Support");
+            }
 
             var structLayout = first.Syntax.GetAttribute(Context.StructLayout);
             if (structLayout != null)
@@ -534,6 +629,7 @@ namespace SharpNative.Compiler
                     Core.Write(writer, member);
                 }
             }
+
             return nonFields;
         }
 
@@ -625,7 +721,7 @@ namespace SharpNative.Compiler
                 writer.WriteLine();
                 writer.WriteLine("this()");
                 writer.OpenBrace();
-                writer.WriteLine("super({0}.init);", typeName);
+				writer.WriteLine("super(__TypeNew!({0})());", typeName);
                 writer.CloseBrace();
 
                 if (Context.Instance.Type.GetMembers("ToString").Any()) // Use better matching ?
@@ -633,7 +729,7 @@ namespace SharpNative.Compiler
                     //					writer.WriteLine ();
                     writer.WriteLine("override String ToString()");
                     writer.OpenBrace();
-                    writer.WriteLine("return Value.ToString();");
+                    writer.WriteLine("return __Value.ToString();");
                     writer.CloseBrace();
                 }
 
@@ -647,7 +743,7 @@ namespace SharpNative.Compiler
                 writer.WriteLine("U opCast(U)()");
                 writer.WriteLine("if(is(U:{0}))", typeName);
                 writer.OpenBrace();
-                writer.WriteLine("return Value;");
+                writer.WriteLine("return __Value;");
                 writer.CloseBrace();
 
                 writer.WriteLine();
@@ -661,8 +757,14 @@ namespace SharpNative.Compiler
                 writer.WriteLine("auto opDispatch(string op, Args...)(Args args)");
                 writer.OpenBrace();
                 writer.WriteLine("enum name = op;");
-                writer.WriteLine("return __traits(getMember, Value, name)(args);");
+                writer.WriteLine("return __traits(getMember, __Value, name)(args);");
                 writer.CloseBrace();
+
+
+         
+              
+
+
 
                 writer.CloseBrace();
             }

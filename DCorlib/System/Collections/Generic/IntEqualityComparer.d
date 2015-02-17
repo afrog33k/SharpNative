@@ -8,10 +8,10 @@ import System.Collections.Generic.Namespace;
 {
 
 
- override public int GetHashCode(int obj) 
+ override public int GetHashCode()
   {
 
-    return (obj);
+    return cast(int)this.toHash;
   
 }
 

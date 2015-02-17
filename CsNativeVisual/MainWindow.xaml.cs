@@ -39,7 +39,7 @@ namespace CsNativeVisual
 
             InitializeComponent();
 
-            MainWindowViewModel.TempDir = Path.Combine(Path.GetTempPath(), "CsNative");
+            MainWindowViewModel.TempDir = Path.Combine(Path.GetTempPath(), "SharpNative");
 
             if (!Directory.Exists(MainWindowViewModel.TempDir))
             {
@@ -79,7 +79,7 @@ namespace CsNativeVisual
                     return;
                 
                 var fileItem = (FileItem) list.SelectedItem;
-				Output.Text = Extensions.ReadFile(fileItem.Location);
+				Output.Text = FileExtensions.ReadFile(fileItem.Location);
             };
 
         }
@@ -268,14 +268,14 @@ namespace CsNativeVisual
            
 
                 ViewModel.CompilerErrors = String.Empty;
-            ThreadPool.QueueUserWorkItem((h) => CompileCpp());
+            ThreadPool.QueueUserWorkItem((h) => CompileD());
 
 
 
         }
 
         public string LastCompiledExecutable;
-        private void CompileCpp()
+        private void CompileD()
         {
            
              //   CppOutput = String.Empty;
@@ -353,7 +353,7 @@ namespace CsNativeVisual
           ThreadPool.QueueUserWorkItem((h) =>
           {
               CompileCSharp(false);
-              CompileCpp();
+              CompileD();
          
                 if (strip(CSharpOutput??"") == strip(CppOutput??""))
                 {
@@ -364,7 +364,7 @@ namespace CsNativeVisual
                             new SolidColorBrush(System.Windows.Media.Color.FromRgb(Color.GreenYellow.R,
                                 Color.GreenYellow.G, Color.GreenYellow.B));
 
-                        ViewModel.CompilerErrors = String.Format("Test Passed:\n\nCSharpOutput:\n{0}CPPOutPut:\n{1}",
+                        ViewModel.CompilerErrors = String.Format("Test Passed:\n\nCSharpOutput:\n{0}DlangOutPut:\n{1}",
                             CSharpOutput, CppOutput);
                     });
                 }
@@ -429,7 +429,8 @@ namespace CsNativeVisual
             if (result == true)
             {
                 CurrentSourceFile = dialog.FileName;
-				TextEditor.Text = Extensions.ReadFile(CurrentSourceFile);
+                CSharpFileName.Content=CurrentSourceFile;
+				TextEditor.Text = FileExtensions.ReadFile(CurrentSourceFile);
             }
             else
             {
@@ -613,17 +614,23 @@ namespace CsNativeVisual
                     {
 
                         var allTests = Directory.EnumerateFiles(filename).Where(u => Path.GetExtension(u) == ".cs");
-
+                        var count = 0;
                         foreach (var file in allTests)
                         {
 
                             var shortName = Path.GetFileName(file);
                             Console.WriteLine("-------------------------Running Test: " + shortName + "-------------------------");
                             ViewModel.CompilerErrors += "-------------------------Running Test: " + shortName + "-------------------------";
+
+                            var text = FileExtensions.ReadFile(file);
+
+                            if (text == "-1")
+                                break;
+
                             Dispatcher.Invoke(() =>
                             {
                                 CurrentSourceFile = file;
-                                  TextEditor.Text = File.ReadAllText(CurrentSourceFile);
+                                  TextEditor.Text = text;
 //                                ViewModel.Recompile(CurrentSourceFile);
 
 //                                CSharpFilename.StringValue = Path.GetFileName(file);
@@ -635,8 +642,13 @@ namespace CsNativeVisual
                             CppOutput = "A..)";
                             //							ViewModel.CompileAndRunCode(shortName,File.ReadAllText(file));
                             CompileCSharp(false);
-                            CompileCpp();
+                            CompileD();
+                            count++;
 
+                            if (count % 20 == 0)
+                            {
+                                GC.Collect();
+                            }
 
                             if (strip(CSharpOutput) == strip(CppOutput))
                             {

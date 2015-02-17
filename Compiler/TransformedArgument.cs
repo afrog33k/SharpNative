@@ -60,8 +60,8 @@ namespace SharpNative.Compiler
                     }
 
                     var isStatic = symbol.Symbol.IsStatic;
-                    if (isStatic)
-                        writer.Write("__ToDelegate(");
+//                    if (isStatic) //Not Needed, delegate class now supports functions directly
+//                        writer.Write("__ToDelegate(");
                     writer.Write("&");
 
                     Core.Write(writer, ArgumentOpt.Expression);

@@ -160,15 +160,26 @@ override	int GetLowerBound(int dimension=0)
 	{
 		auto array = ac.A;
 		//Console.WriteLine("initing array...");
-		//Console.WriteLine(array);
-		if(dims is null)
+//		Console.WriteLine(array);
+	
+		foreach(h;dims) // neccessary as it seems pointer is reused :(
+		{
+			_dims ~= h; 
+		}
+
+		if(_dims is null)
 		{
 			if(array !is null)
 			{
-				dims = [cast(int)array.length];
+				_dims = [cast(int)array.length];
 			}
 		}
-		_dims = dims;
+
+//		Console.Write("_dims=");
+//		Console.WriteLine(_dims);
+
+
+
 		_items = array;
 		_iter = new ArrayIterator!(T)(this);
 	}
@@ -177,18 +188,18 @@ override	int GetLowerBound(int dimension=0)
 
 	this(int[] dims...)
 	{
-		_dims = dims;
+		_dims = dims.dup;
 
-		//Console.WriteLine(_dims);
+		
 
 		int totaldims = 1;
 
 		for(int i=0;i<_dims.length;i++)
 			totaldims*= _dims[i];
 		
-		//if(totaldims==1)
-		//_items =  T[];
-		//else
+		if(_dims.length==0)
+		_items =  new T[0];
+		else
 		_items = new T[totaldims];
 
 
@@ -200,6 +211,11 @@ override	public	int Length() @property
 		return cast(int) _items.length;
 	}
 
+
+	public	int length() @property 
+{
+	return cast(int) _items.length;
+}
 	public void Reverse()
 	{
 		_items.reverse;
@@ -226,6 +242,35 @@ override	public	int Length() @property
 	}
 
 
+	public override Type GetType()
+	{
+		return __TypeOf!(typeof(this));
+	}
+
+	public override String ToString()
+	{
+		//Console.WriteLine(GetType());
+		//return GetType().FullName;
+		//auto csName = (T.stringof);
+		//return _S(csName ~ "[]");
+
+		//auto name =""; __TypeOf!(T).FullName.Text ~ "[]";
+
+		/*if(is(T:Array_T!(T)))
+		{
+			name += "[]";
+		}
+		else
+		{
+
+		}*/
+	//	if(Items is null || Items.length==0)
+		{
+			return _S(__TypeOf!(T).FullName.Text ~ "[]");
+		}
+	//	else
+	//		return _S(Items.toString);
+	}
 
 	//Adds foreach support
 //	Foreach Range Properties
@@ -278,11 +323,17 @@ override	public	int Length() @property
 			return cast(U) Items;
 		}
 
+		final U opCast(U)()
+		if(!is(U:T*))
+		{
+			return cast(U)this;
+		}
+
 //Needs fix, look at MatrixTest.cs
 	final  void opIndexAssign(T value, int[] index...)
 	{
 		//Console.WriteLine("Assigning ...");
-		int[] _indices = index; // .dup is slew
+		int[] _indices = index.dup; // .dup is slew
 
 		auto finalindex = 0;
 		auto len =cast(int)_indices.length;
@@ -344,17 +395,19 @@ override	public	int Length() @property
 //Needs fix, look at MatrixTest.cs
 	final  ref T opIndex(int[] index...) {
 		//Console.WriteLine("Assigning ...");
-		int[] _indices = index; // .dup is slew
+		int[] _indices = index.dup; // .dup is slew
 
 		auto finalindex = 0;
 		auto len =cast(int)_dims.length;
 
 	//Optimize common scenarios, slight performance boosts ... Add others
-		
+
 		 if(len==2) 
 		{
 			finalindex = _indices[0] * _dims[1]  + _indices[1];
-		//Console.WriteLine("Assigning 2d...:" ~ std.conv.to!string(finalindex));
+//			Console.WriteLine(_dims);
+//			Console.WriteLine(_items);
+//		Console.WriteLine("Assigning 2d...:" ~ std.conv.to!string(finalindex));
 
 
 		}
@@ -362,7 +415,7 @@ override	public	int Length() @property
 		 if(len==3) 
 		{
 			finalindex = _indices[0] * _dims[1] *_dims[2] + _indices[1] * _dims[2] + _indices[2];
-		////Console.WriteLine("Assigning 3d...:" ~ std.conv.to!string(finalindex));
+//		Console.WriteLine("Assigning 3d...:" ~ std.conv.to!string(finalindex));
 
 		}
 		else

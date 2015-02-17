@@ -22,31 +22,35 @@ namespace SharpNative.Compiler
             var type = TypeProcessor.ConvertType(elementType);
             var typeString = "Array_T!(" + type + ")";
 
-            if (elementType.TypeKind == TypeKind.TypeParameter)
-                writer.Write(" __TypeNew!(" + typeString + ")([");
-            else
-                writer.Write("new " + typeString + "(");
+			var tempWriter = new TempWriter ();
+			tempWriter.Indent = writer.Indent;
 
+			if (elementType.TypeKind == TypeKind.TypeParameter)
+				writer.Write (" __TypeNew!(" + typeString + ")([");
+			else
+			{
+				writer.Write ("new " + typeString + "(");
+			}
+
+
+
+			//__ARRAY
             var variableDeclarationSyntax = array.Parent.Parent.Parent as VariableDeclarationSyntax;
             if (variableDeclarationSyntax != null)
             {
                 var atype = variableDeclarationSyntax.Type;
-                array.Initializer.WriteArrayInitializer(writer, atype);
+				array.Initializer.WriteArrayInitializer(tempWriter, atype);
             }
             else
-                array.Initializer.WriteArrayInitializer(writer);
+				array.Initializer.WriteArrayInitializer(tempWriter);
 
-//			array.Initializer.WriteArrayInitializer(writer,);
-//            bool first = true;
-//            foreach (var expression in array.Initializer.Expressions)
-//            {
-//                if (first)
-//                    first = false;
-//                else
-//                    writer.Write(",");
-//
-//                Core.Write(writer, expression);
-//            }
+			var tempString = tempWriter.ToString ();
+
+			//new Array_T!(wchar)(__CC!(wchar[])(['a']))
+
+			tempString = tempString.Replace ("new " + typeString + "(__CC!("+typeString + "[])(", "__ARRAY!("+typeString+")(");
+
+			writer.Write (tempString);
 
             writer.Write(")");
         }

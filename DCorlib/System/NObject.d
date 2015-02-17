@@ -1,9 +1,12 @@
 ﻿module System.NObject;
 import System.Namespace;
+import System.Reflection.Namespace;
 
 public class NObject //: ICloneable //Inheriting from ICloneable gives symbol multiply defined!
  {
 
+
+	/*
     public static int[] __id = [1]; // For now no interfaces
 
     public int[] __get_id()
@@ -22,7 +25,7 @@ public class NObject //: ICloneable //Inheriting from ICloneable gives symbol mu
     public static bool __implements_impl(int interfaceid)
     {
         return false;
-    }
+    }*/
 
     public override string  toString() // Needed to  use built-in functions
     {
@@ -31,19 +34,26 @@ public class NObject //: ICloneable //Inheriting from ICloneable gives symbol mu
 
 	public String ToString()
 	{
-		return new String(std.conv.to!wstring(this.toString()));
+		return GetType().FullName;
 	}
 
-	public int GetHashCode() 
+	public Type GetType()
+	{
+		return __TypeOf!(typeof(this));
+
+	}
+
+//	public Type opCast()
+//	{
+//		return GetType();
+//	}
+
+	public int GetHashCode()
 	{//TODO... put a real hash code in here
-		return -1;
+		return cast(int)this.toHash;
 	}
 
-    public int GetHashCode(int obj) 
-    {
-
-        return (obj);
-    }
+  
 
 	public bool Equals(NObject obj) 
 	{

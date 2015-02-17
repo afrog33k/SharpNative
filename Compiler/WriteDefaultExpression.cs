@@ -15,8 +15,9 @@ namespace SharpNative.Compiler
     {
         public static void Go(OutputWriter writer, DefaultExpressionSyntax node)
         {
-            //Need to fix this
-            writer.Write("null");
+			var type = TypeProcessor.GetTypeInfo(node.Type).Type;
+           
+			writer.Write("__Default!("+type+")");
         }
     }
 }

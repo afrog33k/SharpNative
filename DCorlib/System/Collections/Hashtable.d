@@ -6,6 +6,25 @@ import System.Collections.Namespace;
 
  class Hashtable //:  NObject ,  ICloneable ,  IDictionary
 {
+
+	NObject[int] _items;
+
+	final  NObject opIndexAssign(NObject value, int index, IDictionary j=null)  {
+		//if (index >= _items.length)
+		//	throw new ArgumentOutOfRangeException(new String("index"));
+		
+		_items[index] = value;
+		return _items[index];
+	}
+	
+	final  ref NObject opIndex(int index, IDictionary j=null) { //TODO: ref could be a bad idea 
+		//but allows alot of natural c# syntax
+		//if (index >= _items.length)
+		//	throw new ArgumentOutOfRangeException(new String("index"));
+		
+		return _items[index];
+	}
+
 //  Array_T!(System.Collections.Namespace.Hashtable_Entry) _buckets = cast(Array_T!(System.Collections.Namespace.Hashtable_Entry)) null;
 //  int _numberOfBuckets;
 //  int _count;

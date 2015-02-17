@@ -13,6 +13,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 using System.Xml;
@@ -73,11 +74,11 @@ namespace SharpNative.Compiler
                 if(!anyExtern) // This should take care of corlib and external assemblies at once
                 {
                     // TODO: this should write nses for only types defined in binary, this should be a switch, we could be compiling corlib
-                    using (var writer = new OutputWriter(@namespace.Key.GetModuleName(), @namespace.Key.GetModuleName()) {IsNamespace = true})
+                    using (var writer = new OutputWriter(@namespace.Key.GetModuleName(), "Namespace") {IsNamespace = true})
                     {
                         writer.WriteLine("module " + @namespace.Key.GetModuleName() + ";");
                         List<string> addedTypes = new List<string>();
-
+                        
                         foreach (var type in @namespace.Value)
                         {
                             if(type.ContainingType!=null)
@@ -96,12 +97,87 @@ namespace SharpNative.Compiler
 
                             addedTypes.Add(properClassName);
                         }
+
+                        //Reflection Info
+                        writer.WriteLine("\n\nimport System.Namespace;");
+                        writer.WriteLine("public class __ReflectionInfo");
+                        writer.OpenBrace();
+                        writer.WriteLine("static this()");
+                        writer.OpenBrace();
+                        foreach (var type in @namespace.Value)
+                        {
+                            if ((type as INamedTypeSymbol).IsGenericType)
+                            {
+
+                                //Get its specializations
+                                foreach (var specialization in GetGenericSpecializations(type).DistinctBy(k=>k.FullName()))
+                                {
+									//TODO fix nested types
+									//if (specialization.ContainingType == null)
+									{
+										var genericName = GetGenericMetadataName (specialization);
+										writer.WriteLine ("__TypeOf!(" + TypeProcessor.ConvertType (specialization) + ")(\"" + genericName
+										+ "\");");
+									}
+                                }
+                            }
+                            else
+                            {
+								writer.WriteLine("__TypeOf!("+TypeProcessor.ConvertType(type)+")(\"" + type.ContainingNamespace.FullNameWithDotCSharp() +(type.ContainingType!=null?(type.ContainingType.Name+"+"):"") + type.MetadataName + "\");");
+                            }
+                        }
+                        writer.CloseBrace();
+                        writer.CloseBrace();
+
                     }
                 }
             }
         }
 
-        internal static void Go(Compilation result, string outDir, List<string> extraTranslations)
+        private static string GetGenericMetadataName(this INamedTypeSymbol specialization)
+        {
+            //Todo Add support for Arrays and Inner classes
+            return specialization.ContainingNamespace.FullNameWithDotCSharp() + specialization.MetadataName + 
+                   "[" +
+                   specialization.TypeArguments.Select(u =>
+                   {
+                       var namedTypeSymbol = u as INamedTypeSymbol;
+					return u.ContainingNamespace.FullNameWithDotCSharp() +(u.ContainingType!=null?(u.ContainingType.Name+"+"):"") + (namedTypeSymbol !=null && namedTypeSymbol.IsGenericType ? (namedTypeSymbol.GetGenericMetadataName()) : (String.IsNullOrEmpty(u.MetadataName)?u.Name:u.MetadataName));
+                   })
+                       .Aggregate((a, b) => a + "," + b) + "]";
+        }
+
+        //http://stackoverflow.com/questions/27105909/get-fully-qualified-metadata-name-in-roslyn
+        public static string GetFullMetadataName(this INamespaceOrTypeSymbol symbol)
+        {
+            ISymbol s = symbol;
+            var sb = new StringBuilder(s.MetadataName);
+
+            var last = s;
+            s = s.ContainingSymbol;
+            while (!IsRootNamespace(s))
+            {
+                if (s is ITypeSymbol && last is ITypeSymbol)
+                {
+                    sb.Insert(0, '+');
+                }
+                else
+                {
+                    sb.Insert(0, '.');
+                }
+                sb.Insert(0, s.MetadataName);
+                s = s.ContainingSymbol;
+            }
+
+            return sb.ToString();
+        }
+
+        private static bool IsRootNamespace(ISymbol s)
+        {
+            return s is INamespaceSymbol && ((INamespaceSymbol)s).IsGlobalNamespace;
+        }
+
+        internal static void Go(Compilation result, string outDir, IEnumerable<string> extraTranslations)
         {
             _compilation = result;
             OutDir = outDir;
@@ -142,9 +218,11 @@ namespace SharpNative.Compiler
             if (!String.IsNullOrEmpty(exePath))
             {
                 Context.Namespaces.Clear();
-                Console.WriteLine("Building...");
+                if(Driver.Verbose)
+                    Console.WriteLine("Building...");
+
                 var sw = Stopwatch.StartNew();
-                var fStream = File.Open(exePath, FileMode.CreateNew, FileAccess.ReadWrite);
+                var fStream =  File.Open(exePath, FileMode.CreateNew, FileAccess.ReadWrite);
                 var buildResult = _compilation.Emit(fStream);
 
                 fStream.Close();
@@ -157,7 +235,8 @@ namespace SharpNative.Compiler
                                             string.Join("", buildResult.Diagnostics.Select(o => "\n  " + o.ToString())));
                     }
                 }
-                Console.WriteLine("Built in " + sw.Elapsed.TotalMilliseconds + " ms");
+                if (Driver.Verbose)
+                    Console.WriteLine("Built in " + sw.Elapsed.TotalMilliseconds + " ms");
             }
         }
 
@@ -166,7 +245,8 @@ namespace SharpNative.Compiler
         {
             try
             {
-                Console.WriteLine("Parsing...");
+                if (Driver.Verbose)
+                    Console.WriteLine("Parsing...");
                 var sw = Stopwatch.StartNew();
 
                 if (!Directory.Exists(OutDir))
@@ -184,8 +264,8 @@ namespace SharpNative.Compiler
 
                 //TODO: not needed for Dlang
                 //GetGenericSpecializations();
-
-                Console.WriteLine("Parsed in " + sw.Elapsed.TotalMilliseconds + " ms . Writing out d files ...");
+                if (Driver.Verbose)
+                    Console.WriteLine("Parsed in " + sw.Elapsed.TotalMilliseconds + " ms . Writing out d files ...");
                 sw.Restart();
 
                 ProcessAnonymousTypes();
@@ -195,8 +275,8 @@ namespace SharpNative.Compiler
                 ProcessTypes();
 
                 WriteNamespaces();
-
-                Console.WriteLine("D code written out in " + sw.Elapsed.TotalMilliseconds + " ms");
+                if (Driver.Verbose)
+                    Console.WriteLine("D code written out in " + sw.Elapsed.TotalMilliseconds + " ms");
             }
             catch (Exception ex)
             {
@@ -417,18 +497,31 @@ namespace SharpNative.Compiler
                 });
         }
 
+		static bool IsSpecialized (INamedTypeSymbol o)
+		{
+			if (o == null)
+				return false;
+			return o.TypeArguments.All (k =>
+			{
+				var asNamed =  k as INamedTypeSymbol;
+
+				return k.TypeKind != TypeKind.TypeParameter && (asNamed!=null && asNamed.TypeArguments.All(l=>IsSpecialized(l as INamedTypeSymbol)));
+			} );
+		}
+
 //Only needed for CPP target
-//        private static void GetGenericSpecializations()
-//        {
-//             _compilation.SyntaxTrees
-//                .SelectMany(o => o.GetRoot().DescendantNodes().OfType<GenericNameSyntax>())
-//                .Select(
-//                    o =>
-//                        (ModelExtensions.GetTypeInfo(GetModel(o), o).Type ??
-//                         ModelExtensions.GetTypeInfo(GetModel(o), o).ConvertedType) as INamedTypeSymbol)
-//                .Where(o => o != null && (o.TypeArguments.All(k => k.TypeKind != TypeKind.TypeParameter)))
-//                .ToList();
-//        }
+//Resurrected, useful for reflection
+        private static List<INamedTypeSymbol> GetGenericSpecializations(ITypeSymbol type)
+        {
+            return _compilation.SyntaxTrees
+				.SelectMany(o => o.GetRoot().DescendantNodes().OfType<GenericNameSyntax>().Union(o.GetRoot().DescendantNodes().OfType<TypeSyntax>()))
+                .Select(
+                    o =>
+                        (ModelExtensions.GetTypeInfo(GetModel(o), o).Type ??
+                         ModelExtensions.GetTypeInfo(GetModel(o), o).ConvertedType) as INamedTypeSymbol)
+                .Where(o => o != null && (IsSpecialized (o) && o.OriginalDefinition == type))
+                .ToList();
+        }
 
         private static void ProcessObjectInitializers(decimal lastTemporaryIndex)
         {

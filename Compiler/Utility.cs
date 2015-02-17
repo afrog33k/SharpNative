@@ -197,101 +197,8 @@ namespace SharpNative.Compiler
             return null;
         }
 
-        public static string ExecuteCommand(this string pathToExe, string arguments = "", string workingDirectory = "",
-            bool useShell = false)
-        {
-            if (workingDirectory == "")
-                workingDirectory = Path.GetDirectoryName(pathToExe);
+       
 
-            var process = new Process
-            {
-                StartInfo =
-                {
-                    FileName = pathToExe,
-                    Arguments = arguments,
-                    WorkingDirectory = workingDirectory,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    CreateNoWindow = true,
-                    WindowStyle = ProcessWindowStyle.Hidden | ProcessWindowStyle.Minimized,
-                    UseShellExecute = useShell
-                }
-            };
-
-            StringBuilder output = new StringBuilder();
-            StringBuilder error = new StringBuilder();
-
-            using (AutoResetEvent outputWaitHandle = new AutoResetEvent(false))
-            using (AutoResetEvent errorWaitHandle = new AutoResetEvent(false))
-            {
-                process.OutputDataReceived += (sender, e) =>
-                {
-                    if (e.Data == null)
-                        outputWaitHandle.Set();
-                    else
-                        output.AppendLine(e.Data);
-                };
-                process.ErrorDataReceived += (sender, e) =>
-                {
-                    if (e.Data == null)
-                        errorWaitHandle.Set();
-                    else
-                        error.AppendLine(e.Data);
-                };
-
-                var start = DateTime.Now;
-
-                process.Start();
-                process.BeginOutputReadLine();
-                process.BeginErrorReadLine();
-
-                //120 seconds ... for some tests .. i.e. benchmarks
-                if (process.WaitForExit(240000) &&
-                    outputWaitHandle.WaitOne(240000) &&
-                    errorWaitHandle.WaitOne(240000))
-                {
-                    // Process completed. Check process.ExitCode here.
-                    var standardOutput = output.ToString();
-                    var standardError = error.ToString();
-
-                    var end = DateTime.Now - start;
-                    Console.WriteLine("Process took " + end.TotalMilliseconds + " ms");
-                    return String.IsNullOrWhiteSpace(standardOutput)
-                        ? standardError
-                        : String.IsNullOrWhiteSpace(standardError)
-                            ? standardOutput
-                            : standardOutput + Environment.NewLine + standardError;
-                }
-                else
-                {
-                    // Timed out.
-                    return "Process terminated immaturely";
-                }
-            }
-        }
-
-
-        public static void DeleteFile(this string fileName)
-        {
-            try
-            {
-                if (File.Exists(fileName))
-                    File.Delete(fileName);
-            }
-            catch (Exception)
-            {
-            }
-        }
-
-        public static void ToFile(this string text, string fileName)
-        {
-            File.WriteAllText(fileName, text);
-        }
-
-        public static void ToFile(this StringBuilder text, string fileName)
-        {
-            File.WriteAllText(fileName, text.ToString());
-        }
 
         public static bool IsBasicType(this INamedTypeSymbol containingType)
         {
@@ -401,6 +308,10 @@ namespace SharpNative.Compiler
 
         public static string GetFullNameCSharp(this ITypeSymbol typeInfo, bool includeNamespace = true)
         {
+
+//            if (typeInfo is INamedTypeSymbol)
+//                return (typeInfo as INamedTypeSymbol).FullName();
+
             //Todo add support for global
 
             var name = (typeInfo.ContainingNamespace != null && includeNamespace
@@ -493,6 +404,16 @@ namespace SharpNative.Compiler
                 return "CsRoot" + (namespacesuffix ? ("." + NamespaceModuleName) : "") + ".";
             else
                 return ns.ToString() + (namespacesuffix ? ("." + NamespaceModuleName) : "") + ".";
+        }
+
+        public static string FullNameWithDotCSharp(this INamespaceSymbol ns, bool namespacesuffix = true)
+        {
+            if (ns == null)
+                return "";
+            if (ns.IsGlobalNamespace)
+                return "";
+            else
+                return ns.ToString() + ".";
         }
 
         public static string AttributeOrNull(this XElement element, string attrName)

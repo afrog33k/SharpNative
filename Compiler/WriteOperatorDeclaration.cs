@@ -111,13 +111,52 @@ namespace SharpNative.Compiler
 
             var token = method.OperatorToken.ValueText;
 
+			var methodBody = "";
+
+			var temp = new TempWriter ();
+
+			foreach (var statement in method.Body.Statements)
+				Core.Write(temp, statement);
+
+			TriviaProcessor.ProcessTrivias(temp, method.Body.DescendantTrivia());
+
+			methodBody = temp.ToString ();
+		
+
             if (methodName == "opOpAssign")
                 token = token.Substring(0, 1);
 
-            writer.WriteLine("public final " + returnType + " " + methodName +
-                         String.Format(
-                             " (string _op) ({0} other)\r\n\tif(_op==\"{2}\")\r\n\t{{ \r\n\t\treturn {1}(this,other); \r\n\t}}\r\n\r\n",
-                             TypeProcessor.ConvertType(paramType.Type), actualMethodName, token));
+			if (methodName == "opBinary")
+			{
+
+				writer.WriteLine ("public final " + returnType + " " + methodName +
+				String.Format (
+					" (string _op) ({0} other)\r\n\tif(_op==\"{2}\")\r\n\t{{ \r\n\t\treturn {1}(this,other); \r\n\t}}\r\n\r\n",
+					TypeProcessor.ConvertType (paramType.Type), actualMethodName, token));
+			}
+			else if (methodName == "opUnary")//TODO unary operators are mostly going to be direct methodCalls
+			{
+
+				writer.WriteLine ("public final " + returnType + " " + methodName +
+					String.Format (
+						" (string _op) ()\r\n\tif(_op==\"{2}\")\r\n\t{{ \r\n\t\treturn {1}(this); \r\n\t}}\r\n\r\n",
+						TypeProcessor.ConvertType (paramType.Type), actualMethodName, token));
+				//				writer.WriteLine ("public final ref " + returnType + " " + methodName +
+				//					String.Format (
+				//						" (string _op) ()\r\n\tif(_op==\"{2}\")\r\n\t{{ \r\n\t\t{3}\r\n\t}}\r\n\r\n",
+				//TypeProcessor.ConvertType (paramType.Type), actualMethodName, token, methodBody.Replace(method.ParameterList.Parameters[0].Identifier.ValueText,"this")));
+			}
+			else
+			{
+				writer.WriteLine ("public final " + returnType + " " + methodName +
+					String.Format (
+						" (string _op) ({0} other)\r\n\tif(_op==\"{2}\")\r\n\t{{ \r\n\t\treturn {1}(this); \r\n\t}}\r\n\r\n",
+						TypeProcessor.ConvertType (paramType.Type), actualMethodName, token));
+			}
+
+			var @params = method.ParameterList.Parameters;
+
+
 
             writer.WriteLine("public static " + returnType + " " + actualMethodName + WriteMethod.GetParameterListAsString(method.ParameterList.Parameters) );
 

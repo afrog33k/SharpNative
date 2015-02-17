@@ -20,13 +20,34 @@ namespace SharpNative.Compiler
         {
           //  writer.WriteIndent();
             var isStringSwitch = false;
+            var isEnumSwitch = false;
+
             var symbol = TypeProcessor.GetTypeInfo(switchStatement.Expression);
 
             if (symbol.Type.SpecialType == SpecialType.System_String)
                 isStringSwitch = true;
 
-            writer.WriteLine("switch("+ Core.WriteString(switchStatement.Expression) + (isStringSwitch ? ".Text" : "")+")");
+            if (symbol.Type.TypeKind == TypeKind.Enum)
+                isEnumSwitch = true;
 
+            if (!(switchStatement.Expression is LiteralExpressionSyntax))
+				writer.WriteLine ("switch(" + Core.WriteString (switchStatement.Expression) + (isStringSwitch ? ".Hash" : "") + (isEnumSwitch ? ".__Value" : "") + ")");
+			else
+			{
+				var typeInfo = TypeProcessor.GetTypeInfo(switchStatement.Expression);
+				if (typeInfo.Type.SpecialType == SpecialType.System_String)
+				{
+					writer.WriteLine ("switch(");
+					WriteLiteralExpression.Go (writer, (LiteralExpressionSyntax)switchStatement.Expression, true, true);
+					writer.WriteLine ((isStringSwitch ? ".Hash" : "") + ")");
+
+				}
+				else
+				{
+					writer.WriteLine ("switch(" + Core.WriteString (switchStatement.Expression) + (isStringSwitch ? ".Hash" : "") + (isEnumSwitch ? ".__Value" : "") + ")");
+
+				}
+			}
             writer.OpenBrace();
 
             //First process all blocks except the section with the default block
@@ -62,7 +83,16 @@ namespace SharpNative.Compiler
             {
  
 
-                writer.WriteLine("default:");
+				foreach (var label in defaultSection.Labels) // Could be more than one label :P
+				{
+					writer.WriteIndent();
+					if (label is CaseSwitchLabelSyntax)
+						WriteLabel.Go (writer, (CaseSwitchLabelSyntax)label, isStringSwitch);
+					else
+						writer.WriteLine (label.ToFullString().Trim());
+				}
+
+               // writer.WriteLine("default:");
                 writer.OpenBrace(false);
                 foreach (var statement in defaultSection.Statements)
                 {

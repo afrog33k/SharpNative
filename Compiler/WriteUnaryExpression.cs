@@ -2,6 +2,7 @@
 //   SharpNative - C# to D Transpiler
 //   (C) 2014 Irio Systems 
 // */
+using Microsoft.CodeAnalysis;
 
 #region Imports
 
@@ -17,20 +18,54 @@ namespace SharpNative.Compiler
     {
         public static void WritePrefix(OutputWriter writer, PrefixUnaryExpressionSyntax expression)
         {
+			var isProperty = false;
+
+			var symbol = TypeProcessor.GetSymbolInfo (expression.Operand);
+			if (symbol.Symbol is IPropertySymbol)
+				isProperty = true;
+
+
+			if (isProperty)
+			{
+				var symbolName = expression.ToString ().Trim ().RemoveFromStartOfString (expression.OperatorToken.ValueText);
+				switch (expression.OperatorToken.RawKind)
+				{
+				case (int) SyntaxKind.MinusMinusToken:
+					if((symbol.Symbol as IPropertySymbol).IsIndexer)
+						writer.Write (String.Format ("/*--{0}*/((){{ auto v = {0};{0}=(--v);return v;}})()", symbolName));
+					else
+						writer.Write (String.Format ("/*--{0}*/((){{ auto v = {0};{0}(--v);return v;}})()", symbolName));
+					break;
+				case (int) SyntaxKind.PlusPlusToken:
+					if((symbol.Symbol as IPropertySymbol).IsIndexer)
+						writer.Write (String.Format ("/*++{0}*/((){{ auto v = {0};{0}=(++v);return v;}})()", symbolName));
+					else
+						writer.Write (String.Format ("/*++{0}*/((){{ auto v = {0};{0}(++v);return v;}})()", symbolName));
+						
+					break;
+				default:
+					Core.Write (writer, expression.Operand);
+					writer.Write (expression.OperatorToken.ValueText);
+					break;
+				}
+			}
+			else
+			{
 //			Console.WriteLine (expression.ToFullString());
-            if (expression.OperatorToken.RawKind == (decimal) SyntaxKind.MinusMinusToken)
-            {
-                writer.Write("--");
-                Core.Write(writer, expression.Operand);
-            }
-            else if (expression.OperatorToken.RawKind == (decimal) SyntaxKind.PlusPlusToken)
-            {
-                writer.Write("++");
-                Core.Write(writer, expression.Operand);
-            }
-            else
-            {
-                //TODO: cannot take addresses of structs in 32/64-bit mode and subtract them ... really weird d-bug ... leads to wrong math ... should we do a shift ?
+				if (expression.OperatorToken.RawKind == (decimal)SyntaxKind.MinusMinusToken)
+				{
+
+					writer.Write ("--");
+					Core.Write (writer, expression.Operand);
+				}
+				else if (expression.OperatorToken.RawKind == (decimal)SyntaxKind.PlusPlusToken)
+				{
+					writer.Write ("++");
+					Core.Write (writer, expression.Operand);
+				}
+				else
+				{
+					//TODO: cannot take addresses of structs in 32/64-bit mode and subtract them ... really weird d-bug ... leads to wrong math ... should we do a shift ?
 //				if (expression.OperatorToken.CSharpKind () == SyntaxKind.AmpersandToken) // Take address
 //				{
 //					var memberAccess = expression.Operand as MemberAccessExpressionSyntax;
@@ -81,15 +116,50 @@ namespace SharpNative.Compiler
 //
 //				}
 //				else
-                {
-                    writer.Write(expression.OperatorToken.ToString());
-                    Core.Write(writer, expression.Operand);
-                }
-            }
+					{
+						writer.Write (expression.OperatorToken.ToString ());
+						Core.Write (writer, expression.Operand);
+					}
+				}
+			}
         }
 
         public static void WritePostfix(OutputWriter writer, PostfixUnaryExpressionSyntax expression)
         {
+			var isProperty = false;
+
+			var symbol = TypeProcessor.GetSymbolInfo (expression.Operand);
+			if (symbol.Symbol is IPropertySymbol)
+				isProperty = true;
+
+
+			if (isProperty)
+			{
+				var symbolName = expression.ToString().Trim().RemoveFromEndOfString(expression.OperatorToken.ValueText);
+				switch (expression.OperatorToken.RawKind)
+				{
+				case (int) SyntaxKind.MinusMinusToken:
+					if((symbol.Symbol as IPropertySymbol).IsIndexer)
+						writer.Write (String.Format("/*{0}--*/((){{auto v={0};auto y=v;{0}=(--y);return v;}})()",symbolName));
+					else
+						writer.Write (String.Format("/*{0}--*/((){{auto v={0};auto y=v;{0}(--y);return v;}})()",symbolName));
+						
+					break;
+				case (int) SyntaxKind.PlusPlusToken:
+					if((symbol.Symbol as IPropertySymbol).IsIndexer)
+						writer.Write (String.Format("/*{0}++*/((){{auto v={0},y={0};{0}=(++y);return v;}})()",symbolName));
+					else
+						writer.Write (String.Format("/*{0}++*/((){{auto v={0},y={0};{0}(++y);return v;}})()",symbolName));
+						
+					break;
+				default:
+					Core.Write (writer, expression.Operand);
+					writer.Write (expression.OperatorToken.ValueText);
+					break;
+				}
+			}
+			else
+			{
 //            if (expression.Operand is MemberAccessExpressionSyntax)
 //            {
 //                var memberAccess = expression.Operand as MemberAccessExpressionSyntax;
@@ -141,20 +211,22 @@ namespace SharpNative.Compiler
 //            }
 //            else
 //            {
-            switch (expression.OperatorToken.RawKind)
-            {
-                case (int) SyntaxKind.MinusMinusToken:
-                    Core.Write(writer, expression.Operand);
-                    writer.Write("--");
-                    break;
-                case (int) SyntaxKind.PlusPlusToken:
-                    Core.Write(writer, expression.Operand);
-                    writer.Write("++");
-                    break;
-                default:
-                    throw new Exception("No support for " + expression.OperatorToken.RawKind + " at " +
-                                        Utility.Descriptor(expression));
-            }
+				switch (expression.OperatorToken.RawKind)
+				{
+				case (int) SyntaxKind.MinusMinusToken:
+
+					Core.Write (writer, expression.Operand);
+					writer.Write ("--");
+					break;
+				case (int) SyntaxKind.PlusPlusToken:
+					Core.Write (writer, expression.Operand);
+					writer.Write ("++");
+					break;
+				default:
+					throw new Exception ("No support for " + expression.OperatorToken.RawKind + " at " +
+					Utility.Descriptor (expression));
+				}
+			}
 //            }
         }
     }

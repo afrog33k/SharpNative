@@ -10,7 +10,7 @@ class StringBuilder : NObject
 
 		
 		private int capacity;
-		private string data;
+		private wstring data ="";
 	
 	
 	public this() 
@@ -43,7 +43,7 @@ class StringBuilder : NObject
 
 		if (value !is null) 
 		{
-				data = cast(string)(value);
+				data = cast(wstring)(value);
 		}
 		
 	}
@@ -66,7 +66,9 @@ class StringBuilder : NObject
 
 		public override String ToString() 
 		{
-			return new String(to!string(data[0..data.length]));
+		//	Console.WriteLine(data);
+			return _S(data);
+		//	return _S("");
 		}
 
 		public String ToString(int startIndex, int length) 
@@ -74,7 +76,7 @@ class StringBuilder : NObject
 			if (startIndex < 0 || length < 0 || startIndex + length > this.Length) {
 				throw new ArgumentOutOfRangeException();
 			}
-			return new String(to!string(data[startIndex..(startIndex+length)]));
+			return new String((data[startIndex..(startIndex+length)]));
 		}
 
 		public int Capacity() @property
@@ -87,9 +89,9 @@ class StringBuilder : NObject
 	
 
 		public StringBuilder Append(String value) {
-			//Console.WriteLine("Appending " ~ value.text);
+			//Console.WriteLine("Appending " ~ value.Text);
 
-			data = data ~ cast(string)value;
+			data ~=  value.Text;
 
 			//Console.WriteLine("Value is: " ~ data);
 			return this;
@@ -98,7 +100,7 @@ class StringBuilder : NObject
 		public StringBuilder AppendLine(String value) {
 			//Console.WriteLine("Appending " ~ value.text);
 
-			data = data ~ cast(string)value ~ "\r\n";
+			data = data ~ cast(wstring)value ~ "\r\n";
 
 			//Console.WriteLine("Value is: " ~ data);
 			return this;
@@ -118,7 +120,7 @@ class StringBuilder : NObject
 			//for (int i = 0; i < count; i++) {
 			//	this.data[this.length++] = value[startIndex + i];
 			//}
-			data = data ~ (cast(string)value)[startIndex..(count+startIndex)];
+			data = data ~ (cast(wstring)value)[startIndex..(count+startIndex)];
 			return this;
 		}
 
@@ -145,11 +147,11 @@ class StringBuilder : NObject
 				return this;
 			}
 			
-			data = data ~ cast(string)value;
+			data = data ~ cast(wstring)value;
 			return this;
 		}
 
-		public StringBuilder Append(string value) {
+		public StringBuilder Append(wstring value) {
 			if (value == null) {
 				return this;
 			}
@@ -166,11 +168,11 @@ class StringBuilder : NObject
 		}
 
 		public StringBuilder Append(bool value) {
-			return Append(to!string(value));
+			return Append(to!wstring(value));
 		}
 
 		public StringBuilder Append(byte value) {
-			return Append(to!string(value));
+			return Append(to!wstring(value));
 		}
 
 	/*	public StringBuilder Append(decimal value) {
@@ -178,19 +180,19 @@ class StringBuilder : NObject
 		}*/
 
 		public StringBuilder Append(double value) {
-			return Append(to!string(value));
+			return Append(to!wstring(value));
 		}
 
 		public StringBuilder Append(short value) {
-			return Append(to!string(value));
+			return Append(to!wstring(value));
 		}
 
 		public StringBuilder Append(int value) {
-			return Append(to!string(value));
+			return Append(to!wstring(value));
 		}
 
 		public StringBuilder Append(long value) {
-			return Append(to!string(value));
+			return Append(to!wstring(value));
 		}
 
 		//public StringBuilder Append(sbyte value) {
@@ -198,7 +200,7 @@ class StringBuilder : NObject
 		//}
 
 		public StringBuilder Append(float value) {
-			return Append(to!string(value));
+			return Append(to!wstring(value));
 		}
 
 	/*	public StringBuilder Append(ushort value) {
@@ -238,7 +240,7 @@ class StringBuilder : NObject
 		}
 	}
 	
-	string opCast(T : string)() const
+	string opCast(T : wstring)() const
 	{
 		return text;
 	}

@@ -1,4 +1,4 @@
-﻿// complex.cs
+// complex.cs
 using System;
 
 public class Complex
@@ -19,15 +19,10 @@ public class Complex
     {
         return new Complex(c1.Real + c2.Real, c1.Imaginary + c2.Imaginary);
     }
-    // Override the ToString method  (won't work) to display an complex number in the suitable format:
-    public  void Print()
+    public override  string ToString()
     {
-        Console.Write(Real);
-
-        Console.Write(" + i");
-        Console.Write(Imaginary);
-        Console.Write("i");
-        //   return(String.Format("{0} + {1}i", Real, Imaginary));
+      
+        return(String.Format("{0} + {1}i", Real, Imaginary));
 
     }
 
@@ -41,12 +36,12 @@ public class Complex
         Complex sum = num1 + num2;
 
         // Print the numbers and the sum using the overriden ToString method:
-        Console.WriteLine("First complex number:  ");
-        num1.Print();
-        Console.WriteLine("Second complex number: ");
-        num2.Print();
-        Console.WriteLine("The sum of the two numbers: ");
-        sum.Print();
+        Console.WriteLine("First complex number:  " + num1);
+       
+        Console.WriteLine("Second complex number: " + num2);
+       
+        Console.WriteLine("The sum of the two numbers: " + sum);
+        
 
     }
 }
