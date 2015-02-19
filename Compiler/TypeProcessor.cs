@@ -77,8 +77,8 @@ namespace SharpNative.Compiler
                     return "false";
 
                 default:
-                    if(type.TypeKind!=TypeKind.TypeParameter)
-                    return "cast(" + dType + ") null";
+                    if (type.TypeKind != TypeKind.TypeParameter)
+                        return "cast(" + dType + ") null";
                     return dType + ".init";
             }
         }
@@ -107,7 +107,7 @@ namespace SharpNative.Compiler
             if (typeInfo.ConvertedType is IErrorTypeSymbol || typeInfo.ConvertedType == null)
             {
                 typeInfo = model.GetTypeInfo(node.Parent);
-                    //not sure why Roslyn can't find the type of some type nodes, but telling it to use the parent's seems to work
+                //not sure why Roslyn can't find the type of some type nodes, but telling it to use the parent's seems to work
             }
 
             ITypeSymbol t;
@@ -151,7 +151,7 @@ namespace SharpNative.Compiler
             if (typeInfo.ConvertedType is IErrorTypeSymbol || typeInfo.ConvertedType == null)
             {
                 typeInfo = model.GetTypeInfo(node.Parent);
-                    //not sure why Roslyn can't find the type of some type nodes, but telling it to use the parent's seems to work
+                //not sure why Roslyn can't find the type of some type nodes, but telling it to use the parent's seems to work
             }
 
             //TODO: test this out
@@ -169,10 +169,10 @@ namespace SharpNative.Compiler
                 throw new Exception("Type could not be determined for " + node);
 
            
-                if (localize)//TODO: We need to check for collisions and thus fully qualify
-                {
-                    ret = LocalizeName(ret);
-                }
+            if (localize)//TODO: We need to check for collisions and thus fully qualify
+            {
+                ret = LocalizeName(ret, GetTypeInfo(node).Type);
+            }
             
 
             if (ret == "Array_T")
@@ -216,7 +216,7 @@ namespace SharpNative.Compiler
         private static readonly ConcurrentDictionary<ITypeSymbol, string> _cachedTypes =
             new ConcurrentDictionary<ITypeSymbol, string>();
 
-        public static string ConvertType(ITypeSymbol typeSymbol, bool localize = true, bool usebasicname=true)
+        public static string ConvertType(ITypeSymbol typeSymbol, bool localize = true, bool usebasicname = true, bool ignoreAliases =false)
         {
             AddUsedType(typeSymbol);
 
@@ -226,14 +226,14 @@ namespace SharpNative.Compiler
                 throw new Exception("Could not convert type " + typeSymbol);
 
             if (!usebasicname)
-                if (typeSymbol.IsPrimitive())
-                {
-                    ret = typeSymbol.ContainingNamespace.FullName() + "." + typeSymbol.Name;
-                }
+            if (typeSymbol.IsPrimitive())
+            {
+                ret = typeSymbol.ContainingNamespace.FullName() + "." + typeSymbol.Name;
+            }
 
             if (localize)
             {
-                ret = LocalizeName(ret);
+                ret = LocalizeName(ret,typeSymbol,ignoreAliases);
             }
 
             if (ret == "Array_T")
@@ -243,7 +243,31 @@ namespace SharpNative.Compiler
 
         }
 
-        private static string LocalizeName(string ret)
+        static string GetAlias(ITypeSymbol type)
+        {
+            if(Context.Instance.Aliases.ContainsKey(type))
+                return Context.Instance.Aliases[type];
+
+            var newAlias = WriteIdentifierName.TransformIdentifier(type.Name);
+
+
+            if (Context.Instance.MemberNames.Contains(newAlias))
+            {
+                newAlias = "_" + newAlias;
+            }
+
+            if (Context.Instance.Aliases.Any(o=>o.Value==newAlias))
+            {
+                newAlias = "_" + newAlias;
+            }
+
+
+            Context.Instance.Aliases[type] = newAlias;
+
+            return newAlias;
+        }
+
+        private static string LocalizeName(string ret, ITypeSymbol typeSymbol, bool ignoreAliases =false)
         {
             if (String.IsNullOrEmpty(ret))
                 return ret;
@@ -259,13 +283,19 @@ namespace SharpNative.Compiler
             if (name != null)
                 ret = ret.RemoveFromStartOfString(name.Name.ToFullString() + ".Namespace.");
 
-         
+            if(!ignoreAliases)
+            if (Context.Instance.MemberNames.Any(k=>k.Split(',').Contains(ret)))
+            {
+                ret = GetAlias(typeSymbol);
+            }
+
+
             return ret;
         }
 
         public static string TryConvertType(ITypeSymbol typeInfo, bool localize = true)
         {
-            string cachedValue=null;
+            string cachedValue = null;
             _cachedTypes.TryGetValue(typeInfo, out cachedValue);
 
             if (cachedValue == null)
@@ -274,10 +304,10 @@ namespace SharpNative.Compiler
                 _cachedTypes.TryAdd(typeInfo, cachedValue);
             }
 
-            if (localize)
-            {
-               cachedValue= LocalizeName(cachedValue);
-            }
+//            if (localize)
+//            {
+//                cachedValue = LocalizeName(cachedValue,typeInfo);
+//            }
            
             return cachedValue;
 
@@ -327,7 +357,7 @@ namespace SharpNative.Compiler
                 //Nullable types
                 if (named.TypeArguments.Any())
                 {
-                    var convertedType = TryConvertType(named.TypeArguments.FirstOrDefault(),true);
+                    var convertedType = TryConvertType(named.TypeArguments.FirstOrDefault(), true);
 
                     /*switch (convertedType)
                     {
@@ -399,7 +429,7 @@ namespace SharpNative.Compiler
                     return "long";
 
                 case "System.Namespace.UInt32":
-                    return "long"; // Looks like d's uint32 is smaller than C#'s
+                    return "uint"; // /TODO: Looks like d's uint32 is smaller than C#'s
 
                 case "System.Namespace.Byte":
                     return "ubyte";
@@ -430,7 +460,7 @@ namespace SharpNative.Compiler
         {
             var name = GetGenericTypeNameWithParameters(named); 
             var type = named.ContainingType;
-            while (type!=null)
+            while (type != null)
             {
                 name = GetGenericTypeNameWithParameters(type) + "." + name;
                 type = type.ContainingType;
@@ -443,12 +473,12 @@ namespace SharpNative.Compiler
         {
             if (named.IsGenericType)
             {
-                return named.Name + "_" + named.TypeParameters.Select(k=>k.Name)
+                return named.Name + "_" + named.TypeParameters.Select(k => k.Name)
                            .Aggregate((a, b) => a + "_" + b) + "!(" +
-                       named.TypeArguments.Select(
-                           o => GetGenericParameterType(named.TypeParameters[named.TypeArguments.IndexOf(o)], o))
+                named.TypeArguments.Select(
+                    o => GetGenericParameterType(named.TypeParameters[named.TypeArguments.IndexOf(o)], o))
                            .Aggregate((a, b) => a + ", " + b)
-                       + ")";
+                + ")";
             }
             else
             {
@@ -485,7 +515,7 @@ namespace SharpNative.Compiler
             if (named != null && named.SpecialType != SpecialType.None)
             {
                 return named.ContainingNamespace.FullNameWithDot() + named.Name;
-                    //this forces C# shortcuts like "int" to never be used, and instead returns System.Int32 etc.
+                //this forces C# shortcuts like "int" to never be used, and instead returns System.Int32 etc.
             }
             return typeSymbol.ToString();
         }

@@ -27,10 +27,10 @@ namespace SharpNative.Compiler
                
                 {
                     var str = TypeProcessor.ConvertType(declaration.Declaration.Type);
-                    if (str == "NObject") // Dlangs casting is slow
+                   // if (str == "NObject") // Dlangs casting is slow //Kills BoxingTest unfortunately as boxed types are also used to make unbound generics work :(
                         // Looks harmless but is actually a performance optimization ... makes CastTest improve by a whole lot
-                        writer.Write("auto ");
-                    else
+                     //   writer.Write("auto ");
+                    //else
                         writer.Write(str);
 
                     writer.Write(" ");
@@ -163,8 +163,8 @@ namespace SharpNative.Compiler
             writer.Write("&");
 
             Core.Write(writer, value);
-            if (isStatic)
-                writer.Write(")");
+//            if (isStatic)
+//                writer.Write(")");
 
             writer.Write(")");
             return;

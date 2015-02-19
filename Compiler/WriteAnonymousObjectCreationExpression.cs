@@ -51,14 +51,14 @@ namespace SharpNative.Compiler
             var genericPrefix = typeParams.None()
                 ? ""
                 : (" template <" + string.Join(", ", typeParams.Select(o => "typename " + o.Type.Name).Distinct()) +
-                   ">\r\n");
+                                ">\r\n");
 
             return genericPrefix + "Anon_" + string.Join("__",
                 fields
                     .OrderBy(o => o.Name)
                     .Select(o => o.Name + "_" + TypeProcessor.ConvertType(o.Type, false).Replace(".", "_")))
                 // No need localizing these
-                   + genericPrefix;
+            + genericPrefix;
         }
 
         public static void WriteAnonymousType(AnonymousObjectCreationExpressionSyntax syntax)
@@ -70,18 +70,18 @@ namespace SharpNative.Compiler
             TypeProcessor.ClearUsedTypes();
 
             var mynamespace = Context.Instance.Type.ContainingNamespace.FullName().RemoveFromEndOfString(".Namespace");
-                // + "." + TypeState.Instance.TypeName;
+            // + "." + TypeState.Instance.TypeName;
             Context.Instance.Namespace = mynamespace;
             var myUsingDirective = SyntaxFactory.UsingDirective(SyntaxFactory.ParseName(mynamespace));
             var SystemUsingDirective = SyntaxFactory.UsingDirective(SyntaxFactory.ParseName("System"));
-                // Required as certain functions like boxing are in this namespace
+            // Required as certain functions like boxing are in this namespace
 
             Context.Instance.UsingDeclarations =
                 syntax.Parent.DescendantNodes().OfType<UsingDirectiveSyntax>().ToArray()
                     .Union(new[]
-                    {
-                        myUsingDirective, SystemUsingDirective
-                    }).ToArray();
+                {
+                    myUsingDirective, SystemUsingDirective
+                }).ToArray();
 
             //using (var writer = new CppWriter (TypeState.Instance.Namespace, )) {
 

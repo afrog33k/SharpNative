@@ -67,8 +67,8 @@ namespace SharpNative.Compiler
             else if (type != null && type.Name == "Nullable")//Nullable Support
             {
                
-                        var atype = TypeProcessor.ConvertType(type);
-                        writer.Write(atype + "()");
+                var atype = TypeProcessor.ConvertType(type);
+                writer.Write(atype + "()");
                 
             }
             else

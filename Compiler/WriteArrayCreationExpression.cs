@@ -22,35 +22,37 @@ namespace SharpNative.Compiler
             var type = TypeProcessor.ConvertType(elementType);
             var typeString = "Array_T!(" + type + ")";
 
-			var tempWriter = new TempWriter ();
-			tempWriter.Indent = writer.Indent;
+            var tempWriter = new TempWriter();
+            tempWriter.Indent = writer.Indent;
 
-			if (elementType.TypeKind == TypeKind.TypeParameter)
-				writer.Write (" __TypeNew!(" + typeString + ")([");
-			else
-			{
-				writer.Write ("new " + typeString + "(");
-			}
+            if (elementType.TypeKind == TypeKind.TypeParameter)
+                writer.Write(" __TypeNew!(" + typeString + ")([");
+            else
+            {
+                writer.Write("new " + typeString + "(");
+            }
 
 
 
-			//__ARRAY
+            //__ARRAY
             var variableDeclarationSyntax = array.Parent.Parent.Parent as VariableDeclarationSyntax;
+           // var argumentSyntax = array.Parent as ArgumentSyntax;
+
             if (variableDeclarationSyntax != null)
             {
                 var atype = variableDeclarationSyntax.Type;
-				array.Initializer.WriteArrayInitializer(tempWriter, atype);
+                array.Initializer.WriteArrayInitializer(tempWriter, atype);
             }
-            else
-				array.Initializer.WriteArrayInitializer(tempWriter);
+           
+                array.Initializer.WriteArrayInitializer(tempWriter,t);
 
-			var tempString = tempWriter.ToString ();
+            var tempString = tempWriter.ToString();
 
-			//new Array_T!(wchar)(__CC!(wchar[])(['a']))
+            //new Array_T!(wchar)(__CC!(wchar[])(['a']))
 
-			tempString = tempString.Replace ("new " + typeString + "(__CC!("+typeString + "[])(", "__ARRAY!("+typeString+")(");
+            tempString = tempString.Replace("new " + typeString + "(__CC!(" + typeString + "[])(", "__ARRAY!(" + typeString + ")(");
 
-			writer.Write (tempString);
+            writer.Write(tempString);
 
             writer.Write(")");
         }
@@ -107,14 +109,14 @@ namespace SharpNative.Compiler
                 else
                 {
                     type += "Array_T!(" + TypeProcessor.ConvertType(array.Type.ElementType)
-                        /* + Enumerable.Range (0, aType.Rank-1).Select (l => "[]").Aggregate ((a, b) => a + b).ToString () */+
-                            ")";
+                        /* + Enumerable.Range (0, aType.Rank-1).Select (l => "[]").Aggregate ((a, b) => a + b).ToString () */ +
+                    ")";
 
-//					var typeInfo = TypeProcessor.GetTypeInfo (array.Type.ElementType);
+//                  var typeInfo = TypeProcessor.GetTypeInfo (array.Type.ElementType);
                 }
-//				if (type.ConvertedType.TypeKind == Microsoft.CodeAnalysis.TypeKind.TypeParameter)
-//					writer.Write (" __TypeNew!(" + type + ")([");
-//				else
+//              if (type.ConvertedType.TypeKind == Microsoft.CodeAnalysis.TypeKind.TypeParameter)
+//                  writer.Write (" __TypeNew!(" + type + ")([");
+//              else
                 //{
                 writer.Write("new  " + type);
 

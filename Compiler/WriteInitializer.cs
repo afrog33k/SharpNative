@@ -47,7 +47,7 @@ namespace SharpNative.Compiler
                     initializer.WriteArrayInitializer(writer, atype);
                 }
                 else
-                    initializer.WriteArrayInitializer(writer);
+                    initializer.WriteArrayInitializer(writer,t);
                 if (t != null)
                     writer.Write(")");
             }

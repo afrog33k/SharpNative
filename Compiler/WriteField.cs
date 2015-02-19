@@ -22,13 +22,11 @@ namespace SharpNative.Compiler
         {
             foreach (var declaration in field.Declaration.Variables)
             {
-                //    if (field.AttributeLists.Any(l => l.Attributes.Any(a => a.Name.As<IdentifierNameSyntax||QualifiedNameSyntax>().Identifier.ValueText == "ThreadStatic")))
-                //          WriteThreadStatic(writer, declaration, field);
-                //      else
+              
                 //TODO: Add support for threadstatic
                 Go(writer, field, field.Modifiers,
                     WriteIdentifierName.TransformIdentifier(declaration.Identifier.ValueText), field.Declaration.Type,
-                    declaration.Initializer);
+                    declaration.Initializer,field.IsThreadStatic());
             }
         }
 
@@ -36,24 +34,33 @@ namespace SharpNative.Compiler
         {
             foreach (var declaration in field.Declaration.Variables)
             {
-                if (
-                    field.AttributeLists.Any(
-                        l =>
-                            l.Attributes.Any(
-                                a => a.Name.As<IdentifierNameSyntax>().Identifier.ValueText == "ThreadStatic")))
-                    WriteThreadStatic(writer, declaration, field);
-                else
-                {
+               
                     Go(writer, field, field.Modifiers,
                         WriteIdentifierName.TransformIdentifier(declaration.Identifier.ValueText),
-                        field.Declaration.Type, declaration.Initializer);
-                }
+                        field.Declaration.Type, declaration.Initializer,field.IsThreadStatic());
+                
             }
+        }
+
+        private static bool IsThreadStatic(this FieldDeclarationSyntax field)
+        {
+            return field.AttributeLists.Any(
+                l =>
+                    l.Attributes.Any(
+                        a => a.Name.As<IdentifierNameSyntax>().Identifier.ValueText == "ThreadStatic"));
+        }
+
+        private static bool IsThreadStatic(this EventFieldDeclarationSyntax field)
+        {
+            return field.AttributeLists.Any(
+                l =>
+                    l.Attributes.Any(
+                        a => a.Name.As<IdentifierNameSyntax>().Identifier.ValueText == "ThreadStatic"));
         }
 
 
         public static void Go(OutputWriter writer, MemberDeclarationSyntax field, SyntaxTokenList modifiers, string name,
-            TypeSyntax type, EqualsValueClauseSyntax initializerOpt = null)
+            TypeSyntax type, EqualsValueClauseSyntax initializerOpt = null, bool isThreadStatic =false)
         {
             writer.WriteIndent();
 
@@ -77,11 +84,19 @@ namespace SharpNative.Compiler
                 modifiers.Any(SyntaxKind.ProtectedKeyword) || modifiers.Any(SyntaxKind.AbstractKeyword))
                 writer.Write("public ");
 
+
+            if (isThreadStatic)
+            {
+                writer.Write("static ");
+            }
+
             if (modifiers.Any(SyntaxKind.StaticKeyword) || modifiers.Any(SyntaxKind.ConstKeyword))
             {
                 isStatic = true;
-                writer.Write("static ");
+                writer.Write("__gshared ");
             }
+
+          
 
             if (isConst)
             {

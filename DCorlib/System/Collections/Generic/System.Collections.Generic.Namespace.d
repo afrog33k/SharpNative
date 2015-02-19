@@ -62,3 +62,17 @@ alias System.Collections.Generic.Dictionary_TKey_TValue_ValueCollection_Enumerat
 
 alias System.Collections.Generic.Dictionary_TKey_TValue_KeyCollection_EnumeratorTKey_TValue.Dictionary_TKey_TValue_KeyCollection_EnumeratorTKey_TValue Dictionary_TKey_TValue_KeyCollection_EnumeratorTKey_TValue;
 
+// Generic version of IComparable.
+
+public interface IComparable_T(T)
+{
+	// Interface does not need to be marked with the serializable attribute
+	// Compares this object to another object, returning an integer that
+	// indicates the relationship. An implementation of this method must return
+	// a value less than zero if this is less than object, zero
+	// if this is equal to object, or a value greater than zero
+	// if this is greater than object.
+	// 
+	int CompareTo(T other, IComparable_T!(T) __j =null);
+
+}

@@ -40,15 +40,15 @@ namespace SharpNative.Compiler
                 {
                     projectsList =
                         projectsList.Select(
-                            p =>
+                        p =>
                                 p.WithParseOptions(
-                                    new CSharpParseOptions(
-                                        preprocessorSymbols:
+                            new CSharpParseOptions(
+                                preprocessorSymbols:
                                             p.ParseOptions.As<ParseOptions>()
                                                 .PreprocessorSymbolNames.Concat(
-                                                    extraDefines.Where(z => z.StartsWith("-") == false))
+                                    extraDefines.Where(z => z.StartsWith("-") == false))
                                                 .Except(
-                                                    extraDefines.Where(z => z.StartsWith("-"))
+                                    extraDefines.Where(z => z.StartsWith("-"))
                                                         .Select(z => z.Substring(1)))
                                                 .ToArray()))).ToArray();
                 }
@@ -84,7 +84,7 @@ namespace SharpNative.Compiler
         }
 
         public static void CompileFiles(string outDir, string pathToFiles, string[] extraDefines,
-           List<string> extraTranslations)
+            List<string> extraTranslations)
         {
             try
             {
@@ -142,7 +142,7 @@ namespace SharpNative.Compiler
                     {
                         bclDir = Directory.GetParent(
                             Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location + "..\\..\\..\\..\\..\\")) +
-                                 "\\SharpNative\\DCorlib";
+                        "\\SharpNative\\DCorlib";
                     }
 
                     var bclFiles = Directory.GetFiles(bclDir, "*.d", SearchOption.AllDirectories)
@@ -163,7 +163,7 @@ namespace SharpNative.Compiler
 
                     if (Verbose)
                         Console.WriteLine("\nCompiling to binary took " + (DateTime.Now - start).TotalMilliseconds +
-                                          " ms\n");
+                            " ms\n");
 
                     if (!String.IsNullOrEmpty(RunWithArgs))
                     {
@@ -227,16 +227,16 @@ namespace SharpNative.Compiler
                 int passCount = 0;
 
                 NativeCompilationUtils.SetCompilerOptions(options);
-                    var bclDir = pathToDcorlib;
+                var bclDir = pathToDcorlib;
 
-                    if (String.IsNullOrEmpty(bclDir))
-                    {
-                        bclDir = Directory.GetParent(
-                            Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location + "..\\..\\..\\..\\..\\")) +
-                                 "\\SharpNative\\DCorlib";
-                    }
+                if (String.IsNullOrEmpty(bclDir))
+                {
+                    bclDir = Directory.GetParent(
+                        Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location + "..\\..\\..\\..\\..\\")) +
+                    "\\SharpNative\\DCorlib";
+                }
 
-                    var bclFiles = Directory.GetFiles(bclDir, "*.d", SearchOption.AllDirectories)
+                var bclFiles = Directory.GetFiles(bclDir, "*.d", SearchOption.AllDirectories)
                         .OrderBy(o => o)
                         .ToList();
                 var failedTestNames = new List<string>();
@@ -263,7 +263,7 @@ namespace SharpNative.Compiler
 
                     var shortName = Path.GetFileName(filename);
                     Console.WriteLine("-------------------------Running Test: " + shortName +
-                                      "-------------------------");
+                        "-------------------------");
 
                     string applicationExe;
 
@@ -312,7 +312,7 @@ namespace SharpNative.Compiler
 
 
                     Console.WriteLine("\nCompiling to binary took " + (DateTime.Now - start).TotalMilliseconds +
-                                      " ms\n");
+                        " ms\n");
 
 
                     var CSharpOutput = applicationExe.ExecuteCommand(RunWithArgs);
@@ -346,10 +346,10 @@ namespace SharpNative.Compiler
                 }
 
                 Console.WriteLine(
-                      String.Format("Summary \nTotal:{0} \nPass Rate:{1} \nPassed: {2} \nFailed: {3} {4}\n",
-                          filenames.Count(), (passCount * 100) / ((float)filenames.Count()), passCount,
-                          filenames.Count() - passCount,
-                          (filenames.Count() - passCount == 0)
+                    String.Format("Summary \nTotal:{0} \nPass Rate:{1} \nPassed: {2} \nFailed: {3} {4}\n",
+                        filenames.Count(), (passCount * 100) / ((float)filenames.Count()), passCount,
+                        filenames.Count() - passCount,
+                        (filenames.Count() - passCount == 0)
                               ? ""
                               : failedTestNames.Aggregate((k, j) => k + " , " + j)));
 
@@ -434,15 +434,15 @@ namespace SharpNative.Compiler
                 {
                     projectsList =
                         projectsList.Select(
-                            p =>
+                        p =>
                                 p.WithParseOptions(
-                                    new CSharpParseOptions(
-                                        preprocessorSymbols:
+                            new CSharpParseOptions(
+                                preprocessorSymbols:
                                             p.ParseOptions.As<ParseOptions>()
                                                 .PreprocessorSymbolNames.Concat(
-                                                    extraDefines.Where(z => z.StartsWith("-") == false))
+                                    extraDefines.Where(z => z.StartsWith("-") == false))
                                                 .Except(
-                                                    extraDefines.Where(z => z.StartsWith("-"))
+                                    extraDefines.Where(z => z.StartsWith("-"))
                                                         .Select(z => z.Substring(1)))
                                                 .ToArray()))).ToList();
                 }
@@ -571,7 +571,6 @@ namespace SharpNative.Compiler
                         RunWithArgs = arg.Substring(_run.Length) + " ";
                         // Console.WriteLine("Running with args " +  RunWithArgs);
                     }
-
                     else if (arg.StartsWith(_config))
                         config = arg.Substring(_config.Length);
                     else if (arg.StartsWith(_projects))

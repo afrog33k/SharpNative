@@ -65,8 +65,8 @@ namespace SharpNative.Compiler
                     writer.Write("&");
 
                     Core.Write(writer, ArgumentOpt.Expression);
-                    if (isStatic)
-                        writer.Write(")");
+//                    if (isStatic)
+//                        writer.Write(")");
 
                     if (createNew)
                         writer.Write(")");

@@ -80,14 +80,53 @@ namespace SharpNative.Compiler
 
         }
 
-        public static string TransformIdentifier(string ident)
+        public static string TransformIdentifier(string ident, ITypeSymbol type =null)
         {
+            //limited support for badly named identifiers
+            if (ident.StartsWith("__cs"))
+            {
+                return "__" + ident;
+            }
+
+            if (type != null)
+            {
+                //Special Classes
+                if (type.SpecialType == SpecialType.System_Object)
+                {
+                    return "NObject";
+                }
+
+                if (type == Context.Exception)
+                {
+                    return "NException"; //TODO: this is not right, we can have object defined in another namespace ?
+                }
+            }
+
+
+
+
 
             switch (ident)
             {
                 case "version":
                 case "body":
-                    return "cs" + ident;
+                case "auto":
+                case "typeof":
+                case "immutable":
+                case "ubyte":
+                case "typeid":
+                case "alias":
+                case "inout":
+                case "_gshared":
+                case "__TypeOf":
+                case "__Delegate":
+                case "__Event":
+                case "BOX":
+                case "UNBOX":
+                    return "__cs" + ident;
+                case "Object": // Dlang does not accept defining Object / Exception in any module except object.di
+                case "Exception": // Dlang does not accept defining Object / Exception in any module except object.di
+                    return "__CS" + ident;
                 default:
                     return ident;
             }

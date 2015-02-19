@@ -38,12 +38,12 @@ public class Type_T(T):Type
 	override Array_T!(SType) GetInterfaces()
 	{
 		Array_T!(SType) interfaces = null;
-		
+
 		static if(InterfacesTuple!(T).length > 0)
 		{
 			SType[] interfaces_;
-			
-			
+
+
 			alias rinterfaces = InterfacesTuple!(T);
 			foreach (i, T; rinterfaces)
 			{
@@ -51,10 +51,10 @@ public class Type_T(T):Type
 				//				std.stdio.write(interfaces_);
 				//std.stdio.writefln("TL[%d] = %s", i, typeid(T));
 			}
-			
+
 			interfaces = __ARRAY!(SType)(interfaces_);
 		}
-		
+
 		return interfaces;
 	}
 
@@ -66,15 +66,30 @@ public class Type_T(T):Type
 
 	}
 
+	static if(!is(T==void))
+	{
 
 	T Type = __Default!(T);
-
-
-	public override NObject Create()
+	}
+	else
 	{
-		
+		__Void Type = __Void();
+	}
 
-		return BOX!(T)(__TypeNew!(T)());
+	static if (!is(T:NException))
+	{
+		public override NObject Create()
+		{
+		
+			return BOX!(T)(__TypeNew!(T)());
+		}
+	}
+	else
+	{
+		public override NObject Create()
+		{
+			return null; // TODO: Make it possible to create an instance of an Exception			
+		}
 	}
 
 	this(string csName=null)
@@ -84,7 +99,7 @@ public class Type_T(T):Type
 		/*	Type = type;
 
 		//Generating reflection info slows down compile considerably ... will use roslyn to generate this info, its much faster
-*/
+		*/
 		version(Reflection)
 		{
 			__Meta = createMetadata!(T);
@@ -92,7 +107,7 @@ public class Type_T(T):Type
 
 
 
-		 if(is(T==class) || is(T==struct) || is(T==interface))
+		if(is(T==class) || is(T==struct) || is(T==interface))
 		{
 
 
@@ -101,7 +116,7 @@ public class Type_T(T):Type
 
 				static if((BaseClassesTuple!T).length > 0)
 				{
-				//if((typeid(T) != typeid(NObject)) && (typeid(T) != typeid(Object))) 
+					//if((typeid(T) != typeid(NObject)) && (typeid(T) != typeid(Object))) 
 					static if(is(T:NObject))
 					{
 						static if(!is(T==NObject)&&!is(T==NException))
@@ -128,7 +143,7 @@ public class Type_T(T):Type
 
 			fullName = fullName.replace("CsRoot.",""); //Make sure to mark this namespace as global
 
-		//	Console.WriteLine("name " ~ name);
+			//	Console.WriteLine("name " ~ name);
 			//Console.WriteLine("fullName "~fullName);
 
 			if(name.lastIndexOf("Boxed!(")!=-1)
@@ -141,7 +156,7 @@ public class Type_T(T):Type
 				fullName = fullName[("System.Namespace.Boxed!(").length..$-1];
 			}
 
-		//	Console.WriteLine("name " ~ name);
+			//	Console.WriteLine("name " ~ name);
 			//Console.WriteLine("fullName "~fullName);
 
 			auto dotname = "." ~ name;
@@ -156,16 +171,24 @@ public class Type_T(T):Type
 			FullName = _S(fullName);
 
 
-		
+
 			Name = _S(name);
-			   }
+		}
 		else
 		{
+			
+			if(is(T==void))
+			{
+				FullName = _S("System.Void");
+				Name = _S("Void");
+			}
+			else
+			{
 			auto boxedType = __GetBoxedType!(T);
-
 			auto fullName = (boxedType.FullName);
 			FullName=boxedType.FullName;
 			Name = boxedType.Name;
+			}
 		}
 
 		//enum templateParams = TemplateArgsOf!(T);
@@ -175,19 +198,20 @@ public class Type_T(T):Type
 			FullName = _S(csName);
 			if(csName.lastIndexOf(".")!=-1)
 			{
-			Name = _S(csName[csName.lastIndexOf(".")..$]);
-		}
+				Name = _S(csName[csName.lastIndexOf(".")..$]);
+			}
 		}
 
 		//FullName =_S("Dummy");
-	//	Console.WriteLine(FullName);
-//		Console.WriteLine(Name);
+		//	Console.WriteLine(FullName);
+		//		Console.WriteLine(Name);
 
 		static if(is(T==interface))
 		{
-//			Console.WriteLine("this is an interface");
+			//			Console.WriteLine("this is an interface");
 			IsInterface = true;
 		}
+		
 
 	}
 
@@ -197,25 +221,27 @@ public class Type_T(T):Type
 	}
 
 
+	static if(!is(T==void))
+	{
 	public override NObject __GetValue(String fieldname, NObject underlyingtype=null)
 	{
 		T anobject;
 
 		static if(is(T==class))
 		{
-		 anobject  = underlyingtype is null?Type:cast(T)underlyingtype;
+			anobject  = underlyingtype is null?Type:cast(T)underlyingtype;
 		}
 		else  if(is(T==struct))
 		{
-		 anobject  = underlyingtype is null?Type:UNBOX!(T)(underlyingtype);
+			anobject  = underlyingtype is null?Type:UNBOX!(T)(underlyingtype);
 		}
 
 		//return __GetValue!(fieldname);
 		//return _S("yo");
 		//auto value = getValue(__Meta,cast(string)fieldname, anobject);
-		
+
 		//std.stdio.writeln(value);
-	/*	std.stdio.writeln(anobject);
+		/*	std.stdio.writeln(anobject);
 		string sfieldname = cast(string)fieldname;
 		std.stdio.writeln(sfieldname);
 		__Meta.getValue(sfieldname, anobject);
@@ -225,16 +251,16 @@ public class Type_T(T):Type
 
 
 		/*if(value.type==typeid(int))
-			return BOX!int(value.get!int());
+		return BOX!int(value.get!int());
 		if(value.type==typeid(const(int)))
-			return BOX!int(value.get!(const(int))());
+		return BOX!int(value.get!(const(int))());
 		else*/
-			//return  value.get!NObject();
+		//return  value.get!NObject();
 		return null;
-		
+
 	}
 
-	
+
 	public override Array_T!FieldInfo GetFields(string name="")
 	{
 		FieldInfo result[];// = __Meta.Fields;
@@ -252,26 +278,26 @@ public class Type_T(T):Type
 		//}
 
 		//Console.WriteLine(_S("In override ... "));
-		
-	//	auto rtInfo = typeid(T).rtInfo();
 
-     // std.stdio.writeln(rtInfo);
-       
+		//	auto rtInfo = typeid(T).rtInfo();
+
+		// std.stdio.writeln(rtInfo);
+
 
 		/*static if(is(T==class) || is(T==struct) || is(T==interface))
 		{
-			foreach (member_string; __traits(allMembers, T))
-			{
-				auto member =  T.stringof ~ "." ~ member_string;
-				static if (!is(typeof(member) == function)/* && !is(typeof(member)==property))
-				{
-					auto fieldInfo = new FieldInfo();
-					fieldInfo.Name = _S(member_string);
-					fieldInfo.DeclaringType = this;
-					result ~= fieldInfo;
-				//	Console.WriteLine(_S(member_string));
-				}
-			}	
+		foreach (member_string; __traits(allMembers, T))
+		{
+		auto member =  T.stringof ~ "." ~ member_string;
+		static if (!is(typeof(member) == function)/* && !is(typeof(member)==property))
+		{
+		auto fieldInfo = new FieldInfo();
+		fieldInfo.Name = _S(member_string);
+		fieldInfo.DeclaringType = this;
+		result ~= fieldInfo;
+		//	Console.WriteLine(_S(member_string));
+		}
+		}	
 		}*/
 
 		//return new Array_T!FieldInfo(__CC!(FieldInfo[])(result));
@@ -285,20 +311,21 @@ public class Type_T(T):Type
 		{
 			if(name=="")
 			{
-			/*	import std.algorithm;
+				/*	import std.algorithm;
 				import std.array:array;
 				auto membernames = new Array_T!(String)
-					(
-					 __IA!(String[])(
-								`	 ([__traits(allMembers,T)]
-									  .map!(a=>new String(a))).array
-									 )
-					 );
+				(
+				__IA!(String[])(
+				`	 ([__traits(allMembers,T)]
+				.map!(a=>new String(a))).array
+				)
+				);
 
 				return membernames;*/
 			}
 		}
 		return null;
+	}
 	}
 
 	override string toString()

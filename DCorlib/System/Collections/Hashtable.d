@@ -4,12 +4,12 @@ module System.Collections.Hashtable;
 import System.Namespace;
 import System.Collections.Namespace;
 
- class Hashtable //:  NObject ,  ICloneable ,  IDictionary
+ class Hashtable :  NObject  //,  IDictionary , ICloneable
 {
 
-	NObject[int] _items;
+	NObject[NObject] _items;
 
-	final  NObject opIndexAssign(NObject value, int index, IDictionary j=null)  {
+	final  NObject opIndexAssign(NObject value, NObject index, IDictionary j=null)  {
 		//if (index >= _items.length)
 		//	throw new ArgumentOutOfRangeException(new String("index"));
 		
@@ -17,7 +17,7 @@ import System.Collections.Namespace;
 		return _items[index];
 	}
 	
-	final  ref NObject opIndex(int index, IDictionary j=null) { //TODO: ref could be a bad idea 
+	final  ref NObject opIndex(NObject index, IDictionary j=null) { //TODO: ref could be a bad idea 
 		//but allows alot of natural c# syntax
 		//if (index >= _items.length)
 		//	throw new ArgumentOutOfRangeException(new String("index"));

@@ -39,6 +39,8 @@ alias System.GC.GC GC;
 
 alias System.EmptyArray_T.EmptyArray_T EmptyArray_T;
 
+alias System.Activator.Activator Activator;
+
 import std.string;
 
 import core.stdc.stdio;
@@ -64,13 +66,6 @@ public static String _S(String text)
 	return text;
 }
 
-class Activator
-{
-	static NObject CreateInstance(Type type)
-	{
-		return type.Create();
-	}
-}
 
 //Locale Helper
 struct Locale
@@ -494,6 +489,11 @@ Array_T!T __ARRAY(T)(T[] values)
 	return new Array_T!(T)(__CC!(T[])(values));
 }
 
+/*bool __IsInteger(T)()
+{
+	return (is(T==int) || is(T==double) || is(T==float) || is(T==uint));
+}
+*/
 
 //Provides .Net's (default() keyword)
 T __Default(T)()
@@ -502,10 +502,32 @@ if(is(T==class))
 		return cast(T)null;
 }
 
+
 T __Default(T)()
-if(!is(T==class))
+if(is(T==int) || is(T==double) || is(T==float) || is(T==uint) || is(T==wchar))
 {
-		return T.init;
+
+		return cast(T)0;
+}
+
+T __Default(T)()
+if(is(T==struct))
+{
+	return T.init;
+}
+
+__Void __Default(T)()
+if(is(T==void))
+{
+	return __Void.init;
+}
+
+
+T __Default(T)()
+if(!(is(T==int) || is(T==double) || is(T==float) || is(T==uint) || is(T==wchar)|| is(T==struct) || is(T==class) || is(T==void)))
+{
+
+	return T.init;
 }
 
 	T __TypeNew(T,U...)(U args)
@@ -531,15 +553,23 @@ if(!is(T==class))
 		return T(args);
 		//	return T.__init(args);
 		}
-		return T.init;
+		return __Default!(T)();
     }
 
 	T __TypeNew(T,U...)(U args)
-    if(!is(T==struct)&&!is(T==class))
+    if(!is(T==struct)&&!is(T==class)&&!is(T==void))
     {
 	//Console.WriteLine("__TypeNew !Struct !Class " ~ T.stringof);
+		
+		return __Default!(T)();
+    }
 
-		return T.init;
+	__Void __TypeNew(T,U...)(U args)
+    if(is(T==void))
+    {
+		//Console.WriteLine("__TypeNew !Struct !Class " ~ T.stringof);
+
+		return __Default!(T)();
     }
 
 //http://forum.dlang.org/thread/50992AC2.5020807@webdrake.net ... Simen Kjaeraas
@@ -1003,10 +1033,10 @@ public class NException : Exception//: Exception
 		return new String(file ~":"~ to!string(line) ~"\r\n" ~ info.toString);
 	}
 
-	/*public override Type GetType()
+	public Type GetType()
 	{
 		return __TypeOf!(typeof(this));
-	}*/
+	}
 
 	public  String ToString()
 	{
@@ -1743,57 +1773,62 @@ if(is(T == class))
 	return cast(T)value;
 }
 
+static Boxed!__Void BOX(T)(__Void value)
+if(is(T == void))
+{
+	return new Boxed!(__Void);
+}
 
 Type __GetBoxedType(T)()
-	if(is(T==wchar))
+if(is(T==wchar))
 {
 	return __TypeOf!(System.Char.Char);
 }
 
 Type __GetBoxedType(T)()
-	if(is(T==float))
+if(is(T==float))
 {
 	return  __TypeOf!(System.Single.Single);
 }
 
 Type __GetBoxedType(T)()
-	if(is(T==double))
+if(is(T==double))
 {
 	return  __TypeOf!(System.Double.Double);
 }
 
 Type __GetBoxedType(T)()
-	if(is(T==byte))
+if(is(T==byte))
 {
 	return  __TypeOf!(System.SByte.SByte);
 }
 
 Type __GetBoxedType(T)()
-	if(is(T==ubyte))
+if(is(T==ubyte))
 {
 	return  __TypeOf!(System.Byte.Byte);
 }
 
 Type __GetBoxedType(T)()
-	if(is(T==int))
+if(is(T==int))
 {
 	return __TypeOf!(System.Int32.Int32);
 }
 
 Type __GetBoxedType(T)()
-	if(is(T==uint))
+if(is(T==uint))
 {
 	return __TypeOf!(System.UInt32.UInt32);
 }
 
 Type __GetBoxedType(T)()
-	if(is(T==long))
+if(is(T==long))
 {
 	return  __TypeOf!(System.Int64.Int64);
 }
 
 Type __GetBoxedType(T)()
-	if(is(T==ulong))
+if(is(T==ulong))
 {
 	return  __TypeOf!(System.UInt64.UInt64);
 }
@@ -2085,9 +2120,12 @@ bool IsCast(T, U)(U obj)  if (is(T == interface))// && is(U :NObject))
 	static T Cast(T)(NObject object)
 	{
 		auto result = AsCast!(T)(object);
+		static if(is(T==class))
+		{
 		if(result is null && object !is null)
 		{
 			throw new InvalidCastException(new String(("Cannot cast " ~ object.stringof ~ " to " ~ T.stringof)));
+		}
 		}
 		return result;
 	}
@@ -2112,7 +2150,12 @@ bool IsCast(T, U)(U obj)  if (is(T == interface))// && is(U :NObject))
 
 	static T AsCast(T)(NObject object)
 	{
+		static if(is(T==class) || is(T==interface))
+		{
 			return cast(T)(object);
+		}
+		else
+			return UNBOX!(T)(object);
 	}
 	
 static T AsCast(T,U)(U object)
@@ -2612,8 +2655,21 @@ public class Type:NObject
 	}
 }
 
+struct __Void //Special Type for void
+{
+
+}
+
+struct DBNull
+{
+	NObject obj;
+	alias obj this;
+}
+
 
 static Type[TypeInfo] CachedTypes;// = ["":""];
+
+
 
 public static Type_T!(T.__Boxed_) __TypeOf(T)(string csName=null)
 if(is(T==struct))

@@ -61,6 +61,8 @@ namespace SharpNative.Compiler
                     myUsingDirective, SystemUsingDirective
                 }).ToArray();
 
+            
+
             OutputWriter writer = null;
 
 
@@ -72,6 +74,40 @@ namespace SharpNative.Compiler
                     writer.Indent = outputWriter.Indent + 2;
                     writer.WriteIndent();
                 }
+
+                //TODO: Fix enum support
+                if (first.Syntax is EnumDeclarationSyntax)
+                {
+                    WriteEnum.Go(writer,
+                        Context.Instance.Partials.Select(o => o.Syntax)
+                            .Cast<EnumDeclarationSyntax>()
+                            .SelectMany(o => o.Members)
+                            .Where(o => !Program.DoNotWrite.ContainsKey(o)));
+
+                    if (outputWriter != null)
+                    {
+                        outputWriter.Write(writer.ToString());
+                    }
+
+                    return;
+                }
+
+                Context.Instance.AllMembers =
+                 partials.Select(o => o.Syntax)
+                     .Cast<TypeDeclarationSyntax>()
+                     .SelectMany(o => o.Members)
+                     .Where(o => !Program.DoNotWrite.ContainsKey(o))
+                     .ToList();
+
+
+                var allMembersToWrite = Context.Instance.AllMembers
+                       .Where(member => !(member is TypeDeclarationSyntax)
+                                        && !(member is EnumDeclarationSyntax)
+                                        && !(member is DelegateDeclarationSyntax) &&
+                                        !(member is ConstructorDeclarationSyntax))
+                       .ToList();
+
+                Context.Instance.MemberNames = allMembersToWrite.Select(k => k.GetCSharpName()).ToList();
 
                 var bases = partials
                     .Select(o => o.Syntax.BaseList)
@@ -117,36 +153,11 @@ namespace SharpNative.Compiler
                 //
                 //                    }
 
-                //TODO: Fix enum support
-                if (first.Syntax is EnumDeclarationSyntax)
-                {
-                    WriteEnum.Go(writer,
-                        Context.Instance.Partials.Select(o => o.Syntax)
-                            .Cast<EnumDeclarationSyntax>()
-                            .SelectMany(o => o.Members)
-                            .Where(o => !Program.DoNotWrite.ContainsKey(o)));
+                
 
-                    if (outputWriter != null)
-                    {
-                        outputWriter.Write(writer.ToString());
-                    }
+             
 
-                    return;
-                }
-
-                Context.Instance.AllMembers =
-                    partials.Select(o => o.Syntax)
-                        .Cast<TypeDeclarationSyntax>()
-                        .SelectMany(o => o.Members)
-                        .Where(o => !Program.DoNotWrite.ContainsKey(o))
-                        .ToList();
-
-                var allMembersToWrite = Context.Instance.AllMembers
-                    .Where(member => !(member is TypeDeclarationSyntax)
-                                     && !(member is EnumDeclarationSyntax)
-                                     && !(member is DelegateDeclarationSyntax) &&
-                                     !(member is ConstructorDeclarationSyntax))
-                    .ToList();
+               
 
                 var instanceCtors = Context.Instance.AllMembers.OfType<ConstructorDeclarationSyntax>()
                     .Where(o => !o.Modifiers.Any(SyntaxKind.StaticKeyword))
@@ -909,7 +920,10 @@ namespace SharpNative.Compiler
         {
             var sb =
                 new StringBuilder(string.Join("_",
-                    (new[] { type.Name }).Union(type.TypeArguments.Select(o => o.ToString()))));
+                    (new[]
+                    {
+                        WriteIdentifierName.TransformIdentifier(type.Name,type)
+                    }).Union(type.TypeArguments.Select(o => o.ToString()))));
 
             if (appendContainingTypeName)
                 while (type.ContainingType != null)

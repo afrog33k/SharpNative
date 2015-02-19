@@ -78,15 +78,15 @@ namespace SharpNative.Compiler
         public static void ProcessTrivias(OutputWriter writer, IEnumerable<SyntaxTrivia> trivias)
         {
             bool literalCode = false;
-                //if we encounter a #if SharpNative, we set this to true, which indicates that the next DisabledTextTrivia should be written as pure code.   
+            //if we encounter a #if SharpNative, we set this to true, which indicates that the next DisabledTextTrivia should be written as pure code.   
 
             foreach (var trivia in trivias)
             {
                 if (_triviaProcessed.Add(trivia)) //ensure we don't look at the same trivia multiple times
                 {
-                    if (trivia.RawKind == (decimal) SyntaxKind.IfDirectiveTrivia)
+                    if (trivia.RawKind == (decimal)SyntaxKind.IfDirectiveTrivia)
                         literalCode |= GetConditions(trivia, "#if ").Contains("SharpNative");
-                    else if (trivia.RawKind == (decimal) SyntaxKind.DisabledTextTrivia && literalCode)
+                    else if (trivia.RawKind == (decimal)SyntaxKind.DisabledTextTrivia && literalCode)
                     {
                         writer.Write(trivia.ToString());
                         literalCode = false;
@@ -120,9 +120,9 @@ namespace SharpNative.Compiler
             var triviaProcessed = new ConcurrentHashSet<SyntaxTrivia>();
 
             var skipCount = 0;
-                //set to 1 if we encounter a #if !SharpNative directive (while it's 0).  Incremented for each #if that's started inside of that, and decremented for each #endif
+            //set to 1 if we encounter a #if !SharpNative directive (while it's 0).  Incremented for each #if that's started inside of that, and decremented for each #endif
             var elseCount = 0;
-                //set to 1 if we encounter an #if SharpNative directive (while it's 0).  Incremented for each #if that's started inside of that, and decremented for each #endif
+            //set to 1 if we encounter an #if SharpNative directive (while it's 0).  Incremented for each #if that's started inside of that, and decremented for each #endif
 
             var ret = new List<SyntaxNode>();
 
@@ -134,14 +134,14 @@ namespace SharpNative.Compiler
                     if (!triviaProcessed.Add(trivia))
                         return;
 
-                    if (trivia.RawKind == (decimal) SyntaxKind.EndIfDirectiveTrivia)
+                    if (trivia.RawKind == (decimal)SyntaxKind.EndIfDirectiveTrivia)
                     {
                         if (skipCount > 0)
                             skipCount--;
                         if (elseCount > 0)
                             elseCount--;
                     }
-                    else if (trivia.RawKind == (decimal) SyntaxKind.IfDirectiveTrivia)
+                    else if (trivia.RawKind == (decimal)SyntaxKind.IfDirectiveTrivia)
                     {
                         if (skipCount > 0)
                             skipCount++;
@@ -155,7 +155,7 @@ namespace SharpNative.Compiler
                         else if (cond.Contains("SharpNative") && elseCount == 0)
                             elseCount = 1;
                     }
-                    else if (trivia.RawKind == (decimal) SyntaxKind.ElseDirectiveTrivia)
+                    else if (trivia.RawKind == (decimal)SyntaxKind.ElseDirectiveTrivia)
                     {
                         if (elseCount == 1)
                         {

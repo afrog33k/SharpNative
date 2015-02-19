@@ -46,8 +46,6 @@ namespace SharpNative.Compiler
                 methodName = "Invoke";
                    
             }
-               
-
             else if (methodSymbol.MethodKind == MethodKind.DelegateInvoke)
                 methodName = null;
             else
@@ -73,8 +71,8 @@ namespace SharpNative.Compiler
 
                 var named = ((IMethodSymbol)symbol);
                 typeParameters = "!(" +
-                    named.TypeArguments.Select(o => TypeProcessor.GetGenericParameterType(named.TypeParameters[named.TypeArguments.IndexOf(o)], o)).Aggregate((a, b) => a + ", " + b)
-                           + ")";
+                named.TypeArguments.Select(o => TypeProcessor.GetGenericParameterType(named.TypeParameters[named.TypeArguments.IndexOf(o)], o)).Aggregate((a, b) => a + ", " + b)
+                + ")";
 
 //                typeParameters = "!( " +
 //                                 string.Join(", ",
@@ -94,13 +92,13 @@ namespace SharpNative.Compiler
             var isNullableEnum = memberType != null &&
                                  (memberType.Name == "Nullable" && memberType.ContainingNamespace.FullName() == "System") &&
                                  memberType.As<INamedTypeSymbol>().TypeArguments.Single().TypeKind == TypeKind.Enum;
-            //			if (isNullableEnum && methodSymbol.Name == "ToString")
-            //			{
-            //				extensionNamespace = null; //override Translations.xml for nullable enums. We want them to convert to the enum's ToString method
-            //				methodName = "toString";
-            //			}
+            //          if (isNullableEnum && methodSymbol.Name == "ToString")
+            //          {
+            //              extensionNamespace = null; //override Translations.xml for nullable enums. We want them to convert to the enum's ToString method
+            //              methodName = "toString";
+            //          }
 
-                //Invocation on basics should come from boxing the basic then calling on the boxed type, unless static
+            //Invocation on basics should come from boxing the basic then calling on the boxed type, unless static
             var directInvocationOnBasics = methodSymbol.ContainingType.IsBasicType() && methodSymbol.IsStatic;
             //&& methodSymbol.ContainingType!=Context.Instance.Type; //If we are currently working on a basic type e.g. in corlib, don't alter the code
 
@@ -110,8 +108,8 @@ namespace SharpNative.Compiler
             {
                 if (extensionNamespace == null)
                 {
-                    extensionNamespace = TypeProcessor.ConvertType(methodSymbol.ContainingType,true,false);
-                        // methodSymbol.ContainingNamespace.FullName() + "." + methodSymbol.ContainingType.Name;
+                    extensionNamespace = TypeProcessor.ConvertType(methodSymbol.ContainingType, true, false);
+                    // methodSymbol.ContainingNamespace.FullName() + "." + methodSymbol.ContainingType.Name;
                     //memberType.ContainingNamespace.FullName() +"."+ memberType.Name;
                 }
 
@@ -119,8 +117,9 @@ namespace SharpNative.Compiler
 
                 if (methodName != null)
                 {
-//                    if (symbolInfo.Symbol.ContainingType != Context.Instance.Type)
-                        writer.Write(".");
+                    methodName = WriteIdentifierName.TransformIdentifier(methodName);
+                    //                    if (symbolInfo.Symbol.ContainingType != Context.Instance.Type)
+                    writer.Write(".");
                     writer.Write(methodName);
                 }
 
@@ -153,12 +152,12 @@ namespace SharpNative.Compiler
                     //                        if (methodName != null && methodSymbol.IsStatic)
                     //                            writer.Write(".");
                     //                        else
-                    //						{	
+                    //                      {   
                     if (methodSymbol.MethodKind != MethodKind.DelegateInvoke)
                         writer.Write(".");
                     //                        }
                     //                    }
-                    //					writer.Write(".");
+                    //                  writer.Write(".");
                 }
                 else if (methodSymbol.IsStatic && extensionNamespace == null)
                 {
@@ -188,7 +187,7 @@ namespace SharpNative.Compiler
                             .Modifiers.Any(SyntaxKind.NewKeyword))
                     {
                         //TODO: this means that new is not supported on external libraries
-                        //					//why doesnt roslyn give me this information ?
+                        //                  //why doesnt roslyn give me this information ?
                         methodName += "_";
                     }
 
@@ -198,19 +197,19 @@ namespace SharpNative.Compiler
                             .Modifiers.Any(SyntaxKind.NewKeyword))
                     {
 //                        if (symbolInfo.Symbol.ContainingType != Context.Instance.Type)
-                            writer.Write(TypeProcessor.ConvertType(methodSymbol.ContainingType) + ".");
+                        writer.Write(TypeProcessor.ConvertType(methodSymbol.ContainingType) + ".");
                     }
 
                     //TODO: fix this for abstract too or whatever other combination
                     //TODO: create a better fix fot this
-                    //					ISymbol interfaceMethod =
-                    //						methodSymbol.ContainingType.AllInterfaces.SelectMany (
-                    //							u =>
-                    //						u.GetMembers (methodName)
-                    //						.Where (
-                    //								o =>
-                    //							methodSymbol.ContainingType.FindImplementationForInterfaceMember (o) ==
-                    //								methodSymbol)).FirstOrDefault ();
+                    //                  ISymbol interfaceMethod =
+                    //                      methodSymbol.ContainingType.AllInterfaces.SelectMany (
+                    //                          u =>
+                    //                      u.GetMembers (methodName)
+                    //                      .Where (
+                    //                              o =>
+                    //                          methodSymbol.ContainingType.FindImplementationForInterfaceMember (o) ==
+                    //                              methodSymbol)).FirstOrDefault ();
 
                     /*      if (methodSymbol.ContainingType.TypeKind == TypeKind.Interface ||
                 Equals(methodSymbol.ContainingType.FindImplementationForInterfaceMember(methodSymbol), methodSymbol))
@@ -228,7 +227,7 @@ namespace SharpNative.Compiler
                               {
                                   var typenameI = Regex.Replace (TypeProcessor.ConvertType (interfaceMethod.ContainingType), @" ?!\(.*?\)", string.Empty);
                                   if (typenameI.Contains ('.'))
-                                      typenameI = typenameI.SubstringAfterLast ('.');						
+                                      typenameI = typenameI.SubstringAfterLast ('.');                       
                                   writer.Write (typenameI + "_");
                               }
                               else // this is the interface itself
@@ -240,13 +239,13 @@ namespace SharpNative.Compiler
                         Equals(methodSymbol.ContainingType.FindImplementationForInterfaceMember(methodSymbol),
                             methodSymbol))
                     {
-                    /*    methodName =
+                        /*    methodName =
                             Regex.Replace(TypeProcessor.ConvertType(methodSymbol.ContainingType.OriginalDefinition)
                                     .RemoveFromStartOfString(methodSymbol.ContainingNamespace + ".Namespace.") + "_" +
                                 methodName,
                                 @" ?!\(.*?\)", string.Empty);*/
                         if (methodSymbol.ContainingType.ContainingType != null)
-                            methodName = methodName.RemoveFromStartOfString(methodSymbol.ContainingType.ContainingType.Name+".");
+                            methodName = methodName.RemoveFromStartOfString(methodSymbol.ContainingType.ContainingType.Name + ".");
                     }
 
                     var interfaceMethods =
@@ -274,7 +273,7 @@ namespace SharpNative.Compiler
                             writer.Write("");
                         else
                         {
-                           /* var typenameI =
+                            /* var typenameI =
                                 Regex.Replace(
                                     TypeProcessor.ConvertType(interfaceMethod.ContainingType.ConstructedFrom, true),
                                     @" ?!\(.*?\)", string.Empty);
@@ -285,20 +284,21 @@ namespace SharpNative.Compiler
                         }
                     }
 
-                    //					var acc = methodSymbol.DeclaredAccessibility;
+                    //                  var acc = methodSymbol.DeclaredAccessibility;
 
-                    //					if (methodSymbol.MethodKind == MethodKind.ExplicitInterfaceImplementation)
-                    //					{
-                    //						var implementations = methodSymbol.ExplicitInterfaceImplementations[0];
-                    //						if (implementations != null)
-                    //						{
-                    //							//  explicitHeaderNAme = implementations.Name;
-                    //							methodName = TypeProcessor.ConvertType(implementations.ReceiverType) + "_" +implementations.Name; //Explicit fix ?
+                    //                  if (methodSymbol.MethodKind == MethodKind.ExplicitInterfaceImplementation)
+                    //                  {
+                    //                      var implementations = methodSymbol.ExplicitInterfaceImplementations[0];
+                    //                      if (implementations != null)
+                    //                      {
+                    //                          //  explicitHeaderNAme = implementations.Name;
+                    //                          methodName = TypeProcessor.ConvertType(implementations.ReceiverType) + "_" +implementations.Name; //Explicit fix ?
                     //
-                    //							//			writer.Write(methodSymbol.ContainingType + "." + methodName);
-                    //							//Looks like internal classes are not handled properly here ...
-                    //						}
-                    //					}
+                    //                          //          writer.Write(methodSymbol.ContainingType + "." + methodName);
+                    //                          //Looks like internal classes are not handled properly here ...
+                    //                      }
+                    //                  }
+                    methodName = WriteIdentifierName.TransformIdentifier(methodName);
 
                     writer.Write(methodName);
                 }
@@ -313,7 +313,7 @@ namespace SharpNative.Compiler
 
             ITypeSymbol typeSymbol = null;
 
-            bool isOverloaded =methodSymbol.ContainingType.GetMembers(methodSymbol.Name).OfType<IMethodSymbol>().Any(j => j.TypeParameters == methodSymbol.TypeParameters && ParameterMatchesWithRefOutIn(methodSymbol,j));
+            bool isOverloaded = methodSymbol.ContainingType.GetMembers(methodSymbol.Name).OfType<IMethodSymbol>().Any(j => j.TypeParameters == methodSymbol.TypeParameters && ParameterMatchesWithRefOutIn(methodSymbol, j));
             foreach (var arg in arguments.Select(o => new TransformedArgument(o)))
             {
                 if (firstParameter)
@@ -326,16 +326,16 @@ namespace SharpNative.Compiler
                 if (!inParams && IsParamsArgument(invocationExpression, arg.ArgumentOpt, methodSymbol))
                 {
                     foundParamsArray = true;
-					typeSymbol = TypeProcessor.GetTypeInfo(arg.ArgumentOpt.Expression).ConvertedType;
+                    typeSymbol = TypeProcessor.GetTypeInfo(arg.ArgumentOpt.Expression).ConvertedType;
 
                     if (
                         !TypeProcessor.ConvertType(typeSymbol)
                             .StartsWith("Array_T"))
                     {
                         inParams = true;
-                       // var elemType = TypeProcessor.ConvertType((typeSymbol as IArrayTypeSymbol).ElementType);
-                        var s =  TypeProcessor.ConvertType(typeSymbol);
-                        writer.Write("__ARRAY!("+s+")([");
+                        // var elemType = TypeProcessor.ConvertType((typeSymbol as IArrayTypeSymbol).ElementType);
+                        var s = TypeProcessor.ConvertType(typeSymbol);
+                        writer.Write("__ARRAY!(" + s + ")([");
                     }
                 }
 
@@ -348,17 +348,17 @@ namespace SharpNative.Compiler
                 //                }
                 //                    throw new Exception("ref/out cannot reference fields, only local variables.  Consider using ref/out on a local variable and then assigning it into the field. " + Utility.Descriptor(invocationExpression));
 
-                //				if (argumentType.Type == null) {
-                //					if (argumentType.ConvertedType == null)
-                //						writer.Write ("null");
-                //					else
-                //						writer.Write ("(cast("+TypeProcessor.ConvertType(argumentType.ConvertedType)+") null)");
-                //				}
+                //              if (argumentType.Type == null) {
+                //                  if (argumentType.ConvertedType == null)
+                //                      writer.Write ("null");
+                //                  else
+                //                      writer.Write ("(cast("+TypeProcessor.ConvertType(argumentType.ConvertedType)+") null)");
+                //              }
                 //               
                 //                else if (argumentType.Type.IsValueType && !argumentType.ConvertedType.IsValueType)
                 //                {
                 //                    //Box
-                //					writer.Write("BOX!("+TypeProcessor.ConvertType(argumentType.Type) +")(");
+                //                  writer.Write("BOX!("+TypeProcessor.ConvertType(argumentType.Type) +")(");
                 //                    //When passing an argument by ref or out, leave off the .Value suffix
                 //                    if (arg != null && arg.ArgumentOpt.RefOrOutKeyword.RawKind != (decimal)SyntaxKind.None)
                 //                        WriteIdentifierName.Go(writer, arg.ArgumentOpt.Expression.As<IdentifierNameSyntax>(), true);
@@ -370,7 +370,7 @@ namespace SharpNative.Compiler
                 //                else if (!argumentType.Type.IsValueType && argumentType.ConvertedType.IsValueType)
                 //                {
                 //                    //UnBox
-                //					writer.Write("cast(" + TypeProcessor.ConvertType(argumentType.Type) + ")(");
+                //                  writer.Write("cast(" + TypeProcessor.ConvertType(argumentType.Type) + ")(");
                 //                    if (arg != null && arg.ArgumentOpt.RefOrOutKeyword.RawKind != (decimal)SyntaxKind.None)
                 //                        WriteIdentifierName.Go(writer, arg.ArgumentOpt.Expression.As<IdentifierNameSyntax>(), true);
                 //                    else
@@ -384,7 +384,7 @@ namespace SharpNative.Compiler
                 //                    else
                 //                        arg.Write(writer);
                 //                }
-                ProcessArgument(writer, arg.ArgumentOpt,isOverloaded && argumentType.Type.IsValueType && (arg.ArgumentOpt.RefOrOutKeyword.RawKind==(decimal) SyntaxKind.None));
+                ProcessArgument(writer, arg.ArgumentOpt, isOverloaded && argumentType.Type.IsValueType && (arg.ArgumentOpt.RefOrOutKeyword.RawKind == (decimal)SyntaxKind.None));
             }
             if (inParams)
             {
@@ -398,8 +398,8 @@ namespace SharpNative.Compiler
                     writer.Write("__ARRAY!(" + s + ")([])");
 
                 }
-              else
-                writer.Write("null"); //params method called without any params argument.  Send null.
+                else
+                    writer.Write("null"); //params method called without any params argument.  Send null.
 
 
             }
@@ -415,7 +415,7 @@ namespace SharpNative.Compiler
             for (int index = 0; index < methodSymbol.Parameters.Count(); index++)
             {
                 var parameterSymbol = methodSymbol.Parameters[index];
-                if(parameterSymbol.Type != methodSymbol1.Parameters[index].Type)
+                if (parameterSymbol.Type != methodSymbol1.Parameters[index].Type)
                     return false;
 
                 if (parameterSymbol.RefKind == methodSymbol1.Parameters[index].RefKind)
@@ -425,7 +425,7 @@ namespace SharpNative.Compiler
         }
 
 
-        private static void ProcessArgument(OutputWriter writer, ArgumentSyntax variable, bool isOverloaded=false)
+        private static void ProcessArgument(OutputWriter writer, ArgumentSyntax variable, bool isOverloaded = false)
         {
             if (variable != null)
             {
@@ -440,25 +440,25 @@ namespace SharpNative.Compiler
                 var memberaccessexpression = value.Expression as MemberAccessExpressionSyntax;
                 var nameexpression = value.Expression as NameSyntax;
                 var nullAssignment = value.ToFullString().Trim() == "null";
-				var shouldBox = initializerType.Type != null && ((initializerType.Type.IsValueType || initializerType.Type.TypeKind==TypeKind.TypeParameter) &&
-					(!initializerType.ConvertedType.IsValueType));
+                var shouldBox = initializerType.Type != null && ((initializerType.Type.IsValueType || initializerType.Type.TypeKind == TypeKind.TypeParameter) &&
+                    (!initializerType.ConvertedType.IsValueType));
                 var shouldUnBox = initializerType.Type != null && !initializerType.Type.IsValueType &&
                                   initializerType.ConvertedType.IsValueType;
                 var isname = value.Expression is NameSyntax;
                 var ismemberexpression = value.Expression is MemberAccessExpressionSyntax ||
                                          (isname &&
-                                          TypeProcessor.GetSymbolInfo(value.Expression as NameSyntax).Symbol.Kind ==
-                                          SymbolKind.Method);
+                                         TypeProcessor.GetSymbolInfo(value.Expression as NameSyntax).Symbol.Kind ==
+                                         SymbolKind.Method);
                 var isdelegateassignment = ismemberexpression &&
                                            initializerType.ConvertedType.TypeKind == TypeKind.Delegate;
                 var isstaticdelegate = isdelegateassignment &&
                                        ((memberaccessexpression != null &&
-                                         TypeProcessor.GetSymbolInfo(memberaccessexpression).Symbol.IsStatic) ||
-                                        (isname && TypeProcessor.GetSymbolInfo(nameexpression).Symbol.IsStatic));
+                                       TypeProcessor.GetSymbolInfo(memberaccessexpression).Symbol.IsStatic) ||
+                                       (isname && TypeProcessor.GetSymbolInfo(nameexpression).Symbol.IsStatic));
 
                 if (isOverloaded)
                 {
-                    writer.Write("cast(const({0}))",TypeProcessor.ConvertType(initializerType.Type));
+                    writer.Write("cast(const({0}))", TypeProcessor.ConvertType(initializerType.Type));
                 }
 
                 if (nullAssignment)
@@ -473,7 +473,7 @@ namespace SharpNative.Compiler
 
                     //We should start with exact converters and then move to more generic convertors i.e. base class or integers which are implicitly convertible
                     var correctConverter = initializerType.Type.GetImplicitCoversionOp(initializerType.ConvertedType,
-                        initializerType.Type,true);
+                                               initializerType.Type, true);
                     //                            initializerType.Type.GetMembers("op_Implicit").OfType<IMethodSymbol>().FirstOrDefault(h => h.ReturnType == initializerType.Type && h.Parameters[0].Type == initializerType.ConvertedType);
 
                     if (correctConverter == null)
@@ -481,8 +481,8 @@ namespace SharpNative.Compiler
                         useType = false;
                         correctConverter =
                             initializerType.ConvertedType.GetImplicitCoversionOp(initializerType.ConvertedType,
-                                initializerType.Type,true);
-                            //.GetMembers("op_Implicit").OfType<IMethodSymbol>().FirstOrDefault(h => h.ReturnType == initializerType.Type && h.Parameters[0].Type == initializerType.ConvertedType);
+                            initializerType.Type, true);
+                        //.GetMembers("op_Implicit").OfType<IMethodSymbol>().FirstOrDefault(h => h.ReturnType == initializerType.Type && h.Parameters[0].Type == initializerType.ConvertedType);
                     }
 
                     if (correctConverter != null)
@@ -490,12 +490,12 @@ namespace SharpNative.Compiler
                         if (useType)
                         {
                             writer.Write(TypeProcessor.ConvertType(initializerType.Type) + "." + "op_Implicit_" +
-                                         TypeProcessor.ConvertType(correctConverter.ReturnType));
+                                TypeProcessor.ConvertType(correctConverter.ReturnType));
                         }
                         else
                         {
                             writer.Write(TypeProcessor.ConvertType(initializerType.ConvertedType) + "." + "op_Implicit_" +
-                                         TypeProcessor.ConvertType(correctConverter.ReturnType));
+                                TypeProcessor.ConvertType(correctConverter.ReturnType));
                         }
                         writer.Write("(");
                         Core.Write(writer, value.Expression);
@@ -509,7 +509,7 @@ namespace SharpNative.Compiler
 
                     //We should start with exact converters and then move to more generic convertors i.e. base class or integers which are implicitly convertible
                     var correctConverter = initializerType.Type.GetImplicitCoversionOp(initializerType.Type,
-                        initializerType.ConvertedType,true);
+                                               initializerType.ConvertedType, true);
                     //                            initializerType.Type.GetMembers("op_Implicit").OfType<IMethodSymbol>().FirstOrDefault(h => h.ReturnType == initializerType.Type && h.Parameters[0].Type == initializerType.ConvertedType);
 
                     if (correctConverter == null)
@@ -517,8 +517,8 @@ namespace SharpNative.Compiler
                         useType = false;
                         correctConverter =
                             initializerType.ConvertedType.GetImplicitCoversionOp(initializerType.Type,
-                                initializerType.ConvertedType,true);
-                            //.GetMembers("op_Implicit").OfType<IMethodSymbol>().FirstOrDefault(h => h.ReturnType == initializerType.Type && h.Parameters[0].Type == initializerType.ConvertedType);
+                            initializerType.ConvertedType, true);
+                        //.GetMembers("op_Implicit").OfType<IMethodSymbol>().FirstOrDefault(h => h.ReturnType == initializerType.Type && h.Parameters[0].Type == initializerType.ConvertedType);
                     }
 
                     if (correctConverter != null)
@@ -526,12 +526,12 @@ namespace SharpNative.Compiler
                         if (useType)
                         {
                             writer.Write(TypeProcessor.ConvertType(initializerType.Type) + "." + "op_Implicit_" +
-                                         TypeProcessor.ConvertType(correctConverter.ReturnType));
+                                TypeProcessor.ConvertType(correctConverter.ReturnType));
                         }
                         else
                         {
                             writer.Write(TypeProcessor.ConvertType(initializerType.ConvertedType) + "." + "op_Implicit_" +
-                                         TypeProcessor.ConvertType(correctConverter.ReturnType));
+                                TypeProcessor.ConvertType(correctConverter.ReturnType));
                         }
                         writer.Write("(");
                         Core.Write(writer, value.Expression);
@@ -576,8 +576,8 @@ namespace SharpNative.Compiler
                     writer.Write("&");
 
                     Core.Write(writer, value.Expression);
-                    if (isStatic)
-                        writer.Write(")");
+//                    if (isStatic)
+//                        writer.Write(")");
 
                     if (createNew)
                         writer.Write(")");

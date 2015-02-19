@@ -18,6 +18,64 @@ namespace SharpNative.Compiler
 {
     public static class RoslynExtensions
     {
+        public static string GetCSharpName(this MemberDeclarationSyntax member)
+        {
+            var method = member as MethodDeclarationSyntax;
+            var field = member as FieldDeclarationSyntax;
+            var property = member as PropertyDeclarationSyntax;
+            var _eventField = member as EventFieldDeclarationSyntax;
+            var _event = member as EventDeclarationSyntax;
+
+            var _operator = member as OperatorDeclarationSyntax;
+            var _convoperator = member as ConversionOperatorDeclarationSyntax;
+            var indexer = member as IndexerDeclarationSyntax;
+
+
+            //TODO: might have to add support for parameters
+
+
+            if (method != null)
+            {
+                return WriteIdentifierName.TransformIdentifier(method.Identifier.Text);
+            }
+
+            if (field != null)
+            {
+                return field.Declaration.Variables.Select(j=> WriteIdentifierName.TransformIdentifier(j.Identifier.Text)).Aggregate((a,b)=>a+","+b);
+            }
+
+            if (property != null)
+            {
+                return WriteIdentifierName.TransformIdentifier(property.Identifier.Text);
+            }
+
+            if (_eventField != null)
+            {
+                return _eventField.Declaration.Variables.Select(j => WriteIdentifierName.TransformIdentifier(j.Identifier.Text)).Aggregate((a, b) => a + "," + b);
+            }
+
+            if (_event != null)
+            {
+                return WriteIdentifierName.TransformIdentifier(_event.Identifier.Text);
+            }
+
+            if (_operator != null)
+            {
+                return "operator"+_operator.OperatorToken;
+            }
+
+            if (_convoperator != null)
+            {
+                return "operator";
+            }
+
+            if (indexer != null)
+            {
+                return ("[]");
+            }
+
+            throw new NotImplementedException(member.ToFullString());
+        }
         public static bool IsSubclassOf(this ITypeSymbol type, ITypeSymbol baseTypeSymbol)
         {
             if (type == null || type.BaseType == null)
@@ -28,29 +86,25 @@ namespace SharpNative.Compiler
             return IsSubclassOf(type.BaseType, baseTypeSymbol);
         }
 
-        //       
-
-        
-
-
-      
-//        public static string GetFullName(this INamespaceSymbol namespaceSymbol)
-//        {
-//            string result = namespaceSymbol.MetadataName;
-//            if (!namespaceSymbol.IsGlobalNamespace && !namespaceSymbol.ContainingNamespace.IsGlobalNamespace)
-//            {
-//                result =
-//                    Context.Instance.SymbolNames[
-//                        namespaceSymbol.ContainingNamespace, namespaceSymbol.ContainingNamespace.GetFullName()] + "." +
-//                    result;
-//            }
-//            return result;
-//        }
+        //
+        //        public static string GetFullName(this INamespaceSymbol namespaceSymbol)
+        //        {
+        //            string result = namespaceSymbol.MetadataName;
+        //            if (!namespaceSymbol.IsGlobalNamespace && !namespaceSymbol.ContainingNamespace.IsGlobalNamespace)
+        //            {
+        //                result =
+        //                    Context.Instance.SymbolNames[
+        //                        namespaceSymbol.ContainingNamespace, namespaceSymbol.ContainingNamespace.GetFullName()] + "." +
+        //                    result;
+        //            }
+        //            return result;
+        //        }
 
 
         public static bool IsAssignableFrom(this ITypeSymbol baseType, ITypeSymbol type)
         {
-            if (IsImplicitNumericCast(baseType, type)) return true;
+            if (IsImplicitNumericCast(baseType, type))
+                return true;
 
             var current = type;
             while (current != null)
@@ -240,12 +294,12 @@ namespace SharpNative.Compiler
             while (current != null)
             {
                 if (Equals(current.OriginalDefinition, unconstructedType))
-                    return ((INamedTypeSymbol) current).TypeArguments[argumentIndex];
+                    return ((INamedTypeSymbol)current).TypeArguments[argumentIndex];
                 current = current.BaseType;
             }
             if (type is INamedTypeSymbol)
             {
-                var namedTypeSymbol = (INamedTypeSymbol) type;
+                var namedTypeSymbol = (INamedTypeSymbol)type;
                 foreach (var intf in namedTypeSymbol.AllInterfaces)
                 {
                     if (Equals(intf.OriginalDefinition, unconstructedType))
@@ -266,7 +320,7 @@ namespace SharpNative.Compiler
                 // for creating Javascript-Global functions.
                 var isInlinedArgument = jsAttribute.NamedArguments.SingleOrDefault(x => x.Key == propertyName);
                 if (isInlinedArgument.Value.Value != null)
-                    return (T) isInlinedArgument.Value.Value;
+                    return (T)isInlinedArgument.Value.Value;
             }
             return defaultValue;
         }
@@ -290,7 +344,7 @@ namespace SharpNative.Compiler
             var classDeclaration = node.FirstAncestorOrSelf<ClassDeclarationSyntax>(x => true);
             if (classDeclaration == null)
                 return null;
-            return (ITypeSymbol) ModelExtensions.GetDeclaredSymbol(Context.Compilation.GetSemanticModel(classDeclaration.SyntaxTree), classDeclaration);
+            return (ITypeSymbol)ModelExtensions.GetDeclaredSymbol(Context.Compilation.GetSemanticModel(classDeclaration.SyntaxTree), classDeclaration);
         }
 
         public static IMethodSymbol GetContainingMethod(this SyntaxNode node)
@@ -303,10 +357,10 @@ namespace SharpNative.Compiler
             if (method is ConstructorDeclarationSyntax)
             {
                 return
-                    (IMethodSymbol) ModelExtensions.GetDeclaredSymbol(Context.Compilation.GetSemanticModel(method.SyntaxTree), (ConstructorDeclarationSyntax) method);
+                    (IMethodSymbol)ModelExtensions.GetDeclaredSymbol(Context.Compilation.GetSemanticModel(method.SyntaxTree), (ConstructorDeclarationSyntax)method);
             }
             return
-                (IMethodSymbol) ModelExtensions.GetDeclaredSymbol(Context.Compilation.GetSemanticModel(method.SyntaxTree), (MethodDeclarationSyntax) method);
+                (IMethodSymbol)ModelExtensions.GetDeclaredSymbol(Context.Compilation.GetSemanticModel(method.SyntaxTree), (MethodDeclarationSyntax)method);
         }
 
         public static IMethodSymbol GetRootOverride(this IMethodSymbol method)
@@ -326,10 +380,10 @@ namespace SharpNative.Compiler
         public static bool HasOrIsEnclosedInGenericParameters(this INamedTypeSymbol type)
         {
             return type.TypeParameters.Any() ||
-                   (type.ContainingType != null && type.ContainingType.HasOrIsEnclosedInGenericParameters());
+            (type.ContainingType != null && type.ContainingType.HasOrIsEnclosedInGenericParameters());
         }
 
-/*
+        /*
         public static bool HasOrIsEnclosedInUnconstructedType(this NamedTypeSymbol type)
         {
             return (type.TypeParameters.Count > 0 && type.TypeArguments.Any(x => IsUnconstructedType(x))) || (type.ContainingType != null && type.ContainingType.HasOrIsEnclosedInGenericParameters());
@@ -344,8 +398,8 @@ namespace SharpNative.Compiler
             if (namedTypeSymbol != null)
             {
                 return (namedTypeSymbol.TypeParameters.Any() &&
-                        namedTypeSymbol.TypeArguments.Any(x => IsUnconstructedType(x))) ||
-                       (type.ContainingType != null && type.ContainingType.IsUnconstructedType());
+                namedTypeSymbol.TypeArguments.Any(x => IsUnconstructedType(x))) ||
+                (type.ContainingType != null && type.ContainingType.IsUnconstructedType());
             }
             return false;
 //            namedTypeSymbol.ConstructedFrom.ToString() != namedTypeSymbol.ToString() && namedTypeSymbol.ConstructedFrom.ConstructedFrom.ToString() == namedTypeSymbol.ConstructedFrom.ToString() && namedTypeSymbol.HasOrIsEnclosedInGenericParameters()
@@ -354,22 +408,22 @@ namespace SharpNative.Compiler
         public static ParameterSyntax[] GetParameters(this ExpressionSyntax lambda)
         {
             if (lambda is SimpleLambdaExpressionSyntax)
-                return new[] {((SimpleLambdaExpressionSyntax) lambda).Parameter};
+                return new[] { ((SimpleLambdaExpressionSyntax)lambda).Parameter };
             if (lambda is ParenthesizedLambdaExpressionSyntax)
-                return ((ParenthesizedLambdaExpressionSyntax) lambda).ParameterList.Parameters.ToArray();
+                return ((ParenthesizedLambdaExpressionSyntax)lambda).ParameterList.Parameters.ToArray();
             throw new Exception();
         }
 
         public static CSharpSyntaxNode GetBody(this ExpressionSyntax lambda)
         {
             if (lambda is SimpleLambdaExpressionSyntax)
-                return ((SimpleLambdaExpressionSyntax) lambda).Body;
+                return ((SimpleLambdaExpressionSyntax)lambda).Body;
             if (lambda is ParenthesizedLambdaExpressionSyntax)
-                return ((ParenthesizedLambdaExpressionSyntax) lambda).Body;
+                return ((ParenthesizedLambdaExpressionSyntax)lambda).Body;
             throw new Exception();
         }
 
-/*
+        /*
         public static bool IsAssignment(this SyntaxKind type)
         {
             switch (type)
@@ -396,7 +450,7 @@ namespace SharpNative.Compiler
         {
             if (statement.Parent is BlockSyntax)
             {
-                var block = (BlockSyntax) statement.Parent;
+                var block = (BlockSyntax)statement.Parent;
                 var indexOfStatement = block.Statements.IndexOf(statement);
                 if (indexOfStatement == -1)
                     throw new Exception();
@@ -406,7 +460,7 @@ namespace SharpNative.Compiler
             }
             if (statement.Parent is SwitchSectionSyntax)
             {
-                var section = (SwitchSectionSyntax) statement.Parent;
+                var section = (SwitchSectionSyntax)statement.Parent;
                 var indexOfStatement = section.Statements.IndexOf(statement);
                 if (indexOfStatement == -1)
                     throw new Exception();
@@ -475,19 +529,19 @@ namespace SharpNative.Compiler
         public static InvocationExpressionSyntax Invoke(this IMethodSymbol method, params ExpressionSyntax[] arguments)
         {
             var methodTarget = SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                method.ContainingType.ToTypeSyntax(),
-                SyntaxFactory.IdentifierName(method.Name));
+                                   method.ContainingType.ToTypeSyntax(),
+                                   SyntaxFactory.IdentifierName(method.Name));
             return arguments.Any()
                 ? SyntaxFactory.InvocationExpression(methodTarget,
-                    SyntaxFactory.ArgumentList(
-                        SyntaxFactory.SeparatedList(arguments.Select(x => SyntaxFactory.Argument(x)),
-                            arguments.Skip(1).Select(_ => SyntaxFactory.Token(SyntaxKind.CommaToken)))))
+                SyntaxFactory.ArgumentList(
+                    SyntaxFactory.SeparatedList(arguments.Select(x => SyntaxFactory.Argument(x)),
+                        arguments.Skip(1).Select(_ => SyntaxFactory.Token(SyntaxKind.CommaToken)))))
                 : SyntaxFactory.InvocationExpression(methodTarget);
         }
 
         public static bool IsTrue(this ExpressionSyntax expression)
         {
-            var literal = (LiteralExpressionSyntax) expression;
+            var literal = (LiteralExpressionSyntax)expression;
             return literal.Token.IsKind(SyntaxKind.TrueKeyword);
         }
 
@@ -514,7 +568,7 @@ namespace SharpNative.Compiler
                 if (oldNode is CompilationUnitSyntax)
                     break;
             }
-            return compilation.Recompile((CompilationUnitSyntax) newNode);
+            return compilation.Recompile((CompilationUnitSyntax)newNode);
         }
 
         public static INamedTypeSymbol FindType(this Compilation compilation, string fullName)

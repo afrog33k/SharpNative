@@ -21,6 +21,9 @@ namespace SharpNative.Compiler
 
         public List<string> StaticInits = new List<string>();
         public List<string> InstanceInits = new List<string>();
+        public List<string> MemberNames = new List<string>();
+
+        public Dictionary<ITypeSymbol,string> Aliases = new Dictionary<ITypeSymbol, string>(); 
 
 
         public UsingDirectiveSyntax[] UsingDeclarations;
@@ -77,9 +80,12 @@ namespace SharpNative.Compiler
         public static INamedTypeSymbol IEnumerator { get; set; }
 
         public static INamedTypeSymbol Object { get; set; }
+
+        public static INamedTypeSymbol Exception { get; set; }
+
         public static SyntaxNode LastNode { get; set; }
 
-        public static void Update( Compilation compilation)
+        public static void Update(Compilation compilation)
         {
             Instance = new Context();
             if (compilation != null)
@@ -87,16 +93,18 @@ namespace SharpNative.Compiler
         }
 
 
-        private void UpdateContext( Compilation compilation)
+        private void UpdateContext(Compilation compilation)
         {
-           Object = compilation.FindType("System.Object");
+            Object = compilation.FindType("System.Object");
+            Exception = compilation.FindType("System.Exception");
+
             IEnumeratorT = compilation.FindType("System.Collections.Generic.IEnumerator`1");
             IEnumerator = compilation.FindType("System.Collections.IEnumerator");
-              try
+            try
             {
                 StructLayout = compilation.FindType("System.Runtime.InteropServices.StructLayoutAttribute");
-            DllImport = compilation.FindType("System.Runtime.InteropServices.DllImportAttribute");
-            FieldOffset = compilation.FindType("System.Runtime.InteropServices.FieldOffsetAttribute");
+                DllImport = compilation.FindType("System.Runtime.InteropServices.DllImportAttribute");
+                FieldOffset = compilation.FindType("System.Runtime.InteropServices.FieldOffsetAttribute");
             }
             catch (Exception ex)
             {
@@ -106,6 +114,9 @@ namespace SharpNative.Compiler
         }
 
         private static readonly Stack<Context> Instances = new Stack<Context>();
+        
+        public int ForeachCount = 0;
+
         internal static void Push()
         {
             Instances.Push(Instance);

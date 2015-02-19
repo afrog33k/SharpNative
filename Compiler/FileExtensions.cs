@@ -33,19 +33,16 @@ namespace SharpNative.Compiler
             {
                 StringBuilder stringBuilder = new StringBuilder();
                 using (FileStream fileStream = new FileStream(filename, FileMode.Open, FileAccess.Read))
-
                 using (StreamReader streamReader = new StreamReader(fileStream))
                 {
-
                     stringBuilder.Append(streamReader.ReadToEnd());
-
                 }
 
                 return stringBuilder.ToString();
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Cannot read file: " + filename );
+                Console.WriteLine("Cannot read file: " + filename);
                 return "-1";
             }
         }
@@ -89,7 +86,7 @@ namespace SharpNative.Compiler
                     {
                         try
                         {
- outputWaitHandle.Set();
+                            outputWaitHandle.Set();
                         }
                         catch (Exception)
                         {
@@ -110,8 +107,10 @@ namespace SharpNative.Compiler
                         try
                         {
                             errorWaitHandle.Set();
-                        }catch(Exception)
-                        { }
+                        }
+                        catch (Exception)
+                        {
+                        }
                     }
                     else
                     {
@@ -160,7 +159,7 @@ namespace SharpNative.Compiler
                 if (File.Exists(fileName))
                     File.Delete(fileName);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
             }
         }

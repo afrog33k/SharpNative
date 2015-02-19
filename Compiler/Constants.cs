@@ -9,7 +9,6 @@ Usage:
 	SharpNative.exe  /source:""<comma separated paths to C# files>"" /of:outputname [options]   -- To compile C# file(s)
     SharpNative.exe  /test:<path to test folder> [options]   -- To compile and test files in folder
 	
-
 Options available:
 
     /output:

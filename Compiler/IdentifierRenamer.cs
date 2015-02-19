@@ -27,7 +27,7 @@ namespace SharpNative.Compiler
         public static CSharpSyntaxNode RenameIdentifier(CSharpSyntaxNode node, SyntaxToken renameFrom,
             SyntaxToken renameTo)
         {
-            return (CSharpSyntaxNode) node.Accept(new IdentifierRenamer(renameFrom, renameTo));
+            return (CSharpSyntaxNode)node.Accept(new IdentifierRenamer(renameFrom, renameTo));
         }
 
         public override SyntaxNode VisitIdentifierName(IdentifierNameSyntax node)

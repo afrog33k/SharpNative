@@ -27,9 +27,9 @@ namespace SharpNative.Compiler
                     type.GetMembers("op_Implicit")
                         .OfType<IMethodSymbol>()
                         .FirstOrDefault(
-                            h =>
+                    h =>
                                 returnTypeSymbol.IsAssignableFrom(h.ReturnType) &&
-                                h.Parameters[0].Type.IsAssignableFrom(originalTypeSymbol));
+                    h.Parameters[0].Type.IsAssignableFrom(originalTypeSymbol));
             }
             IMethodSymbol bestMatch = null;
             int lastSizeDiff = 1000;
@@ -51,33 +51,33 @@ namespace SharpNative.Compiler
             switch (typeSymbol.SpecialType)
             {
                 case SpecialType.System_Boolean:
-                    return sizeof (bool);
+                    return sizeof(bool);
                 case SpecialType.System_Byte:
-                    return sizeof (byte);
+                    return sizeof(byte);
                 case SpecialType.System_Char:
-                    return sizeof (char);
+                    return sizeof(char);
                 case SpecialType.System_Decimal:
-                    return sizeof (decimal);
+                    return sizeof(decimal);
                 case SpecialType.System_Double:
-                    return sizeof (double);
+                    return sizeof(double);
                 case SpecialType.System_Enum: //TODO: Fix this
-                    return sizeof (int);
+                    return sizeof(int);
                 case SpecialType.System_Int16:
-                    return sizeof (short);
+                    return sizeof(short);
                 case SpecialType.System_Int32:
-                    return sizeof (int);
+                    return sizeof(int);
                 case SpecialType.System_Int64:
-                    return sizeof (long);
+                    return sizeof(long);
                 case SpecialType.System_SByte:
-                    return sizeof (sbyte);
+                    return sizeof(sbyte);
                 case SpecialType.System_Single:
-                    return sizeof (float);
+                    return sizeof(float);
                 case SpecialType.System_UInt16:
-                    return sizeof (ushort);
+                    return sizeof(ushort);
                 case SpecialType.System_UInt32:
-                    return sizeof (uint);
+                    return sizeof(uint);
                 case SpecialType.System_UInt64:
-                    return sizeof (ulong);
+                    return sizeof(ulong);
                 default:
                     return 100000;
             }
@@ -95,9 +95,9 @@ namespace SharpNative.Compiler
                     type.GetMembers("op_Explicit")
                         .OfType<IMethodSymbol>()
                         .FirstOrDefault(
-                            h =>
+                    h =>
                                 returnTypeSymbol.IsAssignableFrom(h.ReturnType) &&
-                                h.Parameters[0].Type.IsAssignableFrom(originalTypeSymbol));
+                    h.Parameters[0].Type.IsAssignableFrom(originalTypeSymbol));
             }
             IMethodSymbol bestMatch = null;
             int lastSizeDiff = 1000;

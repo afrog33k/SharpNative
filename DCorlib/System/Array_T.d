@@ -5,59 +5,59 @@ import System.Collections.Generic.Namespace;
 import std.stdio;
 
 class ArrayIterator(T):IEnumerator_T!(T)
+{
+	int index = -1;
+	Array_T!(T) _array;
+
+	this(Array_T!(T) array)
 	{
-		int index = -1;
-		Array_T!(T) _array;
-
-		this(Array_T!(T) array)
-		{
-			_array = array;
-			//Console.WriteLine(_S("inted with {0}"), BOX!(int)(index));
-			//writeln(_array.Items[index]);
-		}
-
-		public T  Current(IEnumerator_T!(T) k=null)   @property
-		{
-			//writeln(_array is null);
-			//Console.WriteLine(_S("returning {0}"), BOX!(int)(index));
-			//writeln(_array.Items[index]);
-
-			return _array.Items[index];
-			//return cast(T)null;
-		}
-
-		void Dispose(IDisposable f=null)
-		{
-			_array = null;
-		}
-
-
-		bool MoveNext(IEnumerator j = null)
-		{
-			index++;
-			if(index < _array.Length)
-				return true;
-			return false;
-		}
-
-		NObject Current(IEnumerator k=null) @property
-		{
-			return BOX!(T)(Current(cast(IEnumerator_T!(T))null)); // BOX should be adjusted to just pass classes as is
-		}
-
-		void Reset(IEnumerator k=null)
-		{
-			index = -1;
-		}
-
+		_array = array;
+		//Console.WriteLine(_S("inted with {0}"), BOX!(int)(index));
+		//writeln(_array.Items[index]);
 	}
 
+	public T  Current(IEnumerator_T!(T) k=null)   @property
+	{
+		//writeln(_array is null);
+		//Console.WriteLine(_S("returning {0}"), BOX!(int)(index));
+		//writeln(_array.Items[index]);
+
+		return _array.Items[index];
+		//return cast(T)null;
+	}
+
+	void Dispose(IDisposable f=null)
+	{
+		_array = null;
+	}
+
+
+	bool MoveNext(IEnumerator j = null)
+	{
+		index++;
+		if(index < _array.Length)
+			return true;
+		return false;
+	}
+
+	NObject Current(IEnumerator k=null) @property
+	{
+		return BOX!(T)(Current(cast(IEnumerator_T!(T))null)); // BOX should be adjusted to just pass classes as is
+	}
+
+	void Reset(IEnumerator k=null)
+	{
+		index = -1;
+	}
+
+}
+
 /*
- Array_T!(int[]) fiver = new Array_T!(int[])([ [1,2],[8],[3],[4],[6] ],2,3,4);
-      
-      Console.WriteLine(fiver.Ranks);
+Array_T!(int[]) fiver = new Array_T!(int[])([ [1,2],[8],[3],[4],[6] ],2,3,4);
+
+Console.WriteLine(fiver.Ranks);
 */
-public class Array_T(T=NObject) :  Array, ICollection_T!(T) 
+public class Array_T(T=NObject) :  Array, ICollection_T!(T), IList
 //if(!is(T:void))
 {
 	private int index_;
@@ -93,12 +93,12 @@ public class Array_T(T=NObject) :  Array, ICollection_T!(T)
 		return -1;
 	}
 
-override	int Rank() @property
+	override	int Rank() @property
 	{
 		return cast(int)_dims.length;
 	}
 
-override	int GetLength(int dimension=0)
+	override	int GetLength(int dimension=0)
 	{
 
 		if(Rank==1)
@@ -115,7 +115,7 @@ override	int GetLength(int dimension=0)
 
 	}
 
-override	int GetUpperBound(int dimension=0)
+	override	int GetUpperBound(int dimension=0)
 	{
 
 		if(Rank==1)
@@ -133,7 +133,7 @@ override	int GetUpperBound(int dimension=0)
 	}
 
 
-override	int GetLowerBound(int dimension=0)
+	override	int GetLowerBound(int dimension=0)
 	{
 		//we can add support later, but its really an unoptimization
 		return 0;
@@ -151,17 +151,17 @@ override	int GetLowerBound(int dimension=0)
 
 	}
 
-	 void Items(T[] newItems) @property
+	void Items(T[] newItems) @property
 	{
-		 _items = newItems;
+		_items = newItems;
 	}
 	//params and array params are treated the same ... so int[] and 1,2,3,... are similar
 	this(__IA!(T[]) ac,int[] dims...)
 	{
 		auto array = ac.A;
 		//Console.WriteLine("initing array...");
-//		Console.WriteLine(array);
-	
+		//		Console.WriteLine(array);
+
 		foreach(h;dims) // neccessary as it seems pointer is reused :(
 		{
 			_dims ~= h; 
@@ -175,8 +175,8 @@ override	int GetLowerBound(int dimension=0)
 			}
 		}
 
-//		Console.Write("_dims=");
-//		Console.WriteLine(_dims);
+		//		Console.Write("_dims=");
+		//		Console.WriteLine(_dims);
 
 
 
@@ -188,41 +188,60 @@ override	int GetLowerBound(int dimension=0)
 
 	this(int[] dims...)
 	{
-		_dims = dims.dup;
-
 		
+
+		foreach(h;dims) // neccessary as it seems pointer is reused :(
+		{
+			_dims ~= h; 
+		}
+
+
 
 		int totaldims = 1;
 
+
+
 		for(int i=0;i<_dims.length;i++)
 			totaldims*= _dims[i];
-		
+
 		if(_dims.length==0)
-		_items =  new T[0];
+			_items =  new T[0];
 		else
-		_items = new T[totaldims];
+			_items = new T[totaldims];
+
+		//TODO: is there a better way to initialize a large array
+		//if(is(T==struct))
+		{
+		for(int i=0;i<totaldims;i++)
+			_items[i] = __Default!(T)();
+		}
+
+	//	Console.WriteLine(T.stringof);
+		//Console.WriteLine(dims);
+		//Console.WriteLine(_dims.length);
+		//std.stdio.writeln(_items);
 
 
 		_iter = new ArrayIterator!(T)(this);
 	}
-	
-override	public	int Length() @property 
+
+	override	public	int Length() @property 
 	{
 		return cast(int) _items.length;
 	}
 
 
 	public	int length() @property 
-{
-	return cast(int) _items.length;
-}
+	{
+		return cast(int) _items.length;
+	}
 	public void Reverse()
 	{
 		_items.reverse;
 	}
 
-	
-	
+
+
 	public T GetValue(int index)
 	{
 		return _items[index];
@@ -230,7 +249,7 @@ override	public	int Length() @property
 
 	public void SetValue(T value,int index)
 	{
-		 _items[index] = value;
+		_items[index] = value;
 	}
 
 	public void CopyTo(Array_T!(T) other,int start=0,int end=-1)
@@ -258,121 +277,121 @@ override	public	int Length() @property
 
 		/*if(is(T:Array_T!(T)))
 		{
-			name += "[]";
+		name += "[]";
 		}
 		else
 		{
 
 		}*/
-	//	if(Items is null || Items.length==0)
+		//	if(Items is null || Items.length==0)
 		{
 			return _S(__TypeOf!(T).FullName.Text ~ "[]");
 		}
-	//	else
-	//		return _S(Items.toString);
+		//	else
+		//		return _S(Items.toString);
 	}
 
 	//Adds foreach support
-//	Foreach Range Properties
-//		Property	Purpose
-//			.empty	returns true if no more elements
-//				.front	return the leftmost element of the range
-//					Foreach Range Methods
-//					Method	Purpose
-//					.popFront()	move the left edge of the range right by one
+	//	Foreach Range Properties
+	//		Property	Purpose
+	//			.empty	returns true if no more elements
+	//				.front	return the leftmost element of the range
+	//					Foreach Range Methods
+	//					Method	Purpose
+	//					.popFront()	move the left edge of the range right by one
 
 
-		final bool empty() {
-			bool result = (index_ == _items.length);
-			if (result)
-				index_ = 0;
-			return result;
-		}
-		
-		final void popFront() {
-			if (index_ < _items.length)
-				index_++;
-		}
-		
-		final T front() {
-			return _items[index_];
-		}
+	final bool empty() {
+		bool result = (index_ == _items.length);
+		if (result)
+			index_ = 0;
+		return result;
+	}
 
-//Specialized for PInvoke and other uses
-		final U opCast(U)() if(is(U:char**))// && is(T:string))
+	final void popFront() {
+		if (index_ < _items.length)
+			index_++;
+	}
+
+	final T front() {
+		return _items[index_];
+	}
+
+	//Specialized for PInvoke and other uses
+	final U opCast(U)() if(is(U:char**))// && is(T:string))
+	{
+		//throw new Exception("Sibitegeera");
+		//exit(0);
+		//copy with real addresses so the array can be modified
+		char[][] charArray = new char[][Items.length];
+
+		foreach(elem; Items)
 		{
-			//throw new Exception("Sibitegeera");
-			//exit(0);
-			//copy with real addresses so the array can be modified
-			char[][] charArray = new char[][Items.length];
-
-			foreach(elem; Items)
-			{
 			//	Console.WriteLine(elem);
-				charArray = charArray ~ cast(char[])(cast(string)elem);
-			}
-
-			return cast(U) charArray;
+			charArray = charArray ~ cast(char[])(cast(string)elem);
 		}
 
+		return cast(U) charArray;
+	}
 
-		final U opCast(U)()
+
+	final U opCast(U)()
 		if(is(U:T*))// && is(T:string))
 		{
 			//Console.WriteLine("cast... to T*");
 			return cast(U) Items;
 		}
 
-		final U opCast(U)()
+	final U opCast(U)()
 		if(!is(U:T*))
 		{
 			return cast(U)this;
 		}
 
-//Needs fix, look at MatrixTest.cs
+	//Needs fix, look at MatrixTest.cs
 	final  void opIndexAssign(T value, int[] index...)
 	{
 		//Console.WriteLine("Assigning ...");
-		int[] _indices = index.dup; // .dup is slew
+		int[] _indices = index; // .dup is slew
 
 		auto finalindex = 0;
 		auto len =cast(int)_indices.length;
 
-		
+
 		//Optimize common scenarios, slight performance boosts ... Add others
-		
-		 if(index.length==2) 
+
+		if(index.length==2) 
 		{
 			finalindex = _indices[0] * _dims[1]  + _indices[1];
-		//Console.WriteLine("Assigning 2d...:" ~ std.conv.to!string(finalindex));
+			//Console.WriteLine("Assigning 2d...:" ~ std.conv.to!string(finalindex));
 
 
 		}
 		else
-		 if(index.length==3) 
-		{
-			finalindex = _indices[0] * _dims[1] *_dims[2] + _indices[1] * _dims[2] + _indices[2];
-		////Console.WriteLine("Assigning 3d...:" ~ std.conv.to!string(finalindex));
-
-		}
-		else
-		{
-		for(int i=len-1;i>=0;i--)
-		{
-			int multiplier = _indices[i];
-			for(int j=i;j<len-1;j++)
+			if(index.length==3) 
 			{
-				multiplier*= _dims[j+1];
+				finalindex = _indices[0] * _dims[1] *_dims[2] + _indices[1] * _dims[2] + _indices[2];
+				////Console.WriteLine("Assigning 3d...:" ~ std.conv.to!string(finalindex));
+
 			}
-			finalindex += multiplier;
-		}
-		}
-	
+			else
+			{
+				for(int i=len-1;i>=0;i--)
+				{
+					int multiplier = _indices[i];
+					for(int j=i;j<len-1;j++)
+					{
+						multiplier*= _dims[j+1];
+					}
+					finalindex += multiplier;
+				}
+			}
+
 		//Console.WriteLine("Assigning: "~ std.conv.to!string(value) ~ " to: " ~ std.conv.to!string(finalindex));
 
 
 		_items[finalindex] =value;
-		
+
 	}
 
 
@@ -380,62 +399,66 @@ override	public	int Length() @property
 	final  void opIndexAssign(T value, int index)  {
 		//if (index >= _items.length)
 		//	throw new ArgumentOutOfRangeException(new String("index"));
-		
+
 		_items[index] = value;
 	}
-	
+
 	final  ref T opIndex(int index) { //TODO: ref could be a bad idea 
 		//but allows alot of natural c# syntax
 		//if (index >= _items.length)
 		//	throw new ArgumentOutOfRangeException(new String("index"));
-		
+
 		return _items[index];
 	}
 
-//Needs fix, look at MatrixTest.cs
+	//Needs fix, look at MatrixTest.cs
 	final  ref T opIndex(int[] index...) {
 		//Console.WriteLine("Assigning ...");
-		int[] _indices = index.dup; // .dup is slew
+		int[] _indices = index; // .dup is slew
 
 		auto finalindex = 0;
-		auto len =cast(int)_dims.length;
+		auto len =cast(int)index.length;
 
-	//Optimize common scenarios, slight performance boosts ... Add others
+		//Console.WriteLine(_indices);
+		//Console.WriteLine(_dims);
 
-		 if(len==2) 
+		//Optimize common scenarios, slight performance boosts ... Add others
+
+		if(index.length==2) 
 		{
 			finalindex = _indices[0] * _dims[1]  + _indices[1];
-//			Console.WriteLine(_dims);
-//			Console.WriteLine(_items);
-//		Console.WriteLine("Assigning 2d...:" ~ std.conv.to!string(finalindex));
+			//			Console.WriteLine(_dims);
+			//			Console.WriteLine(_items);
+			//		Console.WriteLine("Assigning 2d...:" ~ std.conv.to!string(finalindex));
 
 
 		}
 		else
-		 if(len==3) 
-		{
-			finalindex = _indices[0] * _dims[1] *_dims[2] + _indices[1] * _dims[2] + _indices[2];
-//		Console.WriteLine("Assigning 3d...:" ~ std.conv.to!string(finalindex));
-
-		}
-		else
-		{
-		for(int i=len-1;i>=0;i--)
-		{
-			int multiplier = _indices[i];
-			for(int j=i;j<len-1;j++)
+			if(len==3) 
 			{
-				multiplier*= _dims[j+1];
-			}
-			finalindex += multiplier;
-		}
-		}
+				finalindex = _indices[0] * _dims[1] *_dims[2] + _indices[1] * _dims[2] + _indices[2];
+				//		Console.WriteLine("Assigning 3d...:" ~ std.conv.to!string(finalindex));
 
-	
+			}
+			else
+			{
+				for(int i=len-1;i>=0;i--)
+				{
+					int multiplier = _indices[i];
+					for(int j=i;j<len-1;j++)
+					{
+						multiplier*= _dims[j+1];
+					}
+					finalindex += multiplier;
+				}
+			}
+
+
 
 		//Console.WriteLine("Returning:" ~ std.conv.to!string(finalindex));
 		//Console.WriteLine("Returning: "~ std.conv.to!string(_items[finalindex]) ~ " from: " ~ std.conv.to!string(finalindex));
 
+		//Console.WriteLine("Assigning ...");
 
 		return _items[finalindex];
 		
@@ -454,16 +477,16 @@ override	public	int Length() @property
 
 		return _iter;
 		//return new ArrayIterator!(T)(this); //Highly inefficient
-		
+
 	}
 
 	IEnumerator_T!(T) GetEnumerator(IEnumerable_T!(T) j=null)
 	{
-			if(_iter is null)
+		if(_iter is null)
 			_iter = new ArrayIterator!(T)(this);
 
 		_iter.Reset();
-		
+
 		return _iter;
 		//return new ArrayIterator!(T)(this); //Highly inefficient
 		//throw new NotSupportedException();
@@ -512,14 +535,66 @@ override	public	int Length() @property
 	int opApply(int delegate(ref T) action)
 	{
 		int r;
-			
-			for (auto i = 0; i < _items.length; i++) {
-				if ((r = action(_items[i])) != 0)
-					break;
-			}
-			
-			return r;
+
+		for (auto i = 0; i < _items.length; i++) {
+			if ((r = action(_items[i])) != 0)
+				break;
+		}
+
+		return r;
 	}
+
+	void CopyTo(Array array, int index, ICollection j = null){
+	}
+	int Count(ICollection j = null) @property{
+		return cast(int)_items.length;
+	}
+	NObject SyncRoot(ICollection j = null) @property{
+		return this;
+	}
+
+	bool IsSynchronized(ICollection j = null) @property{
+		return false;
+	}
+
+	bool IsFixedSize(IList k = null) @property{
+		return true;
+	}
+
+	bool IsReadOnly(IList k = null) @property{
+		return true;
+	}
+	void opIndexAssign(NObject value, int index, IList k = null)
+	{
+		_items[index] = Cast!(T)(value);
+	}
+
+	int Add(NObject value, IList k = null){
+		_items ~= Cast!(T)(value);
+		return cast(int)_items.length;
+	}
+
+	void Clear(IList k = null){
+		throw new NotSupportedException();
+	}
+	bool Contains(NObject value, IList k = null){
+		return false;
+	}
+	int IndexOf(NObject value, IList k = null){
+		return -1;
+	}
+	void Insert(int index, NObject value, IList k = null){
+		throw new NotSupportedException();
+
+	}
+	void Remove(NObject value, IList k = null){
+		throw new NotSupportedException();
+
+	}
+	void RemoveAt(int index, IList k = null){
+		throw new NotSupportedException();
+	}
+
 
 }
 

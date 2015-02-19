@@ -26,39 +26,39 @@ namespace SharpNative.Compiler
                 var isRef = false; //UsedAsRef(variable, symbol);
 
                 writer.WriteIndent();
-                // writer.Write("var ");
+// writer.Write("var ");
 
-                //                if (isRef) //Not needed c++ can passby ref
-                //                {
-                //
-                //                    var typeStr = TypeProcessor.ConvertType(declaration.Declaration.Type);
-                //
-                //                    var localSymbol = symbol as ILocalSymbol;
-                //                    var ptr = localSymbol != null && !localSymbol.Type.IsValueType?"*" : "";
-                //                                        writer.Write("gc::gc_ptr < " + typeStr+ ptr + " >");
-                //                    writer.Write("" + typeStr + ptr + "");
-                //
-                //                    writer.Write(" ");
-                //                    writer.Write(WriteIdentifierName.TransformIdentifier(variable.Identifier.ValueText));
-                //                    
-                //                    Program.RefOutSymbols.TryAdd(symbol, null);
-                //
-                //                    writer.Write(" = std::make_shared < ");
-                //                    writer.Write(typeStr + ptr);
-                //                    writer.Write(" >(");
-                //
-                //                    WriteInitializer(writer, declaration, variable);
-                //
-                //                    writer.Write(")");
-                //                }
-                //                else
+//                if (isRef) //Not needed c++ can passby ref
+//                {
+//
+//                    var typeStr = TypeProcessor.ConvertType(declaration.Declaration.Type);
+//
+//                    var localSymbol = symbol as ILocalSymbol;
+//                    var ptr = localSymbol != null && !localSymbol.Type.IsValueType?"*" : "";
+//                                        writer.Write("gc::gc_ptr < " + typeStr+ ptr + " >");
+//                    writer.Write("" + typeStr + ptr + "");
+//
+//                    writer.Write(" ");
+//                    writer.Write(WriteIdentifierName.TransformIdentifier(variable.Identifier.ValueText));
+//                    
+//                    Program.RefOutSymbols.TryAdd(symbol, null);
+//
+//                    writer.Write(" = std::make_shared < ");
+//                    writer.Write(typeStr + ptr);
+//                    writer.Write(" >(");
+//
+//                    WriteInitializer(writer, declaration, variable);
+//
+//                    writer.Write(")");
+//                }
+//                else
                 {
                     var lsymbol = symbol as ILocalSymbol;
 
                     if (lsymbol != null && lsymbol.Type.IsValueType == false)
                     {
                         writer.Write(" ");
-                            // Ideally Escape analysis should take care of this, but for now all value types are on heap and ref types on stack
+// Ideally Escape analysis should take care of this, but for now all value types are on heap and ref types on stack
                     }
 
                     writer.Write(TypeProcessor.ConvertType(declaration.Type));
@@ -90,21 +90,21 @@ namespace SharpNative.Compiler
                 var memberaccessexpression = value as MemberAccessExpressionSyntax;
                 var nameexpression = value as NameSyntax;
                 var nullAssignment = value.ToFullString().Trim() == "null";
-				var shouldBox = initializerType.Type != null && (initializerType.Type.IsValueType) &&
-                                !initializerType.ConvertedType.IsValueType;
+                var shouldBox = initializerType.Type != null && (initializerType.Type.IsValueType) &&
+                    !initializerType.ConvertedType.IsValueType;
                 var shouldUnBox = initializerType.Type != null && !initializerType.Type.IsValueType &&
                                   initializerType.ConvertedType.IsValueType;
                 var isname = value is NameSyntax;
                 var ismemberexpression = value is MemberAccessExpressionSyntax ||
                                          (isname &&
-                                          TypeProcessor.GetSymbolInfo(value as NameSyntax).Symbol.Kind ==
-                                          SymbolKind.Method);
+                                         TypeProcessor.GetSymbolInfo(value as NameSyntax).Symbol.Kind ==
+                                         SymbolKind.Method);
                 var isdelegateassignment = ismemberexpression &&
                                            initializerType.ConvertedType.TypeKind == TypeKind.Delegate;
                 var isstaticdelegate = isdelegateassignment &&
                                        ((memberaccessexpression != null &&
-                                         TypeProcessor.GetSymbolInfo(memberaccessexpression).Symbol.IsStatic) ||
-                                        (isname && TypeProcessor.GetSymbolInfo(nameexpression).Symbol.IsStatic));
+                                       TypeProcessor.GetSymbolInfo(memberaccessexpression).Symbol.IsStatic) ||
+                                       (isname && TypeProcessor.GetSymbolInfo(nameexpression).Symbol.IsStatic));
                 var shouldCast = initializerType.Type != initializerType.ConvertedType &&
                                  initializerType.ConvertedType != null;
 
@@ -125,24 +125,24 @@ namespace SharpNative.Compiler
                 }
                 if (shouldBox)
                 {
-                    //Box
+//Box
                     writer.Write("BOX!(" + TypeProcessor.ConvertType(initializerType.Type) + ")(");
-                    //When passing an argument by ref or out, leave off the .Value suffix
+//When passing an argument by ref or out, leave off the .Value suffix
                     Core.Write(writer, value);
                     writer.Write(")");
                     return;
                 }
                 if (shouldUnBox)
                 {
-                        writer.Write("cast(" + TypeProcessor.ConvertType(initializerType.Type) + ")(");
-                        Core.Write(writer, value);
-                        writer.Write(")");
-                        return;
+                    writer.Write("cast(" + TypeProcessor.ConvertType(initializerType.Type) + ")(");
+                    Core.Write(writer, value);
+                    writer.Write(")");
+                    return;
                     
                 }
                 if (initializer.Parent.Parent.Parent is FixedStatementSyntax) // Fixed is a bit special
                 {
-                    //TODO write a better fix
+//TODO write a better fix
                     var type = TypeProcessor.GetTypeInfo(declaration.Type);
 
                     writer.Write("cast(" + TypeProcessor.ConvertType(type.Type) + ")(");
@@ -170,8 +170,8 @@ namespace SharpNative.Compiler
                     writer.Write("&");
 
                     Core.Write(writer, value);
-                    if (isStatic)
-                        writer.Write(")");
+//                    if (isStatic)
+//                        writer.Write(")");
 
                     if (createNew)
                         writer.Write(")");
@@ -194,9 +194,9 @@ namespace SharpNative.Compiler
             ProcessInitializer(writer, declaration, variable);
         }
 
-        /// <summary>
-        ///     Determines if the passed symbol is used in any ref or out clauses
-        /// </summary>
+/// <summary>
+///     Determines if the passed symbol is used in any ref or out clauses
+/// </summary>
         private static bool UsedAsRef(VariableDeclaratorSyntax variable, ISymbol symbol)
         {
             SyntaxNode node = variable;
@@ -207,7 +207,7 @@ namespace SharpNative.Compiler
 
             return scope.DescendantNodes().OfType<InvocationExpressionSyntax>()
                 .SelectMany(o => o.ArgumentList.Arguments)
-                .Where(o => o.RefOrOutKeyword.RawKind != (decimal) SyntaxKind.None)
+                .Where(o => o.RefOrOutKeyword.RawKind != (decimal)SyntaxKind.None)
                 .Any(o => TypeProcessor.GetSymbolInfo(o.Expression).Symbol == symbol);
         }
     }

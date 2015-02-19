@@ -18,6 +18,11 @@ namespace SharpNative.Compiler
         public static void Go(OutputWriter writer, ReturnStatementSyntax statement)
         {
 
+            var slambda = statement.Ancestors().OfType<SimpleLambdaExpressionSyntax>().FirstOrDefault();
+            var plambda = statement.Ancestors().OfType<ParenthesizedLambdaExpressionSyntax>().FirstOrDefault();
+            var mlambda = statement.Ancestors().OfType<AnonymousMethodExpressionSyntax>().FirstOrDefault();
+
+
             var method = statement.Ancestors().OfType<MethodDeclarationSyntax>().FirstOrDefault();
             var property = statement.Ancestors().OfType<PropertyDeclarationSyntax>().FirstOrDefault();
             var indexer = statement.Ancestors().OfType<IndexerDeclarationSyntax>().FirstOrDefault();
@@ -51,7 +56,21 @@ namespace SharpNative.Compiler
             {
                 returnTypeSymbol = TypeProcessor.GetTypeInfo(@operator.ReturnType).Type;
             }
-           
+
+            if (plambda != null)
+            {
+                returnTypeSymbol = TypeProcessor.GetTypeInfo(plambda).Type;
+            }
+
+            if (slambda != null)
+            {
+                returnTypeSymbol = TypeProcessor.GetTypeInfo(slambda).Type;
+            }
+
+            if (mlambda != null)
+            {
+                returnTypeSymbol = TypeProcessor.GetTypeInfo(statement.Expression).ConvertedType;
+            }
 
 
             writer.WriteIndent();

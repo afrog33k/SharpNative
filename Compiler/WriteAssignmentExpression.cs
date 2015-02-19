@@ -19,7 +19,7 @@ namespace SharpNative.Compiler
     {
         public static void Go(OutputWriter writer, AssignmentExpressionSyntax expression)
         {
-            WriteBinaryExpression.WriteIt(writer,expression.OperatorToken,expression.Right,expression.Left);
+            WriteBinaryExpression.WriteIt(writer, expression.OperatorToken, expression.Right, expression.Left);
         }
     }
 }

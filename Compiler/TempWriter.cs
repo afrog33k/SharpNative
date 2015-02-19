@@ -7,7 +7,8 @@ namespace SharpNative.Compiler
 {
     public class TempWriter : OutputWriter
     {
-        public TempWriter() : base("", "", false)
+        public TempWriter()
+            : base("", "", false)
         {
         }
 

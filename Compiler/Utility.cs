@@ -28,7 +28,7 @@ namespace SharpNative.Compiler
         public static ISymbol[] GetAllMembers(this ITypeSymbol symbol)
         {
             List<ISymbol> members = new List<ISymbol>();
-            members = symbol.GetMembers().Union(symbol.AllInterfaces.SelectMany(j=>j.GetMembers())).ToList();
+            members = symbol.GetMembers().Union(symbol.AllInterfaces.SelectMany(j => j.GetMembers())).ToList();
             
 
             return members.ToArray();
@@ -68,6 +68,21 @@ namespace SharpNative.Compiler
             var inferredDimensions = new Dictionary<int, int>();
             ITypeSymbol aType = null;
             IArrayTypeSymbol _aType = null;
+            CreateArray(initializer, writer, type, arrayType, _aType, first, inferredDimensions);
+        }
+
+        public static void WriteArrayInitializer(this InitializerExpressionSyntax initializer, OutputWriter writer,
+           ITypeSymbol type = null)
+        {
+            var inferredDimensions = new Dictionary<int, int>();
+            CreateArray(initializer, writer, null, null, type as IArrayTypeSymbol, true, inferredDimensions);
+        }
+
+        private static void CreateArray(InitializerExpressionSyntax initializer, OutputWriter writer, TypeSyntax type,
+            ArrayTypeSyntax arrayType, IArrayTypeSymbol _aType, bool first, Dictionary<int, int> inferredDimensions)
+        {
+            ITypeSymbol aType;
+            ExpressionSyntax[] fullDimension;
             if (type != null)
             {
                 arrayType = type as ArrayTypeSyntax;
@@ -90,10 +105,18 @@ namespace SharpNative.Compiler
                         writer.Write("__CC!(" + TypeProcessor.ConvertType(_aType.ElementType)
                             /*+ Enumerable.Range (0, _aType.Rank).Select (l => "[]").Aggregate ((a, b) => a + b).ToString ()*/+
                                      "[])(");
+                        if (_aType.Rank == 1)
+                            first = WriteArrayElements(initializer, writer, inferredDimensions, 0);
+                        else
+                        {
+                            writer.Write("[");
+                            first = WriteArrayElements(initializer, writer, inferredDimensions, 0, true);
+                            writer.Write("]");
+                        }
+                        // if (_aType != null)
+                        writer.Write(")");
                     }
 
-                    if (_aType.Rank == 1)
-                        first = WriteArrayElements(initializer, writer, inferredDimensions, 0);
                     else //multi
                     {
                         writer.Write("[");
@@ -102,8 +125,6 @@ namespace SharpNative.Compiler
                     }
                     //inferredDimensions = inferredDimensions.Take (_aType.Rank).ToList();
                     inferredSizes = inferredDimensions.Select(k => k.Value).ToList();
-                    if (_aType != null)
-                        writer.Write(")");
                 }
             }
 
@@ -112,7 +133,7 @@ namespace SharpNative.Compiler
                 if (arrayType != null && _aType != null)
                 {
                     //Don't do this for jagged arrays ...rank = 1 and .GetLength(>0) throws exception
-                    //	if(aType.Rank > 1)
+                    //  if(aType.Rank > 1)
                     {
                         fullDimension =
                             arrayType.RankSpecifiers.Select(o => o.Sizes).SelectMany(j => j).ToArray();
@@ -204,7 +225,9 @@ namespace SharpNative.Compiler
         {
             if (!containingType.IsValueType)
                 return false;
+
             var specialType = containingType.SpecialType;
+
             if (specialType == SpecialType.System_Boolean || specialType == SpecialType.System_Byte ||
                 specialType == SpecialType.System_Char
                 || specialType == SpecialType.System_Double || specialType == SpecialType.System_Enum ||
@@ -216,7 +239,6 @@ namespace SharpNative.Compiler
                 || specialType == SpecialType.System_UInt16 || specialType == SpecialType.System_UInt32 ||
                 specialType == SpecialType.System_UInt64 || specialType == SpecialType.System_UIntPtr ||
                 specialType == SpecialType.System_Void)
-
                 return true;
 
             return false;
@@ -263,17 +285,8 @@ namespace SharpNative.Compiler
 
         public static string GetModuleName(this INamespaceSymbol typeSymbol)
         {
-            var fullName = typeSymbol.FullName();
-
-//            if (typeSymbol.IsGlobalNamespace)
-//            {
-//                fullName = GlobalNamespaceName;
-//            }
-//            string result = fullName +"."+ NamespaceModuleName;
-            return fullName;
+            return typeSymbol.FullName();
         }
-
-        
 
         public static string GetModuleName(this ITypeSymbol type)
         {
@@ -285,18 +298,18 @@ namespace SharpNative.Compiler
 
           
 
-          //Better use typeprocessor as this is leading to many issues
+            //Better use typeprocessor as this is leading to many issues
 
-            return type.ContainingNamespace.FullName(false) + "."  + type.GetNameD() + "." + BoxedPrefix + type.GetNameD();
+            return type.ContainingNamespace.FullName(false) + "." + type.GetNameD() + "." + BoxedPrefix + type.GetNameD();
 
         
         }
 
-        public static string GetNameD(this ITypeSymbol type, bool removeGenerics=true)
+        public static string GetNameD(this ITypeSymbol type, bool removeGenerics = true)
         {
-            var name=TypeProcessor.ConvertType(type,true,false).RemoveFromStartOfString(type.ContainingNamespace.FullName()+".");
+            var name = TypeProcessor.ConvertType(type, true, false,true).RemoveFromStartOfString(type.ContainingNamespace.FullName() + ".");
 
-            return removeGenerics? Regex.Replace(name, @" ?!\(.*?\)", string.Empty) : name;
+            return removeGenerics ? Regex.Replace(name, @" ?!\(.*?\)", string.Empty) : name;
 
         }
 
@@ -330,20 +343,20 @@ namespace SharpNative.Compiler
                 return name + typeInfo.Name;
 
             name += name + typeInfo.Name + "<" +
-                    String.Join(",",
-                        ((INamedTypeSymbol) typeInfo).TypeArguments.Select(o => o.ToString())) + ">";
+            String.Join(",",
+                ((INamedTypeSymbol)typeInfo).TypeArguments.Select(o => o.ToString())) + ">";
 
             return name;
         }
 
         public static void Parallel<T>(this IEnumerable<T> list, Action<T> action)
         {
-#if true
-            System.Threading.Tasks.Parallel.ForEach(list, action);
-#else
-			foreach (var t in list)
-				action(t);
-#endif
+            #if true
+                System.Threading.Tasks.Parallel.ForEach(list, action);
+            #else
+                foreach (var t in list)
+                    action(t);
+            #endif
         }
 
         public static SyntaxTokenList GetModifiers(this MemberDeclarationSyntax member)
@@ -380,18 +393,18 @@ namespace SharpNative.Compiler
             var name =
                 (!(ns.ContainingSymbol is INamespaceSymbol) && !String.IsNullOrEmpty(ns.Name)
                     ? (ns.ContainingSymbol.Name + ".")
-                    : "")+ ns.Name.Replace(".", "_");
+                    : "") + ns.Name.Replace(".", "_");
             name = name.Replace(ns.ContainingNamespace.FullName() + "_", ns.ContainingNamespace.FullName() + ".");
 
             return name;
         }
 
-        public static string FullName(this INamespaceSymbol ns, bool namespacesuffix=true)
+        public static string FullName(this INamespaceSymbol ns, bool namespacesuffix = true)
         {
             if (ns == null)
                 return "";
             if (ns.IsGlobalNamespace)
-                return "CsRoot" +  (namespacesuffix? ("."+NamespaceModuleName) :"");
+                return "CsRoot" + (namespacesuffix ? ("." + NamespaceModuleName) : "");
             else
                 return ns.ToString() + (namespacesuffix ? ("." + NamespaceModuleName) : "");
         }
@@ -427,7 +440,7 @@ namespace SharpNative.Compiler
 
         public static T As<T>(this object o)
         {
-            return (T) o;
+            return (T)o;
         }
 
         public static string SubstringSafe(this string s, int startAt, int length)
@@ -505,12 +518,12 @@ namespace SharpNative.Compiler
 
         public static IEnumerable<T> Concat<T>(this IEnumerable<T> array, T item)
         {
-            return array.Concat(new T[] {item});
+            return array.Concat(new T[] { item });
         }
 
         public static IEnumerable<T> Except<T>(this IEnumerable<T> array, T item)
         {
-            return array.Except(new T[] {item});
+            return array.Except(new T[] { item });
         }
 
 

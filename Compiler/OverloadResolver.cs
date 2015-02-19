@@ -45,12 +45,10 @@ namespace SharpNative.Compiler
             if (overloadedGroup.Count == 1)
                 return symbol.Name;
 
-            if(method!=null)
-              
-            return ExpandedMethodName(method);
+            if (method != null)
+                return ExpandedMethodName(method);
 
             if (property != null)
-
                 return ExpandedMethodName(property);
 
             return null;

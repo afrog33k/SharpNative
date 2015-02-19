@@ -17,7 +17,6 @@ namespace SharpNative.Compiler
 {
     internal static class WriteForEachStatement
     {
-        private static int foreachCount;
 
         public static void Go(OutputWriter writer, ForEachStatementSyntax foreachStatement)
         {
@@ -40,8 +39,8 @@ namespace SharpNative.Compiler
 
             if (types.Type is IArrayTypeSymbol)
             {//Lets just for through the array, iterators are slow ... really slow
-                var forIter = "__for" + foreachCount;
-                var forArray = "__varfor" + foreachCount;
+                var forIter = "__for" + Context.Instance.ForeachCount;
+                var forArray = "__varfor" + Context.Instance.ForeachCount;
 
                 var temp = new TempWriter();
 
@@ -58,13 +57,13 @@ namespace SharpNative.Compiler
                 writer.WriteLine("auto {0} = {1}[{2}];", WriteIdentifierName.TransformIdentifier(foreachStatement.Identifier.ValueText), forArray, forIter);
                 Core.WriteStatementAsBlock(writer, foreachStatement.Statement, false);
                 writer.CloseBrace();
-                foreachCount++;
+                Context.Instance.ForeachCount++;
 
                 return;
             }
             //It's faster to "while" through arrays than "for" through them
 
-            var foreachIter = "__foreachIter" + foreachCount;
+            var foreachIter = "__foreachIter" + Context.Instance.ForeachCount;
 
             if (typeinfo.Type.AllInterfaces.OfType<INamedTypeSymbol>().Any(j => j.MetadataName == "IEnumerable`1") ||
                 typeinfo.Type.MetadataName == "IEnumerable`1")
@@ -97,7 +96,7 @@ namespace SharpNative.Compiler
                 writer.WriteLine("");
 
 //				writer.CloseBrace ();
-                foreachCount++;
+                Context.Instance.ForeachCount++;
             }
             else
             {
@@ -124,7 +123,7 @@ namespace SharpNative.Compiler
                 writer.CloseBrace();
                 writer.WriteLine("");
 
-                foreachCount++;
+                Context.Instance.ForeachCount++;
             }
         }
     }

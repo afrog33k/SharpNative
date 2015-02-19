@@ -1,4 +1,4 @@
-﻿// /*
+// /*
 //   SharpNative - C# to D Transpiler
 //   (C) 2014 Irio Systems 
 // */
@@ -17,6 +17,7 @@ namespace SharpNative.Compiler
         {
             var info = new LoopInfo(whileStatement);
 
+            
             writer.WriteIndent();
             writer.Write("while (");
             Core.Write(writer, whileStatement.Condition);

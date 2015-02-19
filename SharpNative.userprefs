@@ -1,0 +1,41 @@
+﻿<Properties>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Release" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="VisualCompilerMac/MyDocument.cs">
+    <Files>
+      <File FileName="VisualCompilerMac/MyDocument.cs" Line="1" Column="1" />
+      <File FileName="VisualCompilerMac/NativeCompilationUtils.cs" Line="1" Column="1" />
+      <File FileName="VisualCompilerMac/Extensions.cs" Line="1" Column="1" />
+      <File FileName="DCorlib/System/Double.d" Line="1" Column="1" />
+      <File FileName="DCorlib/System/Console.d" Line="1" Column="1" />
+      <File FileName="DCorlib/System/Decimal.d" Line="1" Column="1" />
+      <File FileName="Compiler/WriteType.cs" Line="1" Column="1" />
+      <File FileName="Compiler/NativeCompilationUtils.cs" Line="1" Column="1" />
+      <File FileName="DCorlib/System/String.d" Line="1" Column="1" />
+      <File FileName="Compiler/WriteArrayCreationExpression.cs" Line="1" Column="1" />
+      <File FileName="Compiler/Utility.cs" Line="1" Column="1" />
+      <File FileName="Compiler/WriteInvocationExpression.cs" Line="1" Column="1" />
+      <File FileName="VisualCompilerMac/MainWindowViewModel.cs" Line="1" Column="1" />
+      <File FileName="Compiler/WriteMethod.cs" Line="1" Column="1" />
+      <File FileName="Compiler/MemberUtilities.cs" Line="1" Column="1" />
+      <File FileName="DCorlib/System/Array.d" Line="1" Column="1" />
+      <File FileName="Compiler/Program.cs" Line="1" Column="1" />
+      <File FileName="Compiler/WriteEnum.cs" Line="1" Column="1" />
+      <File FileName="DCorlib/System/Array_T.d" Line="1" Column="1" />
+      <File FileName="Compiler/WriteLiteralExpression.cs" Line="1" Column="1" />
+      <File FileName="Compiler/WriteProperty.cs" Line="1" Column="1" />
+      <File FileName="Compiler/WriteOperatorDeclaration.cs" Line="1" Column="1" />
+      <File FileName="Compiler/WriteUnaryExpression.cs" Line="1" Column="1" />
+      <File FileName="VisualCompilerMac/Main.cs" Line="1" Column="1" />
+      <File FileName="Compiler/WriteField.cs" Line="1" Column="1" />
+      <File FileName="Compiler/WriteEvent.cs" Line="1" Column="1" />
+      <File FileName="Compiler/Driver.cs" Line="1" Column="1" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore>
+      <Breakpoint file="/Projects/Experiments/CsNative/SharpNative/Compiler/WriteArrayCreationExpression.cs" line="47" column="1" />
+      <Breakpoint file="/Projects/Experiments/CsNative/SharpNative/Compiler/WriteArrayCreationExpression.cs" line="19" column="1" />
+    </BreakpointStore>
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>

@@ -37,7 +37,7 @@ namespace SharpNative.Compiler
             var writer = new TempWriter();
             writer.Indent = indent;
 
-            Write(writer,node,isConst);
+            Write(writer, node, isConst);
 
             return writer.ToString();
         }
@@ -188,13 +188,13 @@ namespace SharpNative.Compiler
 
         public static void WriteFixedStatement(OutputWriter writer, FixedStatementSyntax statement)
         {
-//			writer.WriteIndent();
+//          writer.WriteIndent();
             writer.WriteLine("//fixed() Scope");
             writer.OpenBrace();
             Write(writer, statement.Declaration);
             Write(writer, statement.Statement);
             writer.CloseBrace();
-//			writer.Write(";\r\n");
+//          writer.Write(";\r\n");
         }
 
 

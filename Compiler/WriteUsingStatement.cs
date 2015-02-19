@@ -6,7 +6,6 @@
 #region Imports
 
 using System;
-using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -14,28 +13,26 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace SharpNative.Compiler
 {
-    internal static class WriteUsingStatement
+    static class WriteUsingStatement
     {
         public static void Go(OutputWriter writer, UsingStatementSyntax usingStatement)
         {
             var expression = usingStatement.Expression;
 
-            writer.WriteLine("//using block ... " +  usingStatement.Declaration);
+            writer.WriteLine("//using block ... " + usingStatement.Declaration);
             writer.OpenBrace();
             //Ensure the using statement is a local variable - we can't deal with things we can't reliably repeat in the finally block
             var resource = Utility.TryGetIdentifier(expression);
 //            if (resource == null)
 //                throw new Exception("Using statements must reference a local variable. " + Utility.Descriptor(usingStatement));
 
-            SeparatedSyntaxList<VariableDeclaratorSyntax> variables = new SeparatedSyntaxList<VariableDeclaratorSyntax>();//.Select(o => o.Identifier.ValueText);
+            var variables = new SeparatedSyntaxList<VariableDeclaratorSyntax>();//.Select(o => o.Identifier.ValueText);
             if (usingStatement.Declaration != null)
             {
-                Core.Write(writer,usingStatement.Declaration);
+                Core.Write(writer, usingStatement.Declaration);
                 variables = usingStatement.Declaration.Variables;
 
             }
-
-
 
             writer.WriteLine("try");
             Core.WriteStatementAsBlock(writer, usingStatement.Statement);
@@ -44,10 +41,10 @@ namespace SharpNative.Compiler
             foreach (var variable in variables)
             {
                 var typeInfo = TypeProcessor.GetTypeInfo(usingStatement.Declaration.Type);
-                if(!typeInfo.Type.IsValueType)
-                    writer.WriteLine("if("+variable.Identifier.ValueText+" !is null)");
-                else if(typeInfo.Type.Name=="Nullable")
-                   writer.WriteLine("if(" + variable.Identifier.ValueText + ".HasValue)");
+                if (!typeInfo.Type.IsValueType)
+                    writer.WriteLine("if(" + variable.Identifier.ValueText + " !is null)");
+                else if (typeInfo.Type.Name == "Nullable")
+                    writer.WriteLine("if(" + variable.Identifier.ValueText + ".HasValue)");
 
 
                 writer.WriteLine(variable.Identifier.ValueText + ".Dispose(cast(IDisposable)null);");

@@ -48,9 +48,9 @@ namespace SharpNative.Compiler
         private static bool IsLoopSyntax(SyntaxNode syntax)
         {
             return syntax is ForEachStatementSyntax
-                   || syntax is ForStatementSyntax
-                   || syntax is WhileStatementSyntax
-                   || syntax is DoStatementSyntax;
+            || syntax is ForStatementSyntax
+            || syntax is WhileStatementSyntax
+            || syntax is DoStatementSyntax;
         }
     }
 }

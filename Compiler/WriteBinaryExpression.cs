@@ -241,8 +241,8 @@ namespace SharpNative.Compiler
                         writer.Write("&");
 
                         Core.Write(writer,rightExpression);
-                        if (isStatic)
-                            writer.Write(")");
+//                        if (isStatic)
+//                            writer.Write(")");
 
                         writer.Write(")");
                         return;
