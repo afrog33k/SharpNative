@@ -165,13 +165,11 @@ namespace SharpNative.Compiler
                     }
 
                     var isStatic = isstaticdelegate;
-//                    if (isStatic)
-//                        writer.Write("__ToDelegate(");
-                    writer.Write("&");
-
-                    Core.Write(writer, value);
-//                    if (isStatic)
-//                        writer.Write(")");
+                    //                    if (isStatic)
+                    //                        writer.Write("__ToDelegate(");
+                    MemberUtilities.WriteMethodPointer(writer, value);
+                    //                    if (isStatic)
+                    //                        writer.Write(")");
 
                     if (createNew)
                         writer.Write(")");

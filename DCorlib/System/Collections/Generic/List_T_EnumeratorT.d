@@ -1,14 +1,14 @@
-module System.Collections.Generic.List_T_EnumeratorT;
+module System.Collections.Generic.List__G_EnumeratorT;
 
 
 import System.Namespace;
 import System.Collections.Generic.Namespace;
 import System.Collections.Namespace;
 
- class List_T_EnumeratorT(T) :  IEnumerator_T!(T) ,  IDisposable
+ class List__G_EnumeratorT(T) :  IEnumerator_T!(T) ,  IDisposable
 {
 
-  List_T!(T) l = cast(List_T!(T)) null;
+  List__G!(T) l = cast(List__G!(T)) null;
   int next;
   int ver;
   T current = cast(T) null;
@@ -22,7 +22,7 @@ public void IDisposable_Dispose()
 public bool IEnumerator_MoveNext() 
   {
 
-     List_T!(T)  list = l;
+     List__G!(T)  list = l;
     if ((cast(long)this.next)<(cast(long)list._size)&&this.ver==list._version)
     {
 
@@ -92,7 +92,7 @@ void IEnumerator_Reset()
 
 
 
-public this(List_T!(T) l)
+public this(List__G!(T) l)
   {
 
     //this();

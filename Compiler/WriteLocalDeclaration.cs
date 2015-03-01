@@ -158,13 +158,11 @@ namespace SharpNative.Compiler
                 writer.Write("new " + typeString + "(");
 
             var isStatic = isstaticdelegate;
-//            if (isStatic)
-//                writer.Write("__ToDelegate(");
-            writer.Write("&");
-
-            Core.Write(writer, value);
-//            if (isStatic)
-//                writer.Write(")");
+            //            if (isStatic)
+            //                writer.Write("__ToDelegate(");
+            MemberUtilities.WriteMethodPointer(writer, value);
+            //            if (isStatic)
+            //                writer.Write(")");
 
             writer.Write(")");
             return;
@@ -191,12 +189,12 @@ namespace SharpNative.Compiler
                 if (useType)
                 {
                     writer.Write(TypeProcessor.ConvertType(type) + "." + "op_Implicit_" +
-                                 TypeProcessor.ConvertType(correctConverter.ReturnType));
+                                 TypeProcessor.ConvertType(correctConverter.ReturnType).Replace(".", "_"));
                 }
                 else
                 {
                     writer.Write(TypeProcessor.ConvertType(convertedType) + "." +
-                                 "op_Implicit_" + TypeProcessor.ConvertType(correctConverter.ReturnType));
+                                 "op_Implicit_" + TypeProcessor.ConvertType(correctConverter.ReturnType).Replace(".", "_"));
                 }
                 writer.Write("(");
                 Core.Write(writer, value);

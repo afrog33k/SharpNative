@@ -175,7 +175,7 @@ namespace SharpNative.Compiler
                         Regex.Replace(TypeProcessor.ConvertType(interfaceMethod.ContainingType.ConstructedFrom),
                             @" ?!\(.*?\)", String.Empty);*/
                     //TODO: we should be able to get the original interface name, or just remove all generics from this
-                    interfaceImplemented = interfaceMethod.ContainingType.ConstructedFrom;
+                    interfaceImplemented = interfaceMethod.ContainingType;//.ConstructedFrom;
 
                     /*  if (typenameI.Contains('.'))
                         typenameI = typenameI.SubstringAfterLast('.');
@@ -224,7 +224,27 @@ namespace SharpNative.Compiler
             interfaceMethod.TypeArguments == methodSymbol.TypeArguments;
         }
 
-     
 
+        public static void WriteMethodPointer(OutputWriter writer, SyntaxNode expression)
+        {
+            writer.Write("&");
+            var symbol = TypeProcessor.GetSymbolInfo(expression).Symbol;
+            if (symbol is IMethodSymbol)
+            {
+                //Type inference for delegates
+                var methodSymbol =  symbol as IMethodSymbol;
+                var methodName = TypeProcessor.ConvertType(methodSymbol.ContainingType) +"."+ WriteIdentifierName.TransformIdentifier(methodSymbol.Name);
+                var specializedMethod = methodName +
+                                        (methodSymbol.TypeArguments.Any() ?( "!("+
+                                        methodSymbol.TypeArguments.Select(k => TypeProcessor.ConvertType(k))
+                                            .Aggregate((a, b) => a + "," + b) +")"): "");
+                writer.Write(specializedMethod);
+            }
+            else
+            {
+            Core.Write(writer, expression);
+
+            }
+        }
     }
 }

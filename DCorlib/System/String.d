@@ -432,6 +432,16 @@ class String : NObject
 			return cast(U)this;
 		}
 
+	//Faster internal concat
+	public  String Concat(wstring other)
+	{
+		//using this makes concats in D faster than those in C# (otherwise they are about 3 times  slower)... so all s+=other especially when we are using plain strings should become
+		// s.Concat(other)
+		text ~=  other;
+		return this;
+	}
+
+
 	public static String Concat(String self, String other)
 	{
 		self = new String(self.text ~ other.text);

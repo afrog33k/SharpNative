@@ -326,11 +326,17 @@ namespace SharpNative.Compiler
                 ? " override "
                 : "";
 
+            var isStatic = modifiers.Any(SyntaxKind.StaticKeyword);
+
             if (!isInterface &&!isIndexer) // Auto property
             {
                 if ((hasGetter && !getterHasBody) &&
                     (hasSetter && !setterHasBody) && (!modifiers.Any(SyntaxKind.AbstractKeyword)))
-                    writer.WriteLine("private " + typeString + " " + fieldName + ";");
+                {
+                   
+                    writer.WriteLine("private " + (isStatic?"static " :"") + typeString + " " + fieldName + ";");
+
+                }
             }
             return fieldName;
         }

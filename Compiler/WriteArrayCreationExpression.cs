@@ -26,10 +26,10 @@ namespace SharpNative.Compiler
             tempWriter.Indent = writer.Indent;
 
             if (elementType.TypeKind == TypeKind.TypeParameter)
-                writer.Write(" __TypeNew!(" + typeString + ")([");
+                tempWriter.Write(" __TypeNew!(" + typeString + ")([");
             else
             {
-                writer.Write("new " + typeString + "(");
+                tempWriter.Write("new " + typeString + "(");
             }
 
 
@@ -43,18 +43,24 @@ namespace SharpNative.Compiler
                 var atype = variableDeclarationSyntax.Type;
                 array.Initializer.WriteArrayInitializer(tempWriter, atype);
             }
-           
+           else
                 array.Initializer.WriteArrayInitializer(tempWriter,t);
+
+
+            tempWriter.Write(")");
 
             var tempString = tempWriter.ToString();
 
-            //new Array_T!(wchar)(__CC!(wchar[])(['a']))
+            var oldString = tempString;
 
-            tempString = tempString.Replace("new " + typeString + "(__CC!(" + typeString + "[])(", "__ARRAY!(" + typeString + ")(");
+            tempString = tempString.Replace("new " + typeString + "(__CC!(" + type + "[])(", "__ARRAY!(" + type + ")(");
+
+            if (tempString != oldString)
+                tempString = tempString.RemoveFromEndOfString(")");
 
             writer.Write(tempString);
 
-            writer.Write(")");
+            
         }
 
         public static void Go(OutputWriter writer, ArrayCreationExpressionSyntax array)

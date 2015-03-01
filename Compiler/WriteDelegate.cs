@@ -5,6 +5,7 @@
 
 #region Imports
 
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -26,16 +27,29 @@ template Action(T) {
         public static void Go(OutputWriter outputWriter = null)
         {
             var partials = Context.Instance.DelegatePartials;
+           
             var first = partials.First();
+            bool fileExists = false;
+            foreach (var @partial in partials)
+            {
+                Context.Instance.Namespace = @partial.Symbol.ContainingNamespace.FullName();
+                Context.Instance.Type = @partial.Symbol;
+                WriteOneDelegate(outputWriter, @partial, fileExists);
+                fileExists = true;
+            }
+        }
+
+        private static void WriteOneDelegate(OutputWriter outputWriter, Context.DelegateSyntaxAndSymbol first, bool fileExists)
+        {
             Context.Instance.Namespace = first.Symbol.ContainingNamespace.FullName();
             Context.Instance.Type = first.Symbol;
             TypeProcessor.ClearUsedTypes();
             var mynamespace = Context.Instance.Type.ContainingNamespace.FullName().RemoveFromEndOfString(".Namespace");
-                // + "." + TypeState.Instance.TypeName;
+            // + "." + TypeState.Instance.TypeName;
 
             var myUsingDirective = SyntaxFactory.UsingDirective(SyntaxFactory.ParseName(mynamespace));
             var SystemUsingDirective = SyntaxFactory.UsingDirective(SyntaxFactory.ParseName("System"));
-                // Required as certain functions like boxing are in this namespace
+            // Required as certain functions like boxing are in this namespace
             Context.Instance.UsingDeclarations =
                 first.Syntax.Parent.DescendantNodes().OfType<UsingDirectiveSyntax>().ToArray()
                     .Union(new[]
@@ -44,8 +58,13 @@ template Action(T) {
                     }).ToArray();
             OutputWriter writer = null;
 
-            using (writer = outputWriter == null ? new OutputWriter(Context.Instance.Namespace, Context.Instance.TypeName) : new TempWriter())
+            using (
+                writer =
+                    outputWriter == null
+                        ? new OutputWriter(Context.Instance.Namespace, Context.Instance.TypeName)
+                        : new TempWriter())
             {
+
                 if (outputWriter != null)
                 {
                     writer.WriteLine();
@@ -53,49 +72,49 @@ template Action(T) {
                     writer.WriteIndent();
                 }
 
-              
+                writer.FileExists = fileExists;
 
                 WriteBcl.Go(writer);
 
                 WriteStandardIncludes.Go(writer);
 
-
                 //Look for generic arguments 
-                var genericArgs = partials.Select(o => o.Syntax)
-                    .Where(o => o.TypeParameterList != null)
-                    .SelectMany(o => o.TypeParameterList.Parameters)
-                    .ToList();
-
-                var name = WriteType.TypeName(Context.Instance.Type, false);//Context.Instance.TypeName;
-
-                if (genericArgs.Count > 0)
+              
                 {
-                    name = "template " + name;
-                    name += ("(");
-                    name += (string.Join(" , ", genericArgs.Select(o => o)));
-                    name += (")");
+                    List<TypeParameterSyntax> genericArgs = new List<TypeParameterSyntax>();
+                    if (first.Syntax.TypeParameterList != null)
+                        genericArgs = first.Syntax.TypeParameterList.Parameters.ToList();
 
-                    writer.WriteLine(name);
+                    var name = WriteType.TypeName(Context.Instance.Type, false); //Context.Instance.TypeName;
 
+                    if (genericArgs.Count > 0)
+                    {
+                        name = "template " + name;
+                        name += ("(");
+                        name += (string.Join(" , ", genericArgs.Select(o => o)));
+                        name += (")");
 
-                    writer.OpenBrace();
+                        writer.WriteLine(name);
 
-                    writer.WriteLine("alias __Delegate!(" + TypeProcessor.ConvertType(first.Syntax.ReturnType) + " delegate" +
-                                 WriteMethod.GetParameterListAsString(first.Syntax.ParameterList.Parameters)+") " + WriteType.TypeName(Context.Instance.Type, false) + ";");
+                        writer.OpenBrace();
 
-                    writer.CloseBrace();
-                }
-                else
-                {
-                    //Non-generic
-                    writer.WriteLine("alias __Delegate!(" + TypeProcessor.ConvertType(first.Syntax.ReturnType) + " delegate" +
-                                 WriteMethod.GetParameterListAsString(first.Syntax.ParameterList.Parameters)+") " + WriteType.TypeName(Context.Instance.Type, false) + ";");
+                        writer.WriteLine("alias __Delegate!(" + TypeProcessor.ConvertType(first.Syntax.ReturnType) + " delegate" +
+                                         WriteMethod.GetParameterListAsString(first.Syntax.ParameterList.Parameters) + ") " +
+                                         WriteType.TypeName(Context.Instance.Type, false) + ";");
+
+                        writer.CloseBrace();
+                    }
+                    else
+                    {
+                        //Non-generic
+                        writer.WriteLine("alias __Delegate!(" + TypeProcessor.ConvertType(first.Syntax.ReturnType) + " delegate" +
+                                         WriteMethod.GetParameterListAsString(first.Syntax.ParameterList.Parameters) + ") " +
+                                         WriteType.TypeName(Context.Instance.Type, false) + ";");
+                    }
                 }
 
                 if (outputWriter != null)
-                {
                     outputWriter.WriteLine(writer.ToString());
-                }
             }
         }
     }

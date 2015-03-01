@@ -83,7 +83,7 @@ namespace SharpNative.Compiler
             //Determine if it's an extension method called in a non-extension way.  In this case, just pretend it's not an extension method
             if (extensionNamespace != null && subExpressionOpt != null &&
                 TypeProcessor.GetTypeInfo(subExpressionOpt).ConvertedType.ToString() ==
-                methodSymbol.ContainingNamespace + "." + methodSymbol.ContainingType.FullName())
+                methodSymbol.ContainingNamespace.FullName() + "." + methodSymbol.ContainingType.FullName())
                 extensionNamespace = null;
 
             var memberType = memberReferenceExpressionOpt == null
@@ -386,10 +386,12 @@ namespace SharpNative.Compiler
                 //                }
                 ProcessArgument(writer, arg.ArgumentOpt, isOverloaded && argumentType.Type.IsValueType && (arg.ArgumentOpt.RefOrOutKeyword.RawKind == (decimal)SyntaxKind.None));
             }
+
             if (inParams)
             {
                 writer.Write("])");
             }
+
             if (!foundParamsArray && methodSymbol.Parameters.Any() && methodSymbol.Parameters.Last().IsParams)
             {
                 if (typeSymbol != null)
@@ -400,10 +402,14 @@ namespace SharpNative.Compiler
                 }
                 else
                     writer.Write("null"); //params method called without any params argument.  Send null.
+             }
 
-
+            if (symbol.ContainingType.TypeKind == TypeKind.Interface) // Need it as specialized as possible
+            {
+                if (!firstParameter)
+                    writer.Write(",");
+                writer.Write("cast({0}) null",TypeProcessor.ConvertType(symbol.ContainingType));
             }
-
         
             writer.Write(")");
         }
@@ -442,6 +448,7 @@ namespace SharpNative.Compiler
                 var nullAssignment = value.ToFullString().Trim() == "null";
                 var shouldBox = initializerType.Type != null && ((initializerType.Type.IsValueType || initializerType.Type.TypeKind == TypeKind.TypeParameter) &&
                     (!initializerType.ConvertedType.IsValueType));
+                var shouldCast=  initializerType.Type != null && (initializerType.Type.TypeKind==TypeKind.Interface && initializerType.ConvertedType.SpecialType==SpecialType.System_Object);
                 var shouldUnBox = initializerType.Type != null && !initializerType.Type.IsValueType &&
                                   initializerType.ConvertedType.IsValueType;
                 var isname = value.Expression is NameSyntax;
@@ -456,9 +463,19 @@ namespace SharpNative.Compiler
                                        TypeProcessor.GetSymbolInfo(memberaccessexpression).Symbol.IsStatic) ||
                                        (isname && TypeProcessor.GetSymbolInfo(nameexpression).Symbol.IsStatic));
 
+               
                 if (isOverloaded)
                 {
                     writer.Write("cast(const({0}))", TypeProcessor.ConvertType(initializerType.Type));
+                }
+
+                if (shouldCast)
+                {
+                    writer.Write("cast(NObject)");
+                    writer.Write("(");
+                    Core.Write(writer, value.Expression);
+                    writer.Write(")");
+                    return;
                 }
 
                 if (nullAssignment)
@@ -490,12 +507,12 @@ namespace SharpNative.Compiler
                         if (useType)
                         {
                             writer.Write(TypeProcessor.ConvertType(initializerType.Type) + "." + "op_Implicit_" +
-                                TypeProcessor.ConvertType(correctConverter.ReturnType));
+                                TypeProcessor.ConvertType(correctConverter.ReturnType).Replace(".", "_"));
                         }
                         else
                         {
                             writer.Write(TypeProcessor.ConvertType(initializerType.ConvertedType) + "." + "op_Implicit_" +
-                                TypeProcessor.ConvertType(correctConverter.ReturnType));
+                                TypeProcessor.ConvertType(correctConverter.ReturnType).Replace(".", "_"));
                         }
                         writer.Write("(");
                         Core.Write(writer, value.Expression);
@@ -526,12 +543,12 @@ namespace SharpNative.Compiler
                         if (useType)
                         {
                             writer.Write(TypeProcessor.ConvertType(initializerType.Type) + "." + "op_Implicit_" +
-                                TypeProcessor.ConvertType(correctConverter.ReturnType));
+                                TypeProcessor.ConvertType(correctConverter.ReturnType).Replace(".", "_"));
                         }
                         else
                         {
                             writer.Write(TypeProcessor.ConvertType(initializerType.ConvertedType) + "." + "op_Implicit_" +
-                                TypeProcessor.ConvertType(correctConverter.ReturnType));
+                                TypeProcessor.ConvertType(correctConverter.ReturnType).Replace(".", "_"));
                         }
                         writer.Write("(");
                         Core.Write(writer, value.Expression);
@@ -540,8 +557,11 @@ namespace SharpNative.Compiler
                     }
                 }
 
+
+
                 if (shouldBox)
                 {
+                    
                     //Box
                     writer.Write("BOX!(" + TypeProcessor.ConvertType(initializerType.Type) + ")(");
                     //When passing an argument by ref or out, leave off the .Value suffix
@@ -571,13 +591,11 @@ namespace SharpNative.Compiler
                     }
 
                     var isStatic = isstaticdelegate;
-//                    if (isStatic)
-//                        writer.Write("__ToDelegate(");
-                    writer.Write("&");
-
-                    Core.Write(writer, value.Expression);
-//                    if (isStatic)
-//                        writer.Write(")");
+                    //                    if (isStatic)
+                    //                        writer.Write("__ToDelegate(");
+                    MemberUtilities.WriteMethodPointer(writer, value.Expression);
+                    //                    if (isStatic)
+                    //                        writer.Write(")");
 
                     if (createNew)
                         writer.Write(")");

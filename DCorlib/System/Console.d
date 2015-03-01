@@ -133,18 +133,26 @@ public static void WriteLine(wstring value)
 	
 	public static void WriteLine(String aString) // All raw string classes should be aware of .Text property
 	{
+		if(aString !is null)
 		writeln(aString.Text);
+		else
+			writeln();
 	}
 
 	public static void Write(String aString) // All raw string classes should be aware of .Text property
 	{
-		write(aString.Text);
+		if(aString !is null)
+			write(aString.Text);
+			
 	}
 
 	public static void WriteLine(NObject aString) // All raw string classes should be aware of .Text property
 	{
 		if(aString !is null)
 		writeln(aString.ToString().Text);
+		else
+			writeln();
+
 	}
 
 	public static void Write(NObject aString) // All raw string classes should be aware of .Text property

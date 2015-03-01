@@ -283,14 +283,14 @@ namespace SharpNative.Compiler
         public static string BoxedPrefix = "__Boxed_";
 
 
-        public static string GetModuleName(this INamespaceSymbol typeSymbol)
+        public static string GetModuleName(this INamespaceSymbol typeSymbol, bool useAliases = false)
         {
-            return typeSymbol.FullName();
+            return typeSymbol.FullName(true,useAliases);
         }
 
-        public static string GetModuleName(this ITypeSymbol type)
+        public static string GetModuleName(this ITypeSymbol type, bool useAliases=true)
         {
-            return type.ContainingNamespace.FullName(false) + "." + type.GetNameD() + "." + type.GetNameD();
+            return type.ContainingNamespace.FullName(false,useAliases) + "." + type.GetNameD() + "." + type.GetNameD();
         }
 
         public static string GetBoxedModuleName(this ITypeSymbol type)
@@ -307,7 +307,8 @@ namespace SharpNative.Compiler
 
         public static string GetNameD(this ITypeSymbol type, bool removeGenerics = true)
         {
-            var name = TypeProcessor.ConvertType(type, true, false,true).RemoveFromStartOfString(type.ContainingNamespace.FullName() + ".");
+            var convertType = TypeProcessor.ConvertType(type, false, false,false);
+            var name = convertType.RemoveFromStartOfString(type.ContainingNamespace.FullName(true, false) + ".");
 
             return removeGenerics ? Regex.Replace(name, @" ?!\(.*?\)", string.Empty) : name;
 
@@ -399,8 +400,14 @@ namespace SharpNative.Compiler
             return name;
         }
 
-        public static string FullName(this INamespaceSymbol ns, bool namespacesuffix = true)
+
+        public static string FullName(this INamespaceSymbol ns, bool namespacesuffix = true,bool useAliases=true)
         {
+
+            if(useAliases)
+            if (Context.Instance != null && Context.Instance.NamespaceAliases.ContainsKey(ns))
+                return Context.Instance.NamespaceAliases[ns];
+
             if (ns == null)
                 return "";
             if (ns.IsGlobalNamespace)
@@ -409,14 +416,9 @@ namespace SharpNative.Compiler
                 return ns.ToString() + (namespacesuffix ? ("." + NamespaceModuleName) : "");
         }
 
-        public static string FullNameWithDot(this INamespaceSymbol ns, bool namespacesuffix = true)
+        public static string FullNameWithDot(this INamespaceSymbol ns, bool namespacesuffix = true, bool useAliases = true)
         {
-            if (ns == null)
-                return "";
-            if (ns.IsGlobalNamespace)
-                return "CsRoot" + (namespacesuffix ? ("." + NamespaceModuleName) : "") + ".";
-            else
-                return ns.ToString() + (namespacesuffix ? ("." + NamespaceModuleName) : "") + ".";
+            return ns.FullName(namespacesuffix,useAliases) + ".";
         }
 
         public static string FullNameWithDotCSharp(this INamespaceSymbol ns, bool namespacesuffix = true)

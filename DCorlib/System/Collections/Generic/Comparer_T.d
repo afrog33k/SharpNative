@@ -58,7 +58,7 @@ int IComparer_Compare(NObject x, NObject y)
   static this()
   {
 
-    //_default = (new System.Type(classOf[IComparable_T!(T)])._Type_IsAssignableFrom(new System.Type(classOf[T]))) ? (AsCast!( System.Collections.Generic.Namespace.Comparer_T!(T) )(Activator.CreateInstance(new System.Type(classOf[GenericComparer_T]).MakeGenericType(new System.Type(classOf[T]))))) : ( new Comparer_T_DefaultComparerT());
+    //_default = (new System.Type(classOf[IComparable__G!(T)])._Type_IsAssignableFrom(new System.Type(classOf[T]))) ? (AsCast!( System.Collections.Generic.Namespace.Comparer_T!(T) )(Activator.CreateInstance(new System.Type(classOf[GenericComparer_T]).MakeGenericType(new System.Type(classOf[T]))))) : ( new Comparer_T_DefaultComparerT());
 
   
 }

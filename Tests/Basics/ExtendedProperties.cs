@@ -16,7 +16,7 @@ struct Simple
 
    
 }
-
+ 
     static string v; 
 
     static string S {
@@ -45,7 +45,7 @@ struct Simple
     {
         var anX = new X(); 
         Console.WriteLine(anX.Count);
-        Console.WriteLine(anX.Count++);
+        Console.WriteLine((anX.Count++==5)?9:0 + 78);
 
         Console.WriteLine(anX.Count--);
 

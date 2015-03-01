@@ -23,8 +23,10 @@ namespace SharpNative.Compiler
         public List<string> InstanceInits = new List<string>();
         public List<string> MemberNames = new List<string>();
 
-        public Dictionary<ITypeSymbol,string> Aliases = new Dictionary<ITypeSymbol, string>(); 
+        public Dictionary<ITypeSymbol,string> Aliases = new Dictionary<ITypeSymbol, string>();
+        public Dictionary<INamespaceSymbol, string> NamespaceAliases = new Dictionary<INamespaceSymbol, string>();
 
+        
 
         public UsingDirectiveSyntax[] UsingDeclarations;
 
@@ -81,6 +83,9 @@ namespace SharpNative.Compiler
 
         public static INamedTypeSymbol Object { get; set; }
 
+        public static INamedTypeSymbol String { get; set; }
+
+
         public static INamedTypeSymbol Exception { get; set; }
 
         public static SyntaxNode LastNode { get; set; }
@@ -96,6 +101,8 @@ namespace SharpNative.Compiler
         private void UpdateContext(Compilation compilation)
         {
             Object = compilation.FindType("System.Object");
+            String = compilation.FindType("System.String");
+
             Exception = compilation.FindType("System.Exception");
 
             IEnumeratorT = compilation.FindType("System.Collections.Generic.IEnumerator`1");

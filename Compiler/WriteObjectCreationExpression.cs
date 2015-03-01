@@ -7,6 +7,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -38,9 +39,35 @@ namespace SharpNative.Compiler
 
                     return;
                 }
-                writer.Write("(");
+
+                if (expression.Initializer.IsKind(SyntaxKind.ObjectInitializerExpression))
+                {
+                    var tempName = "__tempVar";
+                    var typeString = TypeProcessor.ConvertType(type); 
+
+                    writer.Write(string.Format("(){{auto {0} = {1}();", tempName,WriteNewOperatorToString(type, typeString)));
+                    foreach (var iexpression in expression.Initializer.Expressions)
+                    {
+                        var localExpression = (iexpression as AssignmentExpressionSyntax);
+                        if (localExpression == null)
+                            continue;
+                        var right = localExpression;
+                        var mar = right;
+                        writer.Write(tempName + "." + Core.WriteString(mar) + ";");
+
+                    }
+
+                    writer.Write("return " + tempName + ";");
+                    writer.Write("}()");
+                    return;
+                }
+                else
+                {
+                      writer.Write("(");
                 Core.Write(writer, expression.Initializer);
                 writer.Write(")");
+                }
+              
             }
 
             if (type.SpecialType == SpecialType.System_Object)
@@ -59,7 +86,7 @@ namespace SharpNative.Compiler
             }
             else
             {
-//                var methodSymbol = TypeProcessor.GetSymbolInfo(expression).Symbol.As<IMethodSymbol>();
+                //                var methodSymbol = TypeProcessor.GetSymbolInfo(expression).Symbol.As<IMethodSymbol>();
 
                 var typeString = TypeProcessor.ConvertType(expression.Type);
 
@@ -93,6 +120,18 @@ namespace SharpNative.Compiler
                 writer.Write(string.Format("  {0}", typeString));
             else
                 writer.Write(string.Format(" new {0}", typeString));
+        }
+
+        private static string WriteNewOperatorToString(ITypeSymbol type, string typeString)
+        {
+            var sb = new StringBuilder();
+            if (type != null && type.TypeKind == TypeKind.TypeParameter)
+                sb.Append(string.Format(" {0}!(", InternalNames.TypeNewName) + typeString + ")");
+            else if (type.IsValueType)
+                sb.Append(string.Format("  {0}", typeString));
+            else
+                sb.Append(string.Format(" new {0}", typeString));
+            return sb.ToString();
         }
 
         private static IEnumerable<TransformedArgument> TranslateParameters(IEnumerable<ArgumentSyntax> list)

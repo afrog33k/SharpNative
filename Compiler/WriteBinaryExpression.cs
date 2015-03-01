@@ -6,6 +6,7 @@
 #region Imports
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -82,15 +83,8 @@ namespace SharpNative.Compiler
             }
             else
             {
-                Action<ExpressionSyntax> write = e => Core.Write(writer, e);
 
-                TypeInfo leftExpressionType;
-                if(leftExpression!=null)
-                    leftExpressionType = TypeProcessor.GetTypeInfo(leftExpression);
-                else
-                {
-                    leftExpressionType = TypeProcessor.GetTypeInfo(rightExpression);
-                }
+                TypeInfo leftExpressionType = TypeProcessor.GetTypeInfo(leftExpression ?? rightExpression);
 
                 var rightExpressionType = TypeProcessor.GetTypeInfo(rightExpression);
 
@@ -105,6 +99,100 @@ namespace SharpNative.Compiler
                 var leftnull = leftExpression != null && leftExpression.ToFullString().Trim() == "null";
 
                 var nullAssignment =  (rightnull || leftnull);
+
+                var val = WriteOperatorDeclaration.AllBinaryOperators.FirstOrDefault(k => k.Value == operatorToken.Text);
+                //Matching Binary Operator Overload
+                if (!String.IsNullOrEmpty(val.Value))
+                {
+                    //Try Left
+                    IEnumerable<ISymbol> members = null;
+                    if (leftExpressionType.Type != null)
+                    {
+                        members = leftExpressionType.Type.GetMembers(val.Key);
+                    }
+                    if (rightExpressionType.Type != null)
+                        {
+                            members=members.
+                            Union(rightExpressionType.Type.GetMembers(val.Key));
+                         
+                        }
+
+                    var leftExpressionString = Core.WriteString(leftExpression);
+                    if (members!=null && members.Any())
+                    {
+                        if (!(leftExpressionType.Type.IsPrimitive() && rightExpressionType.Type.IsPrimitive()))
+                        {
+                            var correctOverload =
+                                members.OfType<IMethodSymbol>()
+                                    .FirstOrDefault(
+                                        u =>
+                                            u.Parameters[0].Type == leftExpressionType.Type &&
+                                            u.Parameters[1].Type == rightExpressionType.Type);
+
+                            if (correctOverload != null)
+                            {
+                                var name =
+                                    WriteIdentifierName.TransformIdentifier(OverloadResolver.MethodName(correctOverload));
+                                writer.Write( TypeProcessor.ConvertType(correctOverload.ContainingType) + "." + name +
+                                             "(" +
+                                             leftExpressionString + "," + Core.WriteString(rightExpression)
+                                             + ")");
+                                return;
+                            }
+                           
+                        }
+                    }
+                    else
+                    {
+                        if (WriteOperatorDeclaration.AssignOpOperators.ContainsKey(val.Key))
+                        {
+                            var methodName =
+                                WriteOperatorDeclaration.AllBinaryOperators.FirstOrDefault(
+                                    k => k.Value == val.Value.Substring(0, 1));
+                            // emulate c# facility to use the lower op ...
+                            //Try Left
+                            members = null;
+                            if (leftExpressionType.Type != null)
+                            {
+                                members = leftExpressionType.Type.GetMembers(methodName.Key);
+                            }
+                            if (rightExpressionType.Type != null)
+                            {
+                                members = members.
+                                    Union(rightExpressionType.Type.GetMembers(methodName.Key));
+
+                            }
+
+                            if (members != null && members.Any())
+                            {
+                                if (!(leftExpressionType.Type.IsPrimitive() && rightExpressionType.Type.IsPrimitive()))
+                                {
+                                    var correctOverload =
+                                        members.OfType<IMethodSymbol>()
+                                            .FirstOrDefault(
+                                                u =>
+                                                    u.Parameters[0].Type == leftExpressionType.Type &&
+                                                    u.Parameters[1].Type == rightExpressionType.Type);
+
+                                    if (correctOverload != null)
+                                    {
+                                        var name =
+                                            WriteIdentifierName.TransformIdentifier(
+                                                OverloadResolver.MethodName(correctOverload));
+                                        writer.Write(leftExpressionString + " = " + TypeProcessor.ConvertType(correctOverload.ContainingType) + "." +
+                                                     name +
+                                                     "(" +
+                                                     leftExpressionString + "," + Core.WriteString(rightExpression)
+                                                     + ")");
+                                        return;
+                                    }
+
+                                }
+                            }
+                        }
+                    }
+
+                }
 
                 //Property calls will be fixed in a preprocessor step ... i.e. just call them
                 if (nullAssignment)
@@ -182,12 +270,12 @@ namespace SharpNative.Compiler
                         if (useType)
                             {
                                 writer.Write(TypeProcessor.ConvertType(leftExpressionType.Type) + "." + "op_Implicit_" +
-                                             TypeProcessor.ConvertType(correctConverter.ReturnType));
+                                             TypeProcessor.ConvertType(correctConverter.ReturnType).Replace(".","_"));
                             }
                             else
                             {
                                 writer.Write(TypeProcessor.ConvertType(rightExpressionType.Type) + "." + "op_Implicit_" +
-                                             TypeProcessor.ConvertType(correctConverter.ReturnType));
+                                             TypeProcessor.ConvertType(correctConverter.ReturnType).Replace(".","_"));
                             }
                             writer.Write("(");
                             Core.Write(writer, rightExpression);
@@ -235,14 +323,12 @@ namespace SharpNative.Compiler
                             writer.Write("new " + typeString + "(");
 
                         var isStatic = isstaticdelegate;
-//                        if (isStatic)
-//                            writer.Write("__ToDelegate(");
+                        //                        if (isStatic)
+                        //                            writer.Write("__ToDelegate(");
 
-                        writer.Write("&");
-
-                        Core.Write(writer,rightExpression);
-//                        if (isStatic)
-//                            writer.Write(")");
+                        MemberUtilities.WriteMethodPointer(writer, rightExpression);
+                        //                        if (isStatic)
+                        //                            writer.Write(")");
 
                         writer.Write(")");
                         return;

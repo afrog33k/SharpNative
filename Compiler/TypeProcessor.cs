@@ -50,8 +50,14 @@ namespace SharpNative.Compiler
         {
             var dType = ConvertType(type);
 
+            if (type.IsPrimitiveInteger())
+                return "0";
+
             if (type.TypeKind == TypeKind.Struct || type.TypeKind == TypeKind.Enum)
                 return dType + ".init";
+            
+            if (type.SpecialType == SpecialType.System_Boolean)
+                return "false";
 
             switch (dType)
             {
@@ -110,6 +116,8 @@ namespace SharpNative.Compiler
                 //not sure why Roslyn can't find the type of some type nodes, but telling it to use the parent's seems to work
             }
 
+         
+
             ITypeSymbol t;
 
             //TODO: do we have to do a search for whether the other is a base class here ?
@@ -117,6 +125,11 @@ namespace SharpNative.Compiler
 
             if (!Equals(typeInfo.ConvertedType, typeInfo.Type) && typeInfo.Type != null)
                 t = typeInfo.Type;
+
+            if (t==null)
+            {
+               t= (ITypeSymbol) GetDeclaredSymbol(node);
+            }
 
             AddUsedType(typeInfo.Type);
 
@@ -161,23 +174,23 @@ namespace SharpNative.Compiler
         }
 
 
-        public static string ConvertType(SyntaxNode node, bool localize = true)
+        public static string ConvertType(SyntaxNode node, bool localize = true, bool usebasicname = true, bool useAliases = true)
         {
-            var ret = TryConvertType(node, localize);
 
-            if (ret == null)
-                throw new Exception("Type could not be determined for " + node);
+            if (node == null)
+                return null;
 
-           
-            if (localize)//TODO: We need to check for collisions and thus fully qualify
-            {
-                ret = LocalizeName(ret, GetTypeInfo(node).Type);
-            }
-            
+            //            var attrs = Utility.GetSharpNativeAttribute(node);
+            //            if (attrs.ContainsKey("ReplaceWithType"))
+            //                return attrs["ReplaceWithType"];
 
-            if (ret == "Array_T")
-                return "Array";
-            return ret;
+            var sym = TryGetTypeSymbol(node, localize);
+
+            if (sym == null)
+                throw new Exception("Could not get type of " + node + " at " + Utility.Descriptor(node));
+
+
+            return ConvertType(sym, localize, usebasicname, useAliases);
         }
 
         public static string ConvertTypeFixPointer(SyntaxNode node)
@@ -216,11 +229,11 @@ namespace SharpNative.Compiler
         private static readonly ConcurrentDictionary<ITypeSymbol, string> _cachedTypes =
             new ConcurrentDictionary<ITypeSymbol, string>();
 
-        public static string ConvertType(ITypeSymbol typeSymbol, bool localize = true, bool usebasicname = true, bool ignoreAliases =false)
+        public static string ConvertType(ITypeSymbol typeSymbol, bool localize = true, bool usebasicname = true, bool useAliases=true)
         {
             AddUsedType(typeSymbol);
 
-            var ret = TryConvertType(typeSymbol);
+            var ret = TryConvertType(typeSymbol,localize);
 
             if (ret == null)
                 throw new Exception("Could not convert type " + typeSymbol);
@@ -228,12 +241,12 @@ namespace SharpNative.Compiler
             if (!usebasicname)
             if (typeSymbol.IsPrimitive())
             {
-                ret = typeSymbol.ContainingNamespace.FullName() + "." + typeSymbol.Name;
+                ret = typeSymbol.ContainingNamespace.FullName(true, useAliases) + "." + typeSymbol.Name;
             }
 
             if (localize)
             {
-                ret = LocalizeName(ret,typeSymbol,ignoreAliases);
+                ret = LocalizeName(ret,typeSymbol,useAliases);
             }
 
             if (ret == "Array_T")
@@ -267,31 +280,69 @@ namespace SharpNative.Compiler
             return newAlias;
         }
 
-        private static string LocalizeName(string ret, ITypeSymbol typeSymbol, bool ignoreAliases =false)
+        private static string LocalizeName(string ret, ITypeSymbol typeSymbol, bool useAliases =false)
         {
             if (String.IsNullOrEmpty(ret))
                 return ret;
 
-            if (ret.StartsWith(Context.Instance.Namespace + "."))
-                ret = ret.RemoveFromStartOfString(Context.Instance.Namespace + ".");
-
-            var name =
-                Context.Instance.UsingDeclarations.FirstOrDefault(
-                    k => ret.StartsWith(k.Name.ToFullString() + ".Namespace.", StringComparison.Ordinal));
+            if (useAliases)
+            {
+//                if (ret.StartsWith(Context.Instance.Namespace + "."))
+//                    ret = ret.RemoveFromStartOfString(Context.Instance.Namespace + ".");
 
 
-            if (name != null)
-                ret = ret.RemoveFromStartOfString(name.Name.ToFullString() + ".Namespace.");
+                foreach (var alias in Context.Instance.NamespaceAliases)
+                {
+                    var symbol = alias.Key.GetModuleName() + ".";
+                    if (ret.Contains(symbol))
+                    {
+                        var aliasName = alias.Value + ".";
+                        if (symbol == aliasName)
+                        {
 
-            if(!ignoreAliases)
-            if (Context.Instance.MemberNames.Any(k=>k.Split(',').Contains(ret)))
+                            ret = ret.Replace(symbol,"");
+                        }
+                        else
+                        {
+                            ret =  ret.Replace(symbol,aliasName);
+                        }
+                    }
+                }
+//                var name =
+//                    Context.Instance.NamespaceAliases.FirstOrDefault(
+//                        k => ret.StartsWith(k.Value, StringComparison.Ordinal)).Value;
+
+               
+            }
+            //This part is a must ... whether or not clashes exist
+            if (Context.Instance.MemberNames.Any(k => k.Split(',').Contains(ret)))
             {
                 ret = GetAlias(typeSymbol);
             }
-
-
             return ret;
         }
+
+        public static void AddAlias(ISymbol typeInfo, string alias)
+        {
+            if(typeInfo==null || String.IsNullOrEmpty(alias))
+                return;
+
+            if (typeInfo is ITypeSymbol)
+                _cachedTypes.TryAdd(typeInfo as ITypeSymbol, WriteIdentifierName.TransformIdentifier(alias));
+
+            else
+            {
+                if(!Context.Instance.NamespaceAliases.ContainsKey((INamespaceSymbol) typeInfo))
+                Context.Instance.NamespaceAliases[typeInfo as INamespaceSymbol] =
+                    WriteIdentifierName.TransformIdentifier(alias);
+            }
+
+
+
+        }
+
+
+        
 
         public static string TryConvertType(ITypeSymbol typeInfo, bool localize = true)
         {
@@ -300,20 +351,24 @@ namespace SharpNative.Compiler
 
             if (cachedValue == null)
             {
-                cachedValue = ConvertTypeUncached(typeInfo, localize);
+                cachedValue = ConvertTypeUncached(typeInfo);
                 _cachedTypes.TryAdd(typeInfo, cachedValue);
             }
 
-//            if (localize)
-//            {
-//                cachedValue = LocalizeName(cachedValue,typeInfo);
-//            }
-           
+            if (localize)
+            {
+                cachedValue = LocalizeName(cachedValue, typeInfo, true);
+            }
+            //            if (localize)
+            //            {
+            //                cachedValue = LocalizeName(cachedValue,typeInfo);
+            //            }
+
             return cachedValue;
 
         }
 
-        private static string ConvertTypeUncached(ITypeSymbol typeSymbol, bool localize)
+        private static string ConvertTypeUncached(ITypeSymbol typeSymbol)
         {
             if (typeSymbol.IsAnonymousType)
                 return WriteAnonymousObjectCreationExpression.TypeName(typeSymbol.As<INamedTypeSymbol>());
@@ -322,16 +377,16 @@ namespace SharpNative.Compiler
 
             if (array != null)
             {
-                var typeString = TryConvertType(array.ElementType, localize);
-                if (localize)
-                {
-                    var name =
-                        Context.Instance.UsingDeclarations.FirstOrDefault(
-                            k => typeString.StartsWith(k.Name.ToFullString() + ".Namespace.", StringComparison.Ordinal));
-
-                    if (name != null)
-                        typeString = typeString.RemoveFromStartOfString(name.Name.ToFullString() + ".Namespace.");
-                }
+                var typeString = TryConvertType(array.ElementType, false);
+//                if (localize)
+//                {
+//                    var name =
+//                        Context.Instance.UsingDeclarations.FirstOrDefault(
+//                            k => typeString.StartsWith(k.Name.ToFullString() + ".Namespace.", StringComparison.Ordinal));
+//
+//                    if (name != null)
+//                        typeString = typeString.RemoveFromStartOfString(name.Name.ToFullString() + ".Namespace.");
+//                }
                 return "Array_T!(" + typeString + ")";
             }
 
@@ -346,7 +401,7 @@ namespace SharpNative.Compiler
             var named = typeSymbol as INamedTypeSymbol;
 
             if (typeSymbol.TypeKind == TypeKind.TypeParameter)
-                return typeSymbol.Name;
+                return  WriteIdentifierName.TransformIdentifier(typeSymbol.Name,typeSymbol);
 
             if (named != null && (named.ContainingNamespace.ToString() == "System" && named.Name == "Exception"))
                 return "System.Namespace.NException";
@@ -357,7 +412,7 @@ namespace SharpNative.Compiler
                 //Nullable types
                 if (named.TypeArguments.Any())
                 {
-                    var convertedType = TryConvertType(named.TypeArguments.FirstOrDefault(), true);
+                    var convertedType = TryConvertType(named.TypeArguments.FirstOrDefault(), false);
 
                     /*switch (convertedType)
                     {
@@ -449,10 +504,10 @@ namespace SharpNative.Compiler
                 default:
 
                     if (named != null)
-                        return typeSymbol.ContainingNamespace.FullNameWithDot() + WriteType.TypeName(named);
+                        return typeSymbol.ContainingNamespace.FullNameWithDot(true,false) + WriteType.TypeName(named);
 
                     //This type does not get translated and gets used as-is
-                    return typeSymbol.ContainingNamespace.FullNameWithDot() + typeSymbol.Name;
+                    return typeSymbol.ContainingNamespace.FullNameWithDot(true,false) + WriteIdentifierName.TransformIdentifier(typeSymbol.Name);
             }
         }
 
@@ -473,8 +528,7 @@ namespace SharpNative.Compiler
         {
             if (named.IsGenericType)
             {
-                return named.Name + "_" + named.TypeParameters.Select(k => k.Name)
-                           .Aggregate((a, b) => a + "_" + b) + "!(" +
+                return WriteType.TypeName(named,false) + "!(" +
                 named.TypeArguments.Select(
                     o => GetGenericParameterType(named.TypeParameters[named.TypeArguments.IndexOf(o)], o))
                            .Aggregate((a, b) => a + ", " + b)
@@ -482,14 +536,18 @@ namespace SharpNative.Compiler
             }
             else
             {
-                return named.Name;
+                return WriteType.TypeName(named);
             }
         }
 
         public static string GetGenericParameterType(ITypeParameterSymbol o, ITypeSymbol named)
         {
+//            if (named as ITypeParameterSymbol!=null)
+//            {
+//                
+//            }
             //TODO: seems to cause more trouble than its worth ... moving to generating two methods one for structs and another for classes
-            return TryConvertType(named);// + (named.TypeKind==TypeKind.Struct&& o.ConstraintTypes.Any(k=>k.TypeKind==TypeKind.Interface)  ?".__Boxed_":"");
+            return ConvertType(named,false);// + (named.TypeKind==TypeKind.Struct&& o.ConstraintTypes.Any(k=>k.TypeKind==TypeKind.Interface)  ?".__Boxed_":"");
         }
 
         private static IEnumerable<ITypeSymbol> TypeArguments(INamedTypeSymbol named)

@@ -5,7 +5,7 @@ import System.Collections.Generic.IComparer_T;
 
 
 alias System.Collections.Generic.ICollection_T.ICollection_T ICollection_T;
-alias System.Collections.Generic.IList_T.IList_T IList_T;
+alias System.Collections.Generic.IList__G.IList__G IList__G;
 alias System.Collections.IList.IList IList;
 
 alias System.Collections.SortedList.SortedList SortedList;

@@ -65,8 +65,12 @@ namespace SharpNative.Compiler
 
         private static void WriteNamespaces()
         {
+            //We dont need namespace aliases at this point
+            Context.Instance.NamespaceAliases = new Dictionary<INamespaceSymbol, string>();
+
             //For now ignore system namespace to prevent conflicts, later we should just check if the module is defined in our sources
-            foreach (var @namespace in Context.Namespaces)
+            var namespaces = Context.Namespaces.ToArray();
+            foreach (var @namespace in namespaces)
             {
 //                if (!@namespace.Key.StartsWith("System") && !isCorlib)
 
@@ -76,15 +80,16 @@ namespace SharpNative.Compiler
                     // TODO: this should write nses for only types defined in binary, this should be a switch, we could be compiling corlib
                     using (var writer = new OutputWriter(@namespace.Key.GetModuleName(), "Namespace") { IsNamespace = true })
                     {
-                        writer.WriteLine("module " + @namespace.Key.GetModuleName() + ";");
+                        writer.WriteLine("module " + @namespace.Key.GetModuleName(false) + ";");
                         List<string> addedTypes = new List<string>();
                         
+                        StringBuilder namespaceImports = new StringBuilder();
                         foreach (var type in @namespace.Value)
                         {
                             if (type.ContainingType != null)
                                 continue;
 
-                            var properClassName = type.GetModuleName();
+                            var properClassName = type.GetModuleName(false);
 
                             if (addedTypes.Contains(properClassName))
                                 continue;
@@ -101,6 +106,12 @@ namespace SharpNative.Compiler
 
                         //Reflection Info
                         writer.WriteLine("\n\nimport System.Namespace;");
+                        //To be on the safe side, import all namespaces except us... this allows us to create correct reflectioninfo
+                        //gtest-053.cs
+//                        foreach (var @name in namespaces.DistinctBy(o=>o.Key).Except(@namespace)) //Cant work leads to cycles
+//                        {
+//                            writer.WriteLine("import {0};", @name.Key.GetModuleName(false));
+//                        }
                         writer.WriteLine("public class __ReflectionInfo");
                         writer.OpenBrace();
                         writer.WriteLine("static this()");
@@ -110,7 +121,7 @@ namespace SharpNative.Compiler
                             if(type.TypeKind==TypeKind.Error)
                                 continue;
                             
-                            if ((type as INamedTypeSymbol).IsGenericType)
+                            if (((INamedTypeSymbol) type).IsGenericType)
                             {
 
                                 //Get its specializations
@@ -119,16 +130,36 @@ namespace SharpNative.Compiler
                                     //TODO fix nested types
                                     //if (specialization.ContainingType == null)
                                     {
-                                        var genericName = GetGenericMetadataName(specialization);
-                                        writer.WriteLine("__TypeOf!(" + TypeProcessor.ConvertType(specialization,true,true,true) + ")(\"" + genericName
+
+                                        var allNamespaces = GetAllNamespaces(specialization);
+                                        foreach (var @name in allNamespaces.DistinctBy(o => o).Where(p=>p!=null).Except(@namespace.Key))
+                                        {
+                                            writer.WriteLine("import {0};", @name.GetModuleName(false));
+                                        }
+                                            var genericName = GetGenericMetadataName(specialization);
+                                        string boxed;
+                                        if (specialization.TypeKind == TypeKind.Struct)
+                                        {
+                                           
+                                            boxed = "__Boxed_";
+                                        }
+                                        writer.WriteLine("__TypeOf!(" + TypeProcessor.ConvertType(specialization,true,true,false) + "" + ")(\"" + genericName
                                             + "\");");
                                     }
                                 }
                             }
                             else
                             {
-                                
-                                writer.WriteLine("__TypeOf!(" + TypeProcessor.ConvertType(type, true, true, true) + ")(\"" + type.ContainingNamespace.FullNameWithDotCSharp() + (type.ContainingType != null ? (type.ContainingType.Name + "+") : "") + type.MetadataName + "\");");
+
+                                var allNamespaces = GetAllNamespaces((INamedTypeSymbol) type);
+                                foreach (var @name in allNamespaces.DistinctBy(o => o).Where(p => p != null).Except(@namespace.Key))
+                                {
+                                    writer.WriteLine("import {0};", @name.GetModuleName(false));
+                                }
+                                var genericName = GetGenericMetadataName((INamedTypeSymbol) type);
+                                writer.WriteLine("__TypeOf!(" + TypeProcessor.ConvertType(type, true, true, false) + ")(\"" + genericName
+                                           + "\");");
+                                //                                writer.WriteLine("__TypeOf!(" + TypeProcessor.ConvertType(type, true, true, true) + ")(\"" + type.ContainingNamespace.FullNameWithDotCSharp() + (type.ContainingType != null ? (type.ContainingType.Name + "+") : "") + type.MetadataName + "\");");
                             }
                         }
                         writer.CloseBrace();
@@ -139,7 +170,18 @@ namespace SharpNative.Compiler
             }
         }
 
-        private static string GetGenericMetadataName(this INamedTypeSymbol specialization)
+        private static List<INamespaceSymbol> GetAllNamespaces(INamedTypeSymbol specialization)
+        {
+            var list = new List<INamespaceSymbol>();
+            list.Add(specialization.ContainingNamespace);
+            foreach (var arg in specialization.TypeArguments)
+            {
+             list.Add(arg.ContainingNamespace);   
+            }
+            return list;
+        }
+
+        public static string GetGenericMetadataName(this INamedTypeSymbol specialization)
         {
             //Todo Add support for Arrays and Inner classes
             return specialization.ContainingNamespace.FullNameWithDotCSharp() + specialization.MetadataName +
@@ -265,7 +307,7 @@ namespace SharpNative.Compiler
 
 
                 //Replace Object Initializers
-                ProcessObjectInitializers(lastTemporaryIndex);
+              //  ProcessObjectInitializers(lastTemporaryIndex);
 
                 //Change order of invocations to take care of default arguments and named parameters
                 FixupInvocations();
@@ -335,7 +377,7 @@ namespace SharpNative.Compiler
                 {
                     Syntax = o,
                     Symbol = GetModel(o).GetDeclaredSymbol(o),
-                    TypeName = WriteType.TypeName(GetModel(o).GetDeclaredSymbol(o))
+                    TypeName =  WriteType.TypeName(GetModel(o).GetDeclaredSymbol(o))
                 }).Where(k => k.Symbol.ContainingType == null) // Ignore all nested classes
                 .GroupBy(o => o.Symbol.ContainingNamespace.FullNameWithDot() + o.TypeName)
                 .ToList();
@@ -362,6 +404,7 @@ namespace SharpNative.Compiler
                         {
                             try
                             {
+                                Context.LastNode = type.First().Syntax;
                                 WriteType.Go();
                             }
                             catch (Exception ex)

@@ -1,9 +1,11 @@
 module System.Reflection.Namespace;
 import System.Namespace;
 import System.__Internal.Namespace;
+import System.Reflection.Internal;
 import std.traits;
 import std.string;
 import std.array;
+
 
 alias __Delegate!(bool delegate(Type m, NObject filterCriteria)) TypeFilter;
 
@@ -24,6 +26,24 @@ public class FieldInfo: NObject
 		//std.stdio.writeln("getting value for " ~ Name.Text);
 		//return _S("failed");
 		return DeclaringType.__GetValue(Name,object);
+	}
+}
+
+public class MethodInfo: NObject
+{
+	Type DeclaringType;
+
+	String Name;
+
+	//ValueMetadata __Meta;
+
+	NObject Invoke(NObject object, Array_T!(NObject) parameters)
+	{
+		//std.stdio.writeln("getting value for " ~ Name.Text);
+		//return _S("failed");
+		//return DeclaringType.__GetValue(Name,object);
+
+		return null;
 	}
 }
 
@@ -80,8 +100,17 @@ public class Type_T(T):Type
 	{
 		public override NObject Create()
 		{
-		
-			return BOX!(T)(__TypeNew!(T)());
+		//	Console.WriteLine("Creating instance of "  ~ T.stringof);
+
+			auto newType=__TypeNew!(T)();
+			//Console.WriteLine("Created instance of "  ~ typeof(newType).stringof);
+
+			auto boxed= BOX!(T)(newType);
+
+			//Console.WriteLine("returning object of "  ~ typeof(boxed).stringof);
+
+			return boxed;
+
 		}
 	}
 	else
@@ -91,6 +120,20 @@ public class Type_T(T):Type
 			return null; // TODO: Make it possible to create an instance of an Exception			
 		}
 	}
+
+	public override Array_T!(String) GetMember(String name)
+	{
+		return null;
+	}
+
+	public override MethodInfo GetMethod(String name)
+	{
+		return null;//&__traits(getMember,T);
+	}
+
+	string[] __members;
+	void*[] __memberPointers;
+
 
 	this(string csName=null)
 	{
@@ -105,7 +148,7 @@ public class Type_T(T):Type
 			__Meta = createMetadata!(T);
 		}
 
-
+		
 
 		if(is(T==class) || is(T==struct) || is(T==interface))
 		{
@@ -211,7 +254,31 @@ public class Type_T(T):Type
 			//			Console.WriteLine("this is an interface");
 			IsInterface = true;
 		}
+
+		//members
+		/*static if(is(T==interface)||is(T==class)||is(T==struct))
+		{
+			enum allMembers = __traits(allMembers, T);
+			foreach(member; allMembers) // compile time
+			{
+				__members ~= member;
+				__memberPointers~=cast(void*) &__traits(getMember,T,member);
+			}
+			
+		}
+
+
 		
+//runtime
+		Console.WriteLine(_S("Members Of :") + FullName);
+		int count = 0;
+		foreach(member; __members) 
+		{
+
+			Console.WriteLine(member);
+			Console.WriteLine(__memberPointers[count]);
+
+		}*/
 
 	}
 

@@ -41,7 +41,7 @@ namespace SharpNative.Compiler
             return TypeName(TypeProcessor.GetTypeInfo(expression).Type.As<INamedTypeSymbol>());
         }
 
-        public static string TypeName(INamedTypeSymbol symbol)
+        public static string TypeName(INamedTypeSymbol symbol)//TODO: fix this
         {
             var fields = symbol.GetMembers().OfType<IPropertySymbol>();
 

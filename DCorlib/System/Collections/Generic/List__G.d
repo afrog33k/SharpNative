@@ -1,16 +1,16 @@
-module System.Collections.Generic.List_T;
+module System.Collections.Generic.List__G;
 import System.Namespace;
 import System.Collections.Namespace;
 import System.Collections.Generic.Namespace;
-import System.Collections.Generic.IList_T;
+import System.Collections.Generic.IList__G;
 
 
-private class List_T_Enumerator_T(T):IEnumerator_T!(T)
+private class List__G_Enumerator_T(T):IEnumerator_T!(T)
   {
     int index = -1;
-    List_T!(T) _list;
+    List__G!(T) _list;
 
-    this(List_T!(T) array)
+    this(List__G!(T) array)
     {
       _list = array;
       //Console.WriteLine(_S("inted with {0}"), BOX!(int)(index));
@@ -54,7 +54,7 @@ private class List_T_Enumerator_T(T):IEnumerator_T!(T)
 /**
  * Represents a list of elements that can be accessed by index.
  */
-class List_T(T) : IList_T!(T) {
+class List__G(T) : IList__G!(T) {
   
   private enum DEFAULT_CAPACITY = 4;
   
@@ -208,12 +208,12 @@ class List_T(T) : IList_T!(T) {
   
 IEnumerator IEnumerable_GetEnumerator()
 {
-  return new List_T_Enumerator_T!(T)(this);
+  return new List__G_Enumerator_T!(T)(this);
 }
 
 IEnumerator_T!(T) IEnumerable_T_GetEnumerator()
 {
-  return new List_T_Enumerator_T!(T)(this);
+  return new List__G_Enumerator_T!(T)(this);
 }
 
  int ICollection_T_Count()
@@ -231,17 +231,17 @@ bool ICollection_T_Contains(T item)
   return Contains(item);;
 }
 
-void IList_T_RemoveAt(int index)
+void IList__G_RemoveAt(int index)
 {
   return RemoveAt(index);
 }
 
-void IList_T_Insert(int index, T item)
+void IList__G_Insert(int index, T item)
 {
   Insert(index,item);
 }
 
-int IList_T_IndexOf(T item)
+int IList__G_IndexOf(T item)
 {
   return IndexOf(item);
 }
@@ -356,8 +356,8 @@ bool ICollection_T_Remove(T item)
   
   /**
    */
-  final List_T FindAll(Predicate!(T) match) {
-    auto list = new List_T;
+  final List__G FindAll(Predicate!(T) match) {
+    auto list = new List__G;
     for (auto i = 0; i < size_; i++) {
       if (match(_items[i]))
         list.ICollection_T_Add(_items[i]);
@@ -411,8 +411,8 @@ bool ICollection_T_Remove(T item)
   
   /**
    */
-  final List_T!(T) GetRange(int index, int count) {
-    auto list = new List_T!(T)(count);
+  final List__G!(T) GetRange(int index, int count) {
+    auto list = new List__G!(T)(count);
     list._items[0 .. count] = _items[index .. index + count];
     list.size_ = count;
     return list;
@@ -514,7 +514,7 @@ bool ICollection_T_Remove(T item)
 
 
 
-//module System.Collections.Generic.List_T;
+//module System.Collections.Generic.List__G;
 
 
 //import System.Namespace;
@@ -522,7 +522,7 @@ bool ICollection_T_Remove(T item)
 //import System.Collections.Namespace;
 ////import System.Collections.ObjectModel.Namespace;
 
-// class List_T( T ) :  NObject ,  IList_T!(T) ,  System.Collections.Namespace.IList
+// class List__G( T ) :  NObject ,  IList__G!(T) ,  System.Collections.Namespace.IList
 //{
 
 //  Array_T!(T) _items = cast(Array_T!(T)) null;
@@ -709,7 +709,7 @@ bool ICollection_T_Remove(T item)
   
 //}
 
-//public List_T!(TOutput) ConvertAll (  TOutput ) (Converter_TInput_TOutput!(T, TOutput) converter) 
+//public List__G!(TOutput) ConvertAll (  TOutput ) (Converter_TInput_TOutput!(T, TOutput) converter) 
 //  {
 
 //    if (converter is null)
@@ -718,7 +718,7 @@ bool ICollection_T_Remove(T item)
 //      throw  new ArgumentNullException( (new String ("converter")));
     
 //}
-//     List_T!(TOutput)  u =  new List_T!(TOutput)(_size);
+//     List__G!(TOutput)  u =  new List__G!(TOutput)(_size);
 //    for (int i = 0;i<this._size;i++)
 //      {
 
@@ -754,7 +754,7 @@ bool ICollection_T_Remove(T item)
 //public bool Exists(Predicate!(T) csmatch) 
 //    {
 
-//      List_T!(T).CheckMatch(csmatch);
+//      List__G!(T).CheckMatch(csmatch);
 //      for (int i = 0;i<this._size;i++)
 //        {
 
@@ -773,7 +773,7 @@ bool ICollection_T_Remove(T item)
 //public T Find(Predicate!(T) csmatch) 
 //      {
 
-//        List_T!(T).CheckMatch(csmatch);
+//        List__G!(T).CheckMatch(csmatch);
 //        for (int i = 0;i<this._size;i++)
 //          {
 
@@ -801,10 +801,10 @@ bool ICollection_T_Remove(T item)
         
 //}
 
-//public List_T!(T) FindAll(Predicate!(T) csmatch) 
+//public List__G!(T) FindAll(Predicate!(T) csmatch) 
 //        {
 
-//          List_T!(T).CheckMatch(csmatch);
+//          List__G!(T).CheckMatch(csmatch);
 //          if (this._size<=0x10000)
 //          {
 
@@ -820,7 +820,7 @@ bool ICollection_T_Remove(T item)
         
 //}
 
-//private List_T!(T) FindAllStackBits(Predicate!(T) csmatch) 
+//private List__G!(T) FindAllStackBits(Predicate!(T) csmatch) 
 //        {
 ///*
 //          //Unsafe
@@ -871,16 +871,16 @@ bool ICollection_T_Remove(T item)
                   
 //}
 //                }
-//                return ( new List_T!(T)(results, found));
+//                return ( new List__G!(T)(results, found));
               
 //}*/
 //   return null;         
 //}
 
-//private List_T!(T) FindAllList(Predicate!(T) csmatch) 
+//private List__G!(T) FindAllList(Predicate!(T) csmatch) 
 //            {
 
-//               List_T!(T)  results =  new List_T!(T)();
+//               List__G!(T)  results =  new List__G!(T)();
 //              for (int i = 0;i<this._size;i++)
 //                {
 
@@ -898,7 +898,7 @@ bool ICollection_T_Remove(T item)
 //public int FindIndex(Predicate!(T) csmatch) 
 //              {
 
-//                //List_T!(T).CheckMatch(csmatch);
+//                //List__G!(T).CheckMatch(csmatch);
 //               // return (Array_T.GetIndex!( T )(_items, 0, _size, csmatch));
 //              return -1;
 //}
@@ -906,7 +906,7 @@ bool ICollection_T_Remove(T item)
 //public int FindIndex(int startIndex, Predicate!(T) csmatch) 
 //              {
 
-//                //List_T!(T).CheckMatch(csmatch);
+//                //List__G!(T).CheckMatch(csmatch);
 //                //CheckStartIndex(startIndex);
 //                //return (Array_T.GetIndex!( T )(_items, startIndex, this._size-startIndex, csmatch));
 //              return -1;
@@ -916,7 +916,7 @@ bool ICollection_T_Remove(T item)
 //public int FindIndex(int startIndex, int count, Predicate!(T) csmatch) 
 //              {
 
-//                //List_T!(T).CheckMatch(csmatch);
+//                //List__G!(T).CheckMatch(csmatch);
 //                //CheckRangeOutOfRange(startIndex, count);
 //                //return (Array_T.GetIndex!( T )(_items, startIndex, count, csmatch));
 //              return -1;
@@ -926,7 +926,7 @@ bool ICollection_T_Remove(T item)
 //public T FindLast(Predicate!(T) csmatch) 
 //              {
 
-//                //List_T!(T).CheckMatch(csmatch);
+//                //List__G!(T).CheckMatch(csmatch);
 //                //int i = Array_T.GetLastIndex!( T )(_items, 0, _size, csmatch);
 //                //return ((i==-1) ? (null) : (this[i]));
 //              return cast(T) null;
@@ -935,7 +935,7 @@ bool ICollection_T_Remove(T item)
 //public int FindLastIndex(Predicate!(T) csmatch) 
 //              {
 
-//                //List_T!(T).CheckMatch(csmatch);
+//                //List__G!(T).CheckMatch(csmatch);
 //                //return (Array_T.GetLastIndex!( T )(_items, 0, _size, csmatch));
 //              return -1;
               
@@ -944,7 +944,7 @@ bool ICollection_T_Remove(T item)
 //public int FindLastIndex(int startIndex, Predicate!(T) csmatch) 
 //              {
 
-//                //List_T!(T).CheckMatch(csmatch);
+//                //List__G!(T).CheckMatch(csmatch);
 //                //CheckStartIndex(startIndex);
 //                //return (Array_T.GetLastIndex!( T )(_items, 0, startIndex+1, csmatch));
 //              return -1;
@@ -954,7 +954,7 @@ bool ICollection_T_Remove(T item)
 //public int FindLastIndex(int startIndex, int count, Predicate!(T) csmatch) 
 //              {
 
-////                List_T!(T).CheckMatch(csmatch);
+////                List__G!(T).CheckMatch(csmatch);
 ////                CheckStartIndex(startIndex);
 ////                if (count<0)
 ////                {
@@ -991,24 +991,24 @@ bool ICollection_T_Remove(T item)
                 
 //}
 
-//public List_T_EnumeratorT!(T) GetEnumerator() 
+//public List__G_EnumeratorT!(T) GetEnumerator() 
 //{
 
-//                  return new List_T_EnumeratorT!(T)(this);
+//                  return new List__G_EnumeratorT!(T)(this);
                 
 //}
 
-//public List_T!(T) GetRange(int index, int count) 
+//public List__G!(T) GetRange(int index, int count) 
 //                {
 
 //                  CheckRange(index, count);
 //                   Array_T!(T)  tmpArray =  new Array_T!(T )(count);
 //                  //Array_T.Copy(_items, index, tmpArray, 0, count);
-//                  return ( new List_T!(T)(tmpArray, count));
+//                  return ( new List__G!(T)(tmpArray, count));
                 
 //}
 
-//public int IList_T_IndexOf(T item) 
+//public int IList__G_IndexOf(T item) 
 //                {
 
 //                  //return (Array_T.IndexOf!( T )(_items, item, 0, _size));
@@ -1102,7 +1102,7 @@ bool ICollection_T_Remove(T item)
                 
 //}
 
-//public void IList_T_Insert(int index, T item) 
+//public void IList__G_Insert(int index, T item) 
 //                {
 
 //                  CheckIndex(index);
@@ -1176,7 +1176,7 @@ bool ICollection_T_Remove(T item)
 ////                  foreach (t; enumerable)
 ////                  {
 
-////                                        IList_T_Insert(index++, t);
+////                                        IList__G_Insert(index++, t);
                   
 ////}
                 
@@ -1237,11 +1237,11 @@ bool ICollection_T_Remove(T item)
 //public bool ICollection_T_Remove(T item) 
 //                {
 
-//                  int loc = IList_T_IndexOf(item);
+//                  int loc = IList__G_IndexOf(item);
 //                  if (loc!=-1)
 //                  {
 
-//                    IList_T_RemoveAt(loc);
+//                    IList__G_RemoveAt(loc);
                   
 //}
 //                  return (loc!=-1);
@@ -1251,7 +1251,7 @@ bool ICollection_T_Remove(T item)
 //public int RemoveAll(Predicate!(T) csmatch) 
 //                {
 
-//                  List_T!(T).CheckMatch(csmatch);
+//                  List__G!(T).CheckMatch(csmatch);
 //                  int i = 0;
 //                  int j = 0;
 //                  for (i=0;i<this._size;i++)
@@ -1292,7 +1292,7 @@ bool ICollection_T_Remove(T item)
                     
 //}
 
-//public void IList_T_RemoveAt(int index) 
+//public void IList__G_RemoveAt(int index) 
 //                    {
 
 //                      if (index<0||(cast(long)index)>=(cast(long)this._size))
@@ -1397,7 +1397,7 @@ bool ICollection_T_Remove(T item)
 //public bool TrueForAll(Predicate!(T) csmatch) 
 //                    {
 
-//                      List_T!(T).CheckMatch(csmatch);
+//                      List__G!(T).CheckMatch(csmatch);
 //                      for (int i = 0;i<this._size;i++)
 //                        {
 
@@ -1573,7 +1573,7 @@ bool ICollection_T_Remove(T item)
 //                        try
 //                        {
 
-//                          return (IList_T_IndexOf(AsCast!( T )(item)));
+//                          return (IList__G_IndexOf(AsCast!( T )(item)));
                         
 //}
 //                        catch(
@@ -1597,7 +1597,7 @@ bool ICollection_T_Remove(T item)
 //                        try
 //                        {
 
-//                          IList_T_Insert(index, AsCast!( T )(item));
+//                          IList__G_Insert(index, AsCast!( T )(item));
 //                          return;
                         
 //}

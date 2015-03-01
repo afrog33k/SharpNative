@@ -82,10 +82,12 @@ namespace SharpNative.Compiler
 
         public static string TransformIdentifier(string ident, ITypeSymbol type =null)
         {
+            ident = ident.Trim();//Cant have spaces in identifiers
+            var name = ident;
             //limited support for badly named identifiers
             if (ident.StartsWith("__cs"))
             {
-                return "__" + ident;
+                name =  "__" + ident;
             }
 
             if (type != null)
@@ -93,20 +95,21 @@ namespace SharpNative.Compiler
                 //Special Classes
                 if (type.SpecialType == SpecialType.System_Object)
                 {
-                    return "NObject";
+                    name =  "NObject";
+                    return name;
                 }
 
                 if (type == Context.Exception)
                 {
-                    return "NException"; //TODO: this is not right, we can have object defined in another namespace ?
+                    name = "NException"; //TODO: this is not right, we can have object defined in another namespace ?
+                    return name;
+
                 }
+
             }
 
 
-
-
-
-            switch (ident)
+            switch (name)
             {
                 case "version":
                 case "body":
@@ -114,6 +117,19 @@ namespace SharpNative.Compiler
                 case "typeof":
                 case "immutable":
                 case "ubyte":
+                case "lazy":
+                case "scope":
+                case "shared":
+                case "Error":
+                case "toString":
+                case "opEquals":
+                case "opCmp":
+                case "opCall":
+                case "toHash":
+                case "final":
+                case "synchronized":
+                case "assert":
+                case "enforce":
                 case "typeid":
                 case "alias":
                 case "inout":
@@ -123,13 +139,28 @@ namespace SharpNative.Compiler
                 case "__Event":
                 case "BOX":
                 case "UNBOX":
-                    return "__cs" + ident;
+                    name= "__cs" + ident;
+                    break;
                 case "Object": // Dlang does not accept defining Object / Exception in any module except object.di
                 case "Exception": // Dlang does not accept defining Object / Exception in any module except object.di
-                    return "__CS" + ident;
+                    name = "__CS" + ident;
+                    break;
                 default:
-                    return ident;
+                    name = ident;
+                    break;
             }
+
+            if (type != null)
+            {
+                var tnamed = type as INamedTypeSymbol;
+                if (tnamed != null && tnamed.IsGenericType)
+                {
+                    name += "__G";
+                }
+            }
+
+
+            return name;
         }
     }
 }

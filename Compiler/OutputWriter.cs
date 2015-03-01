@@ -87,6 +87,7 @@ namespace SharpNative.Compiler
 
 
         public bool IsNamespace;
+        public bool FileExists;
 
         public void Dispose()
         {
@@ -148,6 +149,9 @@ namespace SharpNative.Compiler
                         var @namespace =
                             Context.Instance.Type.ContainingNamespace.FullName().RemoveFromEndOfString(".Namespace");
                         var moduleName = @namespace + "." + Context.Instance.TypeName;
+
+                        if (!FileExists)
+
                         finalBuilder.Append("module " + moduleName + ";\n\n");
 
                         Imports.Add(Context.Instance.Type);
@@ -188,22 +192,41 @@ namespace SharpNative.Compiler
                                     
                                 }
                             }
+
+                           
                             //Add usings
                             foreach (var @anamespace in Context.Instance.UsingDeclarations)
                             {
-                                var name = @anamespace.Name.ToFullString() + ".Namespace";
-                                if (!currentImports.Contains(name))
+                                if (@anamespace.Alias == null) //Aliases are not imports
                                 {
-                                    finalBuilder.Append("import " + name + ";\n");
-                                    currentImports.Add(name);
+                                    var name = @anamespace.Name.ToFullString() + ".Namespace";
+                                    if (!currentImports.Contains(name))
+                                    {
+                                        finalBuilder.Append("import " + name + ";\n");
+                                        currentImports.Add(name);
+                                    }
+                                }
+                               
+                            }
+
+                            foreach (var type in Context.Instance.NamespaceAliases)
+                            {
+                                var name = type.Key.FullName(true,false);
+                                if (name!=type.Value)
+                                {
+                                    
+                                    finalBuilder.Append("alias " + name + " " + type.Value + ";\n");
+                                    // currentImports.Add(name);
                                 }
                             }
+
+
                             //Clear used types first
                             //TypeProcessor.ClearUsedTypes();
                             //Add aliases
                             foreach (var type in Context.Instance.Aliases)
                             {
-                                var name = type.Key.GetModuleName();
+                                var name = type.Key.GetModuleName(false);
                                // if (!currentImports.Contains(name))
                                 {
                                     finalBuilder.Append("alias " + name + " " + type.Value+ ";\n");
@@ -224,10 +247,18 @@ namespace SharpNative.Compiler
 
                         if (!(this is TempWriter))
                         {
-                            File.WriteAllText(_path, finalBuilder.ToString());
+                            if (!FileExists)
+                            {
+                                File.WriteAllText(_path, finalBuilder.ToString());
+                            }
+                            else
+                            {
+                                File.AppendAllText(_path, finalBuilder.ToString());
+
+                            }
 
                             //Set read-only on generated files
-//                        File.SetAttributes(_path, FileAttributes.ReadOnly);
+                            //                        File.SetAttributes(_path, FileAttributes.ReadOnly);
                         }
                     }
                 }

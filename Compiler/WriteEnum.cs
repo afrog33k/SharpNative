@@ -40,6 +40,9 @@ namespace SharpNative.Compiler
             writer.WriteLine("public " + TypeProcessor.ConvertType(Context.Instance.Type.EnumUnderlyingType) + " __Value;");
             writer.WriteLine("alias __Value this;");
 
+            writer.WriteLine("public enum __IsEnum = true; // Identifies struct as enum");
+
+            
 
             writer.WriteLine(string.Format("public this({0} value)", TypeProcessor.ConvertType(Context.Instance.Type.EnumUnderlyingType)));
             writer.OpenBrace();
@@ -50,7 +53,7 @@ namespace SharpNative.Compiler
             writer.WriteLine();
             writer.WriteLine("public Type GetType()");
             writer.OpenBrace();
-            writer.WriteLine("return __Value.GetType();");
+            writer.WriteLine("return __TypeOf!(typeof(this));");
             writer.CloseBrace();
 
             long lastEnumValue = 0;
@@ -121,108 +124,139 @@ namespace SharpNative.Compiler
 
             var baseString = "";
 
-           
-
-            writer.WriteLine("public static class __Boxed_" + " " +
-                                 //(genericArgs.Any() ? ("( " + (string.Join(" , ", genericArgs.Select(o => o)) + " )")) : "") +//Internal boxed should not be generic
-                                 ": Boxed!(" + typeName + ")" + baseString);
-
-            writer.OpenBrace();
-
-
-
-            writer.WriteLine("import std.traits;");
-
-            var members = new List<ISymbol>();
-
-           
-
-            //  foreach (var baseType in bases.Where(o => o.TypeKind == TypeKind.Interface))
-            //{
-
-            var ifacemembers = members.DistinctBy(k => k);//Utility.GetAllMembers(Context.Instance.Type);
-
-            foreach (var member in ifacemembers)
-            {
-                var ifacemethod =
-                    Context.Instance.Type.FindImplementationForInterfaceMember(member)
-                        .DeclaringSyntaxReferences.First()
-                        .GetSyntax();
-
-                var syntax = ifacemethod as MethodDeclarationSyntax;
-                if (syntax != null)
-                    WriteMethod.WriteIt(writer, syntax);
-
-                var property = ifacemethod as PropertyDeclarationSyntax;
-                if (property != null)
-                    WriteProperty.Go(writer, property, true);
-
-            }
-            //}
-
-            //This is required to be able to create an instance at runtime / reflection
-            //					this()
-            //					{
-            //						super(SimpleStruct.init);
-            //					}
 
             writer.WriteLine();
-            writer.WriteLine("this()");
+
+            writer.WriteLine("{0} opBinary(string op)({0} rhs)", typeName);
             writer.OpenBrace();
-            writer.WriteLine("super(__TypeNew!({0})());", typeName);
+            writer.WriteLine("return mixin(\"{0}(__Value \"~op~\" rhs.__Value)\");",typeName);
             writer.CloseBrace();
 
-            writer.WriteLine();
-            writer.WriteLine("public override Type GetType()");
+            writer.WriteLine("bool opEquals(const {0} a)", typeName);
             writer.OpenBrace();
-            writer.WriteLine("return __TypeOf!(typeof(__Value));");
+            writer.WriteLine("return a.__Value == this.__Value;", typeName);
+            writer.CloseBrace();
+
+            writer.WriteLine("bool opEquals(const {0} a)", TypeProcessor.ConvertType(Context.Instance.Type.EnumUnderlyingType));
+            writer.OpenBrace();
+            writer.WriteLine("return a == this.__Value;", typeName);
             writer.CloseBrace();
 
 
-            if (Context.Instance.Type.GetMembers("ToString").Any()) // Use better matching ?
+            writer.WriteLine("public string toString()");
+            writer.OpenBrace();
+            foreach (var membername in values)
             {
-                //					writer.WriteLine ();
-                writer.WriteLine("override String ToString()");
+                var name = WriteIdentifierName.TransformIdentifier(membername.Syntax.Identifier.ValueText);
+                writer.WriteLine("if (this == {0}.__Value)", name);
                 writer.OpenBrace();
-                writer.WriteLine("return Value.ToString();");
+                writer.WriteLine("return \"{0}\";", name);
                 writer.CloseBrace();
             }
-
-            writer.WriteLine();
-            writer.WriteLine("this(ref " + typeName + " value)");
-            writer.OpenBrace();
-            writer.WriteLine("super(value);");
+            writer.WriteLine("return std.conv.to!string(GetType().FullName.Text);");
             writer.CloseBrace();
 
-            writer.WriteLine();
-            writer.WriteLine("U opCast(U)()");
-            writer.WriteLine("if(is(U:{0}))", typeName);
-            writer.OpenBrace();
-            writer.WriteLine("return Value;");
-            writer.CloseBrace();
+            //Not needed for enum ... all enum should have a ToString function ...
+            //            writer.WriteLine("public static class __Boxed_" + " " +
+            //                                 //(genericArgs.Any() ? ("( " + (string.Join(" , ", genericArgs.Select(o => o)) + " )")) : "") +//Internal boxed should not be generic
+            //                                 ": Boxed!(" + typeName + ")" + baseString);
+            //
+            //            writer.OpenBrace();
+            //
+            //
+            //
+            //            writer.WriteLine("import std.traits;");
+            //
+            //            var members = new List<ISymbol>();
+            //
+            //           
+            //
+            //            //  foreach (var baseType in bases.Where(o => o.TypeKind == TypeKind.Interface))
+            //            //{
+            //
+            //            var ifacemembers = members.DistinctBy(k => k);//Utility.GetAllMembers(Context.Instance.Type);
+            //
+            //            foreach (var member in ifacemembers)
+            //            {
+            //                var ifacemethod =
+            //                    Context.Instance.Type.FindImplementationForInterfaceMember(member)
+            //                        .DeclaringSyntaxReferences.First()
+            //                        .GetSyntax();
+            //
+            //                var syntax = ifacemethod as MethodDeclarationSyntax;
+            //                if (syntax != null)
+            //                    WriteMethod.WriteIt(writer, syntax);
+            //
+            //                var property = ifacemethod as PropertyDeclarationSyntax;
+            //                if (property != null)
+            //                    WriteProperty.Go(writer, property, true);
+            //
+            //            }
+            //            //}
+            //
+            //            //This is required to be able to create an instance at runtime / reflection
+            //            //					this()
+            //            //					{
+            //            //						super(SimpleStruct.init);
+            //            //					}
+            //
+            //            writer.WriteLine();
+            //            writer.WriteLine("this()");
+            //            writer.OpenBrace();
+            //            writer.WriteLine("super(__TypeNew!({0})());", typeName);
+            //            writer.CloseBrace();
+            //
+            //            writer.WriteLine();
+            //            writer.WriteLine("public override Type GetType()");
+            //            writer.OpenBrace();
+            //            writer.WriteLine("return __TypeOf!(typeof(__Value));");
+            //            writer.CloseBrace();
+            //
+            //
+            //            if (Context.Instance.Type.GetMembers("ToString").Any()) // Use better matching ?
+            //            {
+            //                //					writer.WriteLine ();
+            //                writer.WriteLine("override String ToString()");
+            //                writer.OpenBrace();
+            //                writer.WriteLine("return Value.ToString();");
+            //                writer.CloseBrace();
+            //            }
+            //
+            //            writer.WriteLine();
+            //            writer.WriteLine("this(ref " + typeName + " value)");
+            //            writer.OpenBrace();
+            //            writer.WriteLine("super(value);");
+            //            writer.CloseBrace();
+            //
+            //            writer.WriteLine();
+            //            writer.WriteLine("U opCast(U)()");
+            //            writer.WriteLine("if(is(U:{0}))", typeName);
+            //            writer.OpenBrace();
+            //            writer.WriteLine("return Value;");
+            //            writer.CloseBrace();
+            //
+            //            writer.WriteLine();
+            //            writer.WriteLine("U opCast(U)()");
+            //            writer.WriteLine("if(!is(U:{0}))", typeName);
+            //            writer.OpenBrace();
+            //            writer.WriteLine("return this;");
+            //            writer.CloseBrace();
+            //
+            //            writer.WriteLine();
+            //            writer.WriteLine("auto opDispatch(string op, Args...)(Args args)");
+            //            writer.OpenBrace();
+            //            writer.WriteLine("enum name = op;");
+            //            writer.WriteLine("return __traits(getMember, Value, name)(args);");
+            //            writer.CloseBrace();
 
-            writer.WriteLine();
-            writer.WriteLine("U opCast(U)()");
-            writer.WriteLine("if(!is(U:{0}))", typeName);
-            writer.OpenBrace();
-            writer.WriteLine("return this;");
-            writer.CloseBrace();
-
-            writer.WriteLine();
-            writer.WriteLine("auto opDispatch(string op, Args...)(Args args)");
-            writer.OpenBrace();
-            writer.WriteLine("enum name = op;");
-            writer.WriteLine("return __traits(getMember, Value, name)(args);");
-            writer.CloseBrace();
-
-//            writer.WriteLine();
-//            writer.WriteLine("public override Type GetType()");
-//            writer.OpenBrace();
-//            writer.WriteLine("return __Value.GetType();");
-//            writer.CloseBrace();
+            //            writer.WriteLine();
+            //            writer.WriteLine("public override Type GetType()");
+            //            writer.OpenBrace();
+            //            writer.WriteLine("return __Value.GetType();");
+            //            writer.CloseBrace();
 
 
-            writer.CloseBrace();
+            //            writer.CloseBrace();
 
             writer.CloseBrace();
 //            writer.Write(";");

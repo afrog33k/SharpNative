@@ -88,7 +88,16 @@ struct Locale
 
 class __UNBOUND: NObject // object used to keep unbound generic types, for sharing and reflection
 {
+	NObject __Value;
+	public this(NObject object)
+	{
+		__Value=object;
+	}
 
+	T opCast(T)() // __UNBOUND doesn't exist ;)
+	{
+		return cast(T) __Value;
+	}
 }
 
 template __Tuple(E...)
@@ -101,10 +110,10 @@ static void __dummyFunc()
 	
 }
 
-struct IntPtr//:Boxed!(int*)
+class IntPtr//:Boxed!(int*)
 {
 	int* m_value;
-	public static  IntPtr Zero = IntPtr(0);
+	public __gshared const  IntPtr Zero = new IntPtr(0);
 
 	this(long pointer)
 	{
@@ -115,18 +124,18 @@ struct IntPtr//:Boxed!(int*)
 	static IntPtr op_Explicit(long pointer)
 	{
 		
-		return IntPtr(pointer);
+		return new IntPtr(pointer);
 	}
 
 
 
-	class __Boxed_:Boxed!(IntPtr)
+	/*class __Boxed_:Boxed!(IntPtr)
 	{
 		this(ref IntPtr ptr)
 		{
 			super(ptr);
 		}
-	}
+	}*/
 
 }
 
@@ -639,6 +648,12 @@ class __Delegate(T): Delegate
 		return this;
 	}
 
+	R opCast(R)()
+	if(!is(R==class) &&!is(R==T))
+	{
+			return cast(R)this;
+	}
+
 
 	ReturnType!T opCall(U ...)(U args)
 	{
@@ -978,7 +993,7 @@ public static string toString(T)(T value) if(is(T==float))
 }
 
 // we have to give it another name ... damn :(
-public class NException : Exception//: Exception  
+public class NException : Exception  
 {
 	
 	
@@ -1727,40 +1742,18 @@ template Func_TResult( TResult )
 //	alias TResult delegate(T input) Func_T_TResult;
 //}
 
-//template BOX(T)
-//{
-
 static Boxed!T BOX(T)(T value)
-if(is(T == struct))
+if(is(T == struct) && !__traits(compiles,T.__IsEnum==true))
 {
-	//writeln("boxing a struct");
-	//writeln("this is a struct: " ~ name);
-	//auto name = fullyQualifiedName!(T) ~ ".__Boxed_";
-	//	auto name = fullyQualifiedName!(T)[0..fullyQualifiedName!(T).lastIndexOf(T.stringof)]~ "__Boxed_" ~ T.stringof;
-			//writeln("this is a struct: " ~ name);
-			//writeln(new T.__Boxed_());
-
-			//return new NObject();
-		auto boxedStruct= new T.__Boxed_(value);//cast(Boxed!(T))Object.factory(name); // Object.Factory cannot create instance of nested class ... why ? ... I am going to have to create my own class generator/registry
-		//writeln(boxedStruct is null);
-		//boxedStruct.Value = value;
-		return boxedStruct;
-	//return null;
-		 //mixin("new " ~ fullyQualifiedName!(T)[0..fullyQualifiedName!(T).lastIndexOf(T.stringof)]~ "__Boxed_" ~ T.stringof ~ "(value)");
+	return new T.__Boxed_(value);
 }
 
-//static NObject BOX(T)(__Property!(T) value)
-////if(is(R:__Property!(T)))
-//{
-//	return BOX!(T)(value._getter());
-//}
-
-/*static NObject BOX(T)(T value)
-if(is(T == class))
+static BoxedEnum!T BOX(T)(T value)
+if(is(T==struct) && __traits(compiles,T.__IsEnum==true))
 {
-		return cast(NObject)value;
-}*/
-
+	//Console.WriteLine(__traits(compiles,T.__IsEnum==true));
+	return new BoxedEnum!(T)(value);
+}
 static T BOX(T)(NObject value)
 if(is(T == class))
 {
@@ -1771,6 +1764,18 @@ static T BOX(T)(Object value)
 if(is(T == class))
 {
 	return cast(T)value;
+}
+
+
+static Boxed!(T) BOX(T)(T value)
+if(!is(T==class) && !is(T==struct) &&!is(T==enum))
+{
+
+	auto boxedPrimitive = __BOXPrimitive(value);
+	if(boxedPrimitive !is null)
+		return cast(Boxed!(T))boxedPrimitive;
+
+	return new Boxed!(T)(value);
 }
 
 static Boxed!__Void BOX(T)(__Void value)
@@ -1834,27 +1839,27 @@ if(is(T==ulong))
 }
 
 Type __GetBoxedType(T)()
-	if(is(T==struct))
+if(is(T==struct) && !__traits(compiles,T.__IsEnum==true)) //Enums are now just structs with lots of magic
 {
 	auto boxedStruct= __TypeOf!(T.__Boxed_);
 	return boxedStruct;
 }
 
 Type __GetBoxedType(T)()
-	if(is(T==enum))
+if(is(T==struct) && __traits(compiles,T.__IsEnum==true)) //Enums are now just structs with lots of magic
 {
 	return __TypeOf!(BoxedEnum!(T));
 }
 
 Type __GetBoxedType(T)()
-	if(is(T==class))
+if(is(T==class))
 {
 	return __TypeOf!(T);
 }
 
 Type __GetBoxedType(T)()
-	if(!is(T==class) && (!is(T==enum))&& (!is(T==struct))&& (!is(T==ulong))&& (!is(T==long)) && (!is(T==uint))&& (!is(T==int))&& (!is(T==ubyte)) && (!is(T==byte)) && (!is(T==double))&& (!is(T==wchar))
-	&& (!is(T==float)))
+	if( !is(T==class) && (!is(T==enum))&& (!is(T==struct))&& (!is(T==ulong))&& (!is(T==long)) && (!is(T==uint))&& (!is(T==int))&& (!is(T==ubyte)) && (!is(T==byte)) && (!is(T==double))&& (!is(T==wchar))
+	&& !is(T==float) && !__traits(compiles,T.__IsEnum==true) )
 {
 	return __TypeOf!(T);
 }
@@ -1905,32 +1910,19 @@ NObject __BOXPrimitive(T)(T value)
 		return new System.UInt64.UInt64(value);
 	}
 
-	static if(is(T==enum))
-	{
-		return new BoxedEnum!(T)(value);
-	}
+	
 
+//Enums are now just structs with lots of magic
 
+	static if(is(T==struct) && __traits(compiles,T.__IsEnum==true))
+	//	static if(is(T==enum))
+		{
+			return new BoxedEnum!(T)(value);
+		}
 
 	return null; // This is not a primitive
 }
 
-static BoxedEnum!(T) BOX(T)(T value)
-if(is(T==enum))
-{
-	return new BoxedEnum!(T)(value);
-}
-
-static Boxed!(T) BOX(T)(T value)
-if(!is(T==class) && !is(T==struct) &&!is(T==enum))
-{
-
-	auto boxedPrimitive = __BOXPrimitive(value);
-	if(boxedPrimitive !is null)
-		return cast(Boxed!(T))boxedPrimitive;
-
-	return new Boxed!(T)(value);
-}
 //}
 
 //template UNBOX(T)
@@ -2131,9 +2123,18 @@ bool IsCast(T, U)(U obj)  if (is(T == interface))// && is(U :NObject))
 	}
 
 	static T Cast(T,U)(U object)
-	if(!is(U==class) &&!is(U==interface))//is(U==enum) || is(U==struct))
+	if((!is(U==class) &&!is(U==interface))&&!(is(T==interface) && is(U==struct)))//is(U==enum) || is(U==struct))
 	{
 		return cast(T)object;
+	}
+
+	
+
+	static T Cast(T,U)(U object)
+	if(is(U==struct) && is(T==interface))
+	{
+	//	Console.WriteLine("Converting struct to interface");
+		return cast(T)BOX!(U)(object); //UNBOX!(T)(cast(NObject)object);
 	}
 
 	static T Cast(T,U)(U object)
@@ -2162,6 +2163,14 @@ static T AsCast(T,U)(U object)
 if(is(U==interface) && is(T==struct))
 {
 return UNBOX!(T)(cast(NObject)object);
+}
+
+
+static T AsCast(T,U)(U object)
+if(is(U==struct) && is(T==interface))
+{
+	Console.WriteLine("Converting struct to interface");
+	return cast(T)BOX!(U)(object); //UNBOX!(T)(cast(NObject)object);
 }
 
 
@@ -2547,12 +2556,13 @@ class OutOfMemoryException : NException {
 	
 }
 
-class TypeMetadata{}
 
 //Basic System.Type, to support for enums for now
 
 import System.__Internal.Namespace;
+import System.Reflection.Internal;
 import System.Reflection.Namespace;
+
 
 public class Type:NObject
 {
@@ -2578,6 +2588,16 @@ public class Type:NObject
 	}
 
 	public Array_T!(String) GetMembers(string name="")
+	{
+		return null;
+	}
+
+	public Array_T!(String) GetMember(String name)
+	{
+		return null;
+	}
+
+	public MethodInfo GetMethod(String name)
 	{
 		return null;
 	}
@@ -2672,18 +2692,13 @@ static Type[TypeInfo] CachedTypes;// = ["":""];
 
 
 public static Type_T!(T.__Boxed_) __TypeOf(T)(string csName=null)
-if(is(T==struct))
+if(is(T==struct) && !__traits(compiles, T.__IsEnum==true))
 {
-
 
 	auto info = typeid(T);
 
-//	Console.WriteLine("finding " ~ info.toString);
-
-//	writeln(CachedTypes.toString);s
 	if(info in CachedTypes)
 	{
-//		Console.WriteLine("found " ~ info.toString);
 
 		return cast(Type_T!(T.__Boxed_)) CachedTypes[info];
 	}
@@ -2696,23 +2711,36 @@ if(is(T==struct))
 }
 
 
+public static Type_T!(T) __TypeOf(T)(string csName=null)
+if(is(T==struct) && __traits(compiles, T.__IsEnum==true))
+{
+
+	auto info = typeid(T);
+
+	if(info in CachedTypes)
+	{
+
+		return cast(Type_T!(T)) CachedTypes[info];
+	}
+
+	auto type= new Type_T!(T)(csName);
+
+	CachedTypes[info] = type;
+
+	return type;
+}
+
 
 
 public static Type_T!(T) __TypeOf(T)(string csName=null)
 if(!is(T==struct))
 {
-	//At this point look up / create type info for this type ... Name etc // this way reflection is OnDemand / OnUsage 
 
-	//static if(is(T==struct))
 	auto  info = typeid(T);
 
-//	Console.WriteLine("looking up " ~ info.toString);
-//	writeln(CachedTypes.toString);
 	if(info in CachedTypes)
 	{
-//		Console.WriteLine("found " ~ info.toString);
 		return cast(Type_T!(T)) CachedTypes[info];
-
 	}
 
 	auto type= new Type_T!(T)(csName);
@@ -2789,6 +2817,8 @@ public class Enum : NObject
 
 		throw new ArgumentException(_S(""));
 	}
+
+
 }
 
 //PInvoke Support

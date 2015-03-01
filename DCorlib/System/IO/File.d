@@ -19,5 +19,15 @@ class File : NObject
 		
 		std.file.write(to!(string)(filename.Text), cast(char[])cast(wchar[])text.Text);
 	}
+
+	public static void WriteAllBytes(String filename, Array_T!(ubyte) bytes)
+	{
+		std.file.write(to!(string)(filename.Text), bytes.Items);
+	}
+
+	public static Array_T!(ubyte) ReadAllBytes(String filename)
+	{
+		return new Array_T!(ubyte)(__CC!(ubyte[])(cast(ubyte[])std.file.read(to!(string)(filename.Text))));
+	}
 }
 

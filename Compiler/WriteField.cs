@@ -144,7 +144,7 @@ namespace SharpNative.Compiler
 
                 else
                 {
-                    if (typeinfo.Type.TypeKind != TypeKind.Struct)
+                   // if (typeinfo.Type.TypeKind != TypeKind.Struct)
                     {
                         writer.Write(" = ");
                         if (typeinfo.Type.TypeKind == TypeKind.Delegate)

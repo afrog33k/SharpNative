@@ -78,16 +78,24 @@ namespace SharpNative.Compiler
                 else
                 {
 
-                    //Number literals //TODO: make these convert to D Literal Suffixes
-                    var suffix = realTypeSuffixes.FirstOrDefault (j => str.EndsWith (j));
-                    if (suffix != null)
-						str = str.Replace(suffix,drealTypeSuffixes[Array.IndexOf(realTypeSuffixes,suffix)]);
-					else
-					{
-						suffix = integerTypeSuffixes.FirstOrDefault (j => str.EndsWith (j));
-						if (suffix != null)
-							str = str.Replace(suffix,dintegerTypeSuffixes[Array.IndexOf(integerTypeSuffixes,suffix)]);
-					}
+                    //No need to convert these ... lets just put the correct suffix ourselves
+
+
+                    if (typeInfo.ConvertedType != typeInfo.Type)
+                    {
+                        writer.Write("cast({0})",TypeProcessor.ConvertType(typeInfo.ConvertedType)); //TODO: add better, less clumsy conversion
+                    }
+
+//                    //Number literals //TODO: make these convert to D Literal Suffixes
+//                    var suffix = realTypeSuffixes.FirstOrDefault (j => str.EndsWith (j));
+//                    if (suffix != null)
+//						str = str.Replace(suffix,drealTypeSuffixes[Array.IndexOf(realTypeSuffixes,suffix)]);
+//					else
+//					{
+//						suffix = integerTypeSuffixes.FirstOrDefault (j => str.EndsWith (j));
+//						if (suffix != null)
+//							str = str.Replace(suffix,dintegerTypeSuffixes[Array.IndexOf(integerTypeSuffixes,suffix)]);
+//					}
 
                     writer.Write(str);
                 }

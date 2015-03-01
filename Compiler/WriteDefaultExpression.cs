@@ -17,7 +17,7 @@ namespace SharpNative.Compiler
         {
 			var type = TypeProcessor.GetTypeInfo(node.Type).Type;
            
-			writer.Write("__Default!("+type+")");
+			writer.Write("__Default!("+TypeProcessor.ConvertType(type)+")");
         }
     }
 }

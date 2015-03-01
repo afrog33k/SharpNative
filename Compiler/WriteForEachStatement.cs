@@ -36,11 +36,11 @@ namespace SharpNative.Compiler
 //                var isPtr = typeinfo.Type != null && typeinfo.Type.IsValueType ? "" : "";
             var typeString = TypeProcessor.ConvertType(foreachStatement.Type) + " ";
 
-
+            var foreachCount = Context.Instance.ForeachCount++;
             if (types.Type is IArrayTypeSymbol)
             {//Lets just for through the array, iterators are slow ... really slow
-                var forIter = "__for" + Context.Instance.ForeachCount;
-                var forArray = "__varfor" + Context.Instance.ForeachCount;
+                var forIter = "__for" + foreachCount;
+                var forArray = "__varfor" + foreachCount;
 
                 var temp = new TempWriter();
 
@@ -57,13 +57,13 @@ namespace SharpNative.Compiler
                 writer.WriteLine("auto {0} = {1}[{2}];", WriteIdentifierName.TransformIdentifier(foreachStatement.Identifier.ValueText), forArray, forIter);
                 Core.WriteStatementAsBlock(writer, foreachStatement.Statement, false);
                 writer.CloseBrace();
-                Context.Instance.ForeachCount++;
+               
 
                 return;
             }
             //It's faster to "while" through arrays than "for" through them
 
-            var foreachIter = "__foreachIter" + Context.Instance.ForeachCount;
+            var foreachIter = "__foreachIter" + foreachCount;
 
             if (typeinfo.Type.AllInterfaces.OfType<INamedTypeSymbol>().Any(j => j.MetadataName == "IEnumerable`1") ||
                 typeinfo.Type.MetadataName == "IEnumerable`1")
@@ -96,7 +96,7 @@ namespace SharpNative.Compiler
                 writer.WriteLine("");
 
 //				writer.CloseBrace ();
-                Context.Instance.ForeachCount++;
+                foreachCount++;
             }
             else
             {
@@ -123,7 +123,7 @@ namespace SharpNative.Compiler
                 writer.CloseBrace();
                 writer.WriteLine("");
 
-                Context.Instance.ForeachCount++;
+                foreachCount++;
             }
         }
     }

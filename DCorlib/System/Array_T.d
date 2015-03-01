@@ -207,14 +207,18 @@ public class Array_T(T=NObject) :  Array, ICollection_T!(T), IList
 		if(_dims.length==0)
 			_items =  new T[0];
 		else
+		{
 			_items = new T[totaldims];
+
+			for(int i=0;i<totaldims;i++)
+				_items[i] = __Default!(T)();
+		}
 
 		//TODO: is there a better way to initialize a large array
 		//if(is(T==struct))
-		{
-		for(int i=0;i<totaldims;i++)
-			_items[i] = __Default!(T)();
-		}
+		//{
+		
+		//}
 
 	//	Console.WriteLine(T.stringof);
 		//Console.WriteLine(dims);
@@ -252,13 +256,7 @@ public class Array_T(T=NObject) :  Array, ICollection_T!(T), IList
 		_items[index] = value;
 	}
 
-	public void CopyTo(Array_T!(T) other,int start=0,int end=-1)
-	{
-		if(end==-1)
-			other.Items = _items[start..$].dup;
-		else
-			other.Items = _items[start..end+1].dup;
-	}
+	
 
 
 	public override Type GetType()
@@ -516,9 +514,9 @@ public class Array_T(T=NObject) :  Array, ICollection_T!(T), IList
 		throw new NotSupportedException();
 	}
 
-	public void CopyTo(Array_T!(T) array, int arrayIndex,ICollection_T!(T) j=null)
-	{
-		throw new NotSupportedException();
+	public void CopyTo(Array_T!(T) other, int arrayIndex,ICollection_T!(T) j=null)
+	{	
+			other.Items = _items[arrayIndex..$].dup;	
 	}
 
 
@@ -544,7 +542,12 @@ public class Array_T(T=NObject) :  Array, ICollection_T!(T), IList
 		return r;
 	}
 
-	void CopyTo(Array array, int index, ICollection j = null){
+	void CopyTo(Array array, int index, ICollection j = null)
+	{
+		Array_T!(T) other = cast(Array_T!(T)) array;
+		
+			other.Items = _items[index..$].dup;
+		
 	}
 	int Count(ICollection j = null) @property{
 		return cast(int)_items.length;

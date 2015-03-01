@@ -31,16 +31,24 @@ namespace SharpNative.Compiler
         {
             var partials = Context.Instance.Partials;
             var first = partials.First();
-            Context.Instance.Namespace = first.Symbol.ContainingNamespace.FullName();
-            Context.Instance.Type = first.Symbol;
+            bool fileExists = false;
+            foreach (var @partial in partials.GroupBy(o=>o.Symbol))
+            {
+                Context.Instance.Namespace = @partial.First().Symbol.ContainingNamespace.FullName();
+                Context.Instance.Type = @partial.First().Symbol;
+                WriteOutOneType(outputWriter, @partial.ToArray(), fileExists);
+                fileExists = true;
+            }
+        }
+
+        private static void WriteOutOneType(OutputWriter outputWriter, Context.SyntaxAndSymbol[] first, bool fileExists)
+        {
             TypeProcessor.ClearUsedTypes();
             var mynamespace = Context.Instance.Type.ContainingNamespace.FullName().RemoveFromEndOfString(".Namespace");
 
             var fullname = Context.Instance.Namespace + "." + Context.Instance.TypeName;
             if (TypeRenames.ContainsKey(fullname))
-            {
                 Context.Instance.TypeName = TypeRenames[fullname];
-            }
 
             // + "." + TypeState.Instance.TypeName;
             if (Driver.Verbose)
@@ -53,21 +61,72 @@ namespace SharpNative.Compiler
             var myUsingDirective = SyntaxFactory.UsingDirective(SyntaxFactory.ParseName(mynamespace));
             var SystemUsingDirective = SyntaxFactory.UsingDirective(SyntaxFactory.ParseName("System"));
             // Required as certain functions like boxing are in this namespace
-            var namespaces = first.Syntax.Parent.DescendantNodes().OfType<UsingDirectiveSyntax>().ToArray();
-            var usingStatements = first.Syntax.Parent.DescendantNodes().OfType<UsingStatementSyntax>().ToArray();
+            var namespaces = first.First().Syntax.Parent.DescendantNodes().OfType<UsingDirectiveSyntax>().ToArray();
+            var usingStatements = first.First().Syntax.Parent.DescendantNodes().OfType<UsingStatementSyntax>().ToArray();
+            var allTypeAliases = first.First().Syntax.DescendantNodes().OfType<QualifiedNameSyntax>().ToArray();
             Context.Instance.UsingDeclarations = namespaces
                 .Union(new[]
                 {
                     myUsingDirective, SystemUsingDirective
                 }).ToArray();
 
-            
+//            foreach (var usingDirectiveSyntax in namespaces)
+//            {
+//               // if (usingDirectiveSyntax.Alias != null)
+//                {
+//                    var symbol = TypeProcessor.GetSymbolInfo(usingDirectiveSyntax.Name).Symbol;
+//
+//                    var type = symbol;
+//
+//                    UsingDirectiveSyntax syntax = usingDirectiveSyntax;
+//                   // if (first.First().Syntax.DescendantNodes().Select(i=> TypeProcessor.GetSymbolInfo(i).Symbol).Where(k=>k != null).Any(i=> i.ContainingNamespace==symbol))
+//                    {
+//
+//                        //TypeProcessor.GetSymbolInfo(allTypeAliases[0].Left).Symbol.Name;
+//
+//                        TypeProcessor.AddAlias(type, !String.IsNullOrEmpty(usingDirectiveSyntax.Alias.Name.ToFullString().Trim())?usingDirectiveSyntax.Alias.Name.ToFullString() : (type as INamespaceSymbol).FullName(true,false));
+//                    }
+//
+//
+//
+//                }
+//            }
 
+            TypeProcessor.AddAlias(Context.Instance.Type.ContainingNamespace as INamespaceSymbol, Context.Instance.Type.ContainingNamespace.GetModuleName());
+
+
+            foreach (var ns in namespaces)
+            {
+                //TODO: Add support for type aliases ...
+                var symbol = TypeProcessor.GetSymbolInfo(ns.Name).Symbol;
+                if(allTypeAliases.All(o => TypeProcessor.GetSymbolInfo(o.Left).Symbol != symbol))
+                TypeProcessor.AddAlias(symbol as INamespaceSymbol, (symbol as INamespaceSymbol).GetModuleName());
+            }
+
+            var aliases = allTypeAliases.DistinctBy(j=> TypeProcessor.GetSymbolInfo(j.Left));
+            foreach (var alias in aliases)
+            {
+                var left = alias.Left;
+                var type = TypeProcessor.GetSymbolInfo(left).Symbol as INamespaceSymbol;
+                var name = left.ToString();
+                if (type != null && type.Name != name)
+                {
+                    TypeProcessor.AddAlias(type, name );
+                }
+
+            }
             OutputWriter writer = null;
 
-
-            using (writer = outputWriter == null ? new OutputWriter(Context.Instance.Namespace, Context.Instance.TypeName) : new TempWriter())
+            using (
+                writer =
+                    outputWriter == null
+                        ? new OutputWriter(Context.Instance.Namespace, Context.Instance.TypeName)
+                        : new TempWriter())
             {
+
+                
+                    writer.FileExists = fileExists;
+                
                 if (outputWriter != null)
                 {
                     writer.WriteLine();
@@ -76,7 +135,7 @@ namespace SharpNative.Compiler
                 }
 
                 //TODO: Fix enum support
-                if (first.Syntax is EnumDeclarationSyntax)
+                if (first.First().Syntax is EnumDeclarationSyntax)
                 {
                     WriteEnum.Go(writer,
                         Context.Instance.Partials.Select(o => o.Syntax)
@@ -85,97 +144,91 @@ namespace SharpNative.Compiler
                             .Where(o => !Program.DoNotWrite.ContainsKey(o)));
 
                     if (outputWriter != null)
-                    {
                         outputWriter.Write(writer.ToString());
-                    }
 
                     return;
                 }
 
                 Context.Instance.AllMembers =
-                 partials.Select(o => o.Syntax)
-                     .Cast<TypeDeclarationSyntax>()
-                     .SelectMany(o => o.Members)
-                     .Where(o => !Program.DoNotWrite.ContainsKey(o))
-                     .ToList();
-
+                    first.Select(k=>k.Syntax.As<TypeDeclarationSyntax>()).SelectMany(o => o.Members)
+                        .Where(o => !Program.DoNotWrite.ContainsKey(o))
+                        .ToList();
 
                 var allMembersToWrite = Context.Instance.AllMembers
-                       .Where(member => !(member is TypeDeclarationSyntax)
-                                        && !(member is EnumDeclarationSyntax)
-                                        && !(member is DelegateDeclarationSyntax) &&
-                                        !(member is ConstructorDeclarationSyntax))
-                       .ToList();
+                    .Where(member => !(member is TypeDeclarationSyntax)
+                                     && !(member is EnumDeclarationSyntax)
+                                     && !(member is DelegateDeclarationSyntax) &&
+                                     !(member is ConstructorDeclarationSyntax))
+                    .ToList();
 
                 Context.Instance.MemberNames = allMembersToWrite.Select(k => k.GetCSharpName()).ToList();
 
-                var bases = partials
-                    .Select(o => o.Syntax.BaseList)
-                    .Where(o => o != null)
-                    .SelectMany(o => o.Types)
-                    .Select(o => TypeProcessor.GetTypeInfo(o.Type).ConvertedType)
-                    .Distinct()
-                    .ToList();
+                {
+                    var bases = new List<ITypeSymbol>();
+                    var baselist = first.Select(k => k.Syntax.As<TypeDeclarationSyntax>()).Select(o => o.BaseList).Where(k => k != null).ToArray();
+                    if (baselist.Any())
 
-                //                var interfaces = bases.Where(o => o.TypeKind == TypeKind.Interface).ToList();
+                        bases = baselist.SelectMany(k=>k.Types)
+                            .Select(o => TypeProcessor.GetTypeInfo(o.Type).ConvertedType)
+                            .Distinct()
+                            .ToList();
 
-                if (Context.Instance.Type != Context.Object)
-                    if (!bases.Any((j => j.TypeKind != TypeKind.Interface)) &&
-                        !(first.Symbol.TypeKind == TypeKind.Interface || first.Symbol.TypeKind == TypeKind.Struct))
-                        //TODO: fix structs using mixins / alias this
-                        bases.Add(Context.Object);
+                    //                var interfaces = bases.Where(o => o.TypeKind == TypeKind.Interface).ToList();
 
-                //                    WriteStandardIncludes.Go(writer);
+                    if (Context.Instance.Type != Context.Object)
+                    {
+                        if (!bases.Any((j => j.TypeKind != TypeKind.Interface)) &&
+                            !(first.First().Symbol.TypeKind == TypeKind.Interface || first.First().Symbol.TypeKind == TypeKind.Struct))
+                            //TODO: fix structs using mixins / alias this
+                            bases.Add(Context.Object);
+                    }
 
-                //                    writer.WriteLine(String.Format("#include \"{0}\"", TypeState.Instance.TypeName + ".h"));
+                    //                    WriteStandardIncludes.Go(writer);
 
-                WriteBcl.Go(writer);
+                    //                    writer.WriteLine(String.Format("#include \"{0}\"", TypeState.Instance.TypeName + ".h"));
 
-                //TypeState.Instance.DerivesFromObject = bases.Count == interfaces.Count;
+                   
 
-                var @namespace = first.Symbol.ContainingNamespace.FullName();
-                var genericArgs = Context.Instance.Type.TypeParameters.Select(l => l as ITypeSymbol).ToList();
+                    WriteBcl.Go(writer);
 
+                    //TypeState.Instance.DerivesFromObject = bases.Count == interfaces.Count;
 
-                //Module name = namespace + "." + typename;
+                    var @namespace = first.First().Symbol.ContainingNamespace.FullName();
+                    var genericArgs = Context.Instance.Type.TypeParameters.Select(l => l as ITypeSymbol).ToList();
 
-                WriteStandardIncludes.Go(writer);
+                    //Module name = namespace + "." + typename;
 
-                //                    var namespaces = @namespace.Split(new string[] { "." }, StringSplitOptions.None);
-                //
-                //                    if (@namespace.Length > 0)
-                //                    {
-                //                        foreach (var ns in namespaces)
-                //                        {
-                //                            writer.WriteLine("namespace " + ns + "\r\n{");
-                //                            writer.WriteLine("namespace " + ns + "\r\n{");
-                //                        }
-                //
-                //                    }
+                    WriteStandardIncludes.Go(writer);
 
-                
+                    //                    var namespaces = @namespace.Split(new string[] { "." }, StringSplitOptions.None);
+                    //
+                    //                    if (@namespace.Length > 0)
+                    //                    {
+                    //                        foreach (var ns in namespaces)
+                    //                        {
+                    //                            writer.WriteLine("namespace " + ns + "\r\n{");
+                    //                            writer.WriteLine("namespace " + ns + "\r\n{");
+                    //                        }
+                    //
+                    //                    }
 
-             
+                    var instanceCtors = Context.Instance.AllMembers.OfType<ConstructorDeclarationSyntax>()
+                        .Where(o => !o.Modifiers.Any(SyntaxKind.StaticKeyword))
+                        .ToList();
 
-               
+                    var staticCtors = Context.Instance.AllMembers.OfType<ConstructorDeclarationSyntax>()
+                        .Where(o => (o.Modifiers.Any(SyntaxKind.StaticKeyword)))
+                        .ToList();
 
-                var instanceCtors = Context.Instance.AllMembers.OfType<ConstructorDeclarationSyntax>()
-                    .Where(o => !o.Modifiers.Any(SyntaxKind.StaticKeyword))
-                    .ToList();
+                    //TODO: Add support for overloading constructing
+                    //                    if (instanceCtors.Count > 1)
+                    //                        throw new Exception(
+                    //                            "Overloaded constructors are not supported.  Consider changing all but one to static Create methods " +
+                    //                            Utility.Descriptor(first.Syntax));
 
-                var staticCtors = Context.Instance.AllMembers.OfType<ConstructorDeclarationSyntax>()
-                    .Where(o => (o.Modifiers.Any(SyntaxKind.StaticKeyword)))
-                    .ToList();
-
-                //TODO: Add support for overloading constructing
-                //                    if (instanceCtors.Count > 1)
-                //                        throw new Exception(
-                //                            "Overloaded constructors are not supported.  Consider changing all but one to static Create methods " +
-                //                            Utility.Descriptor(first.Syntax));
-
-                //                    var ctorOpt = instanceCtors.SingleOrDefault();
-                //TODO: Handle interfaces by
-                /*
+                    //                    var ctorOpt = instanceCtors.SingleOrDefault();
+                    //TODO: Handle interfaces by
+                    /*
                 class Interface
                 {
                     public:
@@ -184,132 +237,141 @@ namespace SharpNative.Compiler
                 }
                 */
 
-                var membersToWrite = allMembersToWrite.ToList();
-                //.Where(o => IsStatic(o) == staticMembers).ToList();
+                    var membersToWrite = allMembersToWrite.ToList();
+                    //.Where(o => IsStatic(o) == staticMembers).ToList();
 
-                //                    if (membersToWrite.Count == 0 && (partials.Any(o => o.Syntax.Modifiers.Any(SyntaxKind.StaticKeyword))))
-                //                        continue;
+                    //                    if (membersToWrite.Count == 0 && (partials.Any(o => o.Syntax.Modifiers.Any(SyntaxKind.StaticKeyword))))
+                    //                        continue;
 
-                //                    if (staticMembers)
-                //                        writer.Write("object ");
-                //                    else if (first.Syntax.Kind == SyntaxKind.InterfaceDeclaration)
-                //                        writer.Write("trait ");
-                //                    else
-                //                    {
-                //                        if (partials.Any(o => o.Syntax.Modifiers.Any(SyntaxKind.AbstractKeyword)))
-                //                            writer.Write("abstract ");
+                    //                    if (staticMembers)
+                    //                        writer.Write("object ");
+                    //                    else if (first.Syntax.Kind == SyntaxKind.InterfaceDeclaration)
+                    //                        writer.Write("trait ");
+                    //                    else
+                    //                    {
+                    //                        if (partials.Any(o => o.Syntax.Modifiers.Any(SyntaxKind.AbstractKeyword)))
+                    //                            writer.Write("abstract ");
 
-                //                    }
+                    //                    }
 
-                // writer.Write(TypeState.Instance.TypeName);
+                    // writer.Write(TypeState.Instance.TypeName);
 
-                if (first.Syntax is TypeDeclarationSyntax)
-                {
-
-
-                    //Internal classes/structs are declared static in D to behave correctly
-                    if (outputWriter != null)
+                    if (first.First().Syntax is TypeDeclarationSyntax)
                     {
-                        writer.Write("static ");
-                    }
-                    if (Context.Instance.Type.TypeKind == TypeKind.Class)
-                        writer.Write("class ");
-                    else if (Context.Instance.Type.TypeKind == TypeKind.Interface)
-                        writer.Write("interface ");
-                    else if (Context.Instance.Type.TypeKind == TypeKind.Struct)
-                    {
-                        writer.Write("struct ");
-                        //						writer.Write (" class "); // Allows inheritance ... but too many issues, will look at this when it gets relevant
-                    }
-                    else
-                        throw new Exception("don't know how to write type: " + Context.Instance.Type.TypeKind);
-                    List<ITypeSymbol> parentTypeParameters;
-                    if (Context.Instance.Type.ContainingType != null)
-                    {
-                        parentTypeParameters = Context.Instance.Type.ContainingType.TypeArguments.ToList();
-                    }
-                    else
-                    {
-                        parentTypeParameters = new List<ITypeSymbol>();
-                    }
-                    writer.Write(TypeName(Context.Instance.Type, false));
-
-                    if (Context.Instance.Type.IsGenericType)
-                    {
-
+                        //Internal classes/structs are declared static in D to behave correctly
+                        if (outputWriter != null)
+                            writer.Write("static ");
+                        if (Context.Instance.Type.TypeKind == TypeKind.Class)
+                            writer.Write("class ");
+                        else if (Context.Instance.Type.TypeKind == TypeKind.Interface)
+                            writer.Write("interface ");
+                        else if (Context.Instance.Type.TypeKind == TypeKind.Struct)
                         {
-                            foreach (var @base in bases)
-                            {
-                                var namedTypeSymbol = @base as INamedTypeSymbol;
-                                if (namedTypeSymbol != null)
-                                {
-                                    foreach (var arg in namedTypeSymbol.TypeArguments)
-                                    {
+                            writer.Write("struct ");
+                            //						writer.Write (" class "); // Allows inheritance ... but too many issues, will look at this when it gets relevant
+                        }
+                        else
+                            throw new Exception("don't know how to write type: " + Context.Instance.Type.TypeKind);
+                        List<ITypeSymbol> parentTypeParameters;
+                        if (Context.Instance.Type.ContainingType != null)
+                            parentTypeParameters = Context.Instance.Type.ContainingType.TypeArguments.ToList();
+                        else
+                            parentTypeParameters = new List<ITypeSymbol>();
 
-                                        if (arg.TypeKind == TypeKind.TypeParameter && !parentTypeParameters.Contains(arg))
+                        writer.Write(TypeName(Context.Instance.Type, false));
+                        //TypeProcessor.ConvertType(Context.Instance.Type, true, false,true));
+
+                        if (Context.Instance.Type.IsGenericType)
+                        {
+
+                            {
+                                foreach (var @base in bases)
+                                {
+                                    var namedTypeSymbol = @base as INamedTypeSymbol;
+                                    if (namedTypeSymbol != null)
+                                    {
+                                        foreach (var arg in namedTypeSymbol.TypeArguments)
                                         {
-                                            if (!genericArgs.Any(k => k.Name == arg.Name))
+                                            if (arg.TypeKind == TypeKind.TypeParameter && !parentTypeParameters.Contains(arg))
                                             {
-                                                genericArgs.Add(arg);
+                                                if (!genericArgs.Any(k => k.Name == arg.Name))
+                                                    genericArgs.Add(arg);
                                             }
                                         }
                                     }
                                 }
-                            }
-                            if (genericArgs.Any())
-                            {
-                                writer.Write("(" + string.Join(" , ", genericArgs.Select(o => o)) + ")");
+                                if (genericArgs.Any())
+                                {
+                                    writer.Write("(" +
+                                                 string.Join(" , ",
+                                                     genericArgs.Select(o => TypeProcessor.ConvertType(o, true, true, false))) + ")");
+                                }
                             }
                         }
-                    }
 
-                    bool firstBase = true;
+                        bool firstBase = true;
 
-                    if (Context.Instance.Type.TypeKind != TypeKind.Struct)
-                    {
-                        foreach (var baseType in bases.OrderBy(o => o.TypeKind == TypeKind.Interface ? 1 : 0))
+                        if (Context.Instance.Type.TypeKind != TypeKind.Struct)
                         {
-                            var convertType = TypeProcessor.ConvertType(baseType);
+                            foreach (var baseType in bases.OrderBy(o => o.TypeKind == TypeKind.Interface ? 1 : 0))
+                            {
+                                var convertType = TypeProcessor.ConvertType(baseType);
 
+                                writer.Write(firstBase ? " : " : " ,");
 
+                                writer.Write(convertType);
 
-                            writer.Write(firstBase ? " : " : " ,");
-
-
-                            writer.Write(convertType);
-
-
-                            firstBase = false;
+                                firstBase = false;
+                            }
                         }
                     }
+
+                    writer.WriteLine();
+
+                    writer.OpenBrace();
+
+                    var nonFields = WriteFields(membersToWrite, first.First(), writer);
+
+                    foreach (var member in nonFields)
+                    {
+                        //                    writer.WriteLine();
+                        Core.Write(writer, member);
+                    }
+
+                    WriteConstructors(instanceCtors, writer);
+
+                    WriteStaticConstructors(staticCtors, writer);
+
+                    //PInvoke is now centralized, so we can call it on all libraries etc without issue
+
+                    writer.Indent--;
+                    WriteOutNestedTypes(first.First(), writer);
+
+                    var methodSymbols = membersToWrite.OfType<MethodDeclarationSyntax>().Select(TypeProcessor.GetDeclaredSymbol);
+                    //TypeProcessor.GetDeclaredSymbol(method);
+
+                    if (!methodSymbols.OfType<IMethodSymbol>()
+                       .Any(k => k.Name == "ToString" && k.Parameters.Length == 0 && k.ReturnType == Context.String))
+                    {
+                        if (Context.Instance.Type.TypeKind == TypeKind.Struct ||
+                            (Context.Instance.Type.TypeKind == TypeKind.Class))
+                        {
+                            var overrideS = Context.Instance.Type.TypeKind == TypeKind.Struct ? "" : "override ";
+                            writer.WriteLine();
+                            writer.WriteLine("public "+overrideS+"String ToString()");
+                            writer.OpenBrace();
+                            writer.WriteLine("return GetType().FullName;");//Better names based on specialization
+                            writer.CloseBrace();
+                        }
+                       
+                    }
+
+                    WriteOutBoxed(writer, genericArgs, bases);
                 }
-
-                writer.WriteLine();
-
-                writer.OpenBrace();
-
-                var nonFields = WriteFields(membersToWrite, first, writer);
-
-                foreach (var member in nonFields)
-                {
-                    //                    writer.WriteLine();
-                    Core.Write(writer, member);
-                }
-
-                WriteConstructors(instanceCtors, writer);
-
-                WriteStaticConstructors(staticCtors, writer);
-
-                //PInvoke is now centralized, so we can call it on all libraries etc without issue
-
-                writer.Indent--;
-                WriteOutNestedTypes(first, writer);
-
-                WriteOutBoxed(writer, genericArgs, bases);
-
 
                 if (Context.Instance.Type.TypeKind == TypeKind.Struct)
                 {
+                    writer.WriteLine();
                     writer.WriteLine("public __Boxed_ __Get_Boxed()");
                     writer.OpenBrace();
                     writer.WriteLine("return new __Boxed_(this);");
@@ -319,36 +381,30 @@ namespace SharpNative.Compiler
 
                 if (Context.Instance.Type.TypeKind != TypeKind.Interface)
                 {
-					if (Context.Instance.Type.TypeKind == TypeKind.Class)
-						writer.WriteLine ("public override Type GetType()");
+                    writer.WriteLine();
+                    if (Context.Instance.Type.TypeKind == TypeKind.Class)
+                        writer.WriteLine("public override Type GetType()");
 //					else if (Context.Instance.Type.TypeKind == TypeKind.Interface) // Messes with GetType overrides of objects
 //					{
 //						writer.WriteLine ("public final Type GetType()");
 //					}
-					else if (Context.Instance.Type.TypeKind == TypeKind.Struct)
-					{
-						writer.WriteLine ("public Type GetType()");
-
-					}
+                    else if (Context.Instance.Type.TypeKind == TypeKind.Struct)
+                        writer.WriteLine("public Type GetType()");
                     writer.OpenBrace();
-					if (Context.Instance.Type.TypeKind == TypeKind.Class)
-                    	writer.WriteLine("return __TypeOf!(typeof(this));");
-					else
-						writer.WriteLine("return __TypeOf!(__Boxed_);");
-						
+                    //if (Context.Instance.Type.TypeKind == TypeKind.Class)
+                        writer.WriteLine("return __TypeOf!(typeof(this));");
+                   // else
+                   //     writer.WriteLine("return __TypeOf!(__Boxed_);");
+
                     writer.CloseBrace();
                 }
-
-
 
                 writer.CloseBrace();
 
                 WriteEntryMethod(writer);
 
                 if (outputWriter != null)
-                {
                     outputWriter.Write(writer.ToString());
-                }
             }
         }
 
@@ -426,12 +482,16 @@ namespace SharpNative.Compiler
 				}
 			}
 
-			if (constructorCount > 0 && (Context.Instance.Type.TypeKind == TypeKind.Struct)) // struct with constructors
+			if (Context.Instance.Type.TypeKind == TypeKind.Struct) // struct with constructors
 			{
+			    if (instanceCtors.All(k => k.ParameterList.Parameters.Count != 0))
+			    {
+			        writer.WriteLine("void __init(){}//default xtor");
+			    }
 				writer.WriteLine ("static {0} opCall(U...)(U args_)",Context.Instance.TypeName);
 				writer.OpenBrace ();
 				writer.WriteLine (" {0} s;",Context.Instance.TypeName);
-				writer.WriteLine ("s.__init(args_);");
+                writer.WriteLine ("s.__init(args_);");
 				writer.WriteLine ("return s;");
 				writer.CloseBrace();
 			}
@@ -669,10 +729,10 @@ namespace SharpNative.Compiler
             if (Context.Instance.Type.TypeKind == TypeKind.Struct)
             {
                 writer.WriteLine();
-                var typeName = TypeName(Context.Instance.Type, false) +
+                var typeName = TypeProcessor.ConvertType(Context.Instance.Type); /*TypeName(Context.Instance.Type, false) +
                                (Context.Instance.Type.IsGenericType && genericArgs.Any()
                                    ? ("!(" + string.Join(" , ", genericArgs.Select(o => o)) + ")")
-                                   : "");
+                                   : "");*/
 
                 var baseString = "";
 
@@ -721,6 +781,15 @@ namespace SharpNative.Compiler
                             WriteProperty.Go(writer, property, true);
 
                     }
+
+              
+//                {
+//                    writer.WriteLine("public override String ToString()");
+//                    writer.OpenBrace();
+//                    writer.WriteLine("return __Value.ToString();", Program.GetGenericMetadataName(Context.Instance.Type));
+//                    writer.CloseBrace();
+//                }
+                
                 //}
 
                 //This is required to be able to create an instance at runtime / reflection
@@ -735,10 +804,10 @@ namespace SharpNative.Compiler
 				writer.WriteLine("super(__TypeNew!({0})());", typeName);
                 writer.CloseBrace();
 
-                if (Context.Instance.Type.GetMembers("ToString").Any()) // Use better matching ?
+//                if (Context.Instance.Type.GetMembers("ToString").Any()) // Use better matching ?
                 {
                     //					writer.WriteLine ();
-                    writer.WriteLine("override String ToString()");
+                    writer.WriteLine("public override String ToString()");
                     writer.OpenBrace();
                     writer.WriteLine("return __Value.ToString();");
                     writer.CloseBrace();
@@ -772,12 +841,18 @@ namespace SharpNative.Compiler
                 writer.CloseBrace();
 
 
-         
-              
 
-
-
+                writer.WriteLine();
+                writer.WriteLine("public override Type GetType()");
+                writer.OpenBrace();
+                writer.WriteLine("return __Value.GetType();");
                 writer.CloseBrace();
+
+
+
+
+
+        writer.CloseBrace();
             }
         }
 
@@ -916,24 +991,41 @@ namespace SharpNative.Compiler
         }
 
 
-        public static string TypeName(INamedTypeSymbol type, bool appendContainingTypeName = true)
+        public static string TypeName(INamedTypeSymbol type, bool appendContainingTypeName = true, bool localize = false)
         {
-            var sb =
-                new StringBuilder(string.Join("_",
-                    (new[]
-                    {
-                        WriteIdentifierName.TransformIdentifier(type.Name,type)
-                    }).Union(type.TypeArguments.Select(o => o.ToString()))));
+            var sb = new StringBuilder();
+
+            if (type.IsGenericType)
+            {
+                //sb =
+               //                new StringBuilder(string.Join("_",
+               //                    (new[]
+               //                    {
+               //                        WriteIdentifierName.TransformIdentifier(type.Name,type)
+               //                    }).Union(type.TypeArguments.Select(o => TypeProcessor.ConvertType(o)))));
+               sb.Append(WriteIdentifierName.TransformIdentifier(type.Name, type));
+            }
+            else
+            {
+                sb.Append(WriteIdentifierName.TransformIdentifier(type.Name,type));
+
+            }
+             
 
             if (appendContainingTypeName)
+            {
                 while (type.ContainingType != null)
                 {
                     type = type.ContainingType;
-                    sb.Insert(0, type.Name + (type.TypeArguments.Any() ? (("_" + string.Join("_", type.TypeArguments.Select(o => o)) + "!(" +
-                        string.Join(",", (type.TypeArguments.Select(o => o.ToString())))) + ")") : "") + ".");
+                    sb.Insert(0, WriteIdentifierName.TransformIdentifier(type.Name, type) +
+                        (type.TypeArguments.Any()
+                            ? (("!(" +
+                                string.Join(",", (type.TypeArguments.Select(o => o.ToString())))) + ")")
+                            : "") + ".");
 
                     //                sb.Append(string.Join("_", type.TypeArguments.Select(o => o)));
                 }
+            }
 
             return sb.ToString();
         }

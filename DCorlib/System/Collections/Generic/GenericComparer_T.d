@@ -23,7 +23,7 @@ import System.Collections.Generic.Namespace;
       return (1);
     
 }
-    return (x.IComparable_T_CompareTo(y));
+    return (x.IComparable__G_CompareTo(y));
   
 }
 

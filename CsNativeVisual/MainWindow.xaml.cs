@@ -337,8 +337,17 @@ namespace CsNativeVisual
                 finally
                 {
 //                    File.Delete(outputcpp);
-                    if (File.Exists(outputexe))
-                        File.Delete(outputexe);
+                    try
+                    {
+                        if (File.Exists(outputexe))
+                            File.Delete(outputexe);
+                    }
+                    catch (Exception)
+                    {
+                        
+                       
+                    }
+                    
                 }
            
         }
