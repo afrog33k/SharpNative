@@ -254,7 +254,7 @@ struct Symbol {
 	mixin(getIsFlagsMixin!(SymbolModifier, "modifiers"));
 
 	/// Returns a duplicate of the array containing any attributes that apply to this symbol.
-	@property Variant[] attributes() pure {
+	@property Variant[] attributes()  {
 		// TODO: Don't duplicate, use a readonly range instead.
 		return _attributes.dup;
 	}
@@ -500,7 +500,7 @@ struct ParameterMetadata {
 
 	/// Gets the default value of this parameter.
 	/// The result is undefined if $(D, hasDefaultValue) is false.
-	@property const(Variant) defaultValue() const pure nothrow {
+	@property const(Variant) defaultValue() const   {
 		return _defaultValue;
 	}
 

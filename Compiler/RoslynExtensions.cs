@@ -18,6 +18,112 @@ namespace SharpNative.Compiler
 {
     public static class RoslynExtensions
     {
+        public static string GetYieldClassName(this ISymbol symbol)
+        {
+            if(symbol is IMethodSymbol)
+            return "YieldEnumerator_" + ((IMethodSymbol) symbol).Name;
+            else
+            {
+             return   "YieldEnumerator_" + ((IPropertySymbol)symbol).Name;
+            }
+
+        }
+
+       
+
+        public static string GetAssemblyAnonymousTypesArray(this IAssemblySymbol assembly)
+        {
+            return "_" + assembly.Name + "_AnonymousTypes";
+        }
+
+        private static int anonymousTypeNameCounter = 1;
+        private static Dictionary<ITypeSymbol, string> anonymousTypeNames = new Dictionary<ITypeSymbol, string>();
+
+        public static string GetTypeName(this ITypeSymbol type)
+        {
+//            var nameOverride = type.GetAttributeValue<string>(Context.Instance.JsAttributeType, "Name");
+//            if (nameOverride != null)
+//                return nameOverride;
+
+            if (type.IsAnonymousType)
+            {
+                string name;
+                if (!anonymousTypeNames.TryGetValue(type, out name))
+                {
+                    var index = anonymousTypeNameCounter++;
+                    name = type.ContainingAssembly.GetAssemblyAnonymousTypesArray() + "[" + index + "]";
+                    anonymousTypeNames[type] = name;
+                }
+                return name;
+            }
+
+            var namedTypeSymbol = type as INamedTypeSymbol;
+            if (namedTypeSymbol != null)
+            {
+                var result = GetTypeName(type.GetFullName()).Replace('`', '_');
+                return result;
+            }
+            else if (type is IArrayTypeSymbol)
+            {
+                var arrayType = (IArrayTypeSymbol)type;
+                return GetTypeName(arrayType.ElementType) + "_1";
+            }
+            else if (type is ITypeParameterSymbol)
+            {
+                var typeParameter = (ITypeParameterSymbol)type;
+                return typeParameter.Name;
+            }
+            else
+            {
+                throw new Exception();
+            }
+        }
+
+        public static string GetTypeName(string typeName)
+        {
+            return typeName;//typeName.Replace(".", "$");
+        }
+
+        public static string GetFullName(this TypeInfo typeInfo)
+        {
+            return typeInfo.ConvertedType.GetFullName();
+        }
+
+        public static string GetFullName(this INamespaceSymbol namespaceSymbol)
+        {
+            string result = namespaceSymbol.MetadataName;
+            if (!namespaceSymbol.IsGlobalNamespace && !namespaceSymbol.ContainingNamespace.IsGlobalNamespace)
+                result = Context.Instance.SymbolNames[namespaceSymbol.ContainingNamespace, namespaceSymbol.ContainingNamespace.GetFullName()] + "." + result;
+            return result;
+        }
+
+        public static string GetFullName(this ITypeSymbol type)
+        {
+            if (type.IsAnonymousType)
+            {
+                return type.GetTypeName();
+            }
+            if (type is IArrayTypeSymbol)
+            {
+                var arrayType = (IArrayTypeSymbol)type;
+                return arrayType.ElementType.GetFullName() + "[]";
+            }
+
+            var typeParameter = type as ITypeParameterSymbol;
+            if (typeParameter != null)
+            {
+                return typeParameter.Name;
+            }
+            else
+            {
+                string result = type.MetadataName;
+                if (type.ContainingType != null)
+                    result = type.ContainingType.GetFullName() + "." + result;
+                else if (!type.ContainingNamespace.IsGlobalNamespace)
+                    result = type.ContainingNamespace.GetFullName() + "." + result;
+                return result;
+            }
+        }
         public static string GetCSharpName(this MemberDeclarationSyntax member)
         {
             var method = member as MethodDeclarationSyntax;
@@ -661,9 +767,15 @@ namespace SharpNative.Compiler
             }
         }
 
-        public static bool IsAsync(this MethodDeclarationSyntax method)
+        public static bool IsAsync(this MemberDeclarationSyntax method)
         {
-            return method.Modifiers.Any(x => x.IsKind(SyntaxKind.AsyncKeyword));
+            if(method is MethodDeclarationSyntax)
+            return (method as MethodDeclarationSyntax).Modifiers.Any(x => x.IsKind(SyntaxKind.AsyncKeyword));
+            else if(method is PropertyDeclarationSyntax)
+            {
+                return (method as PropertyDeclarationSyntax).Modifiers.Any(x => x.IsKind(SyntaxKind.AsyncKeyword));
+            }
+            return false;
         }
 
         public static bool IsPointer(this ITypeSymbol type)

@@ -166,6 +166,18 @@
     <Compile Include="WriteUsingStatement.cs" />
     <Compile Include="WriteVariableDeclaration.cs" />
     <Compile Include="WriteWhileStatement.cs" />
+    <Compile Include="WriteYieldStatement.cs" />
+    <Compile Include="YieldAsync\BreakStatementStripper.cs" />
+    <Compile Include="YieldAsync\Cs.cs" />
+    <Compile Include="YieldAsync\GotoSubstituter.cs" />
+    <Compile Include="YieldAsync\State.cs" />
+    <Compile Include="YieldAsync\StateGenerator.cs" />
+    <Compile Include="YieldAsync\StateMachineThisFixer.cs" />
+    <Compile Include="YieldAsync\StatMachineGeneratorFixer.cs" />
+    <Compile Include="YieldAsync\YieldChecker.cs" />
+    <Compile Include="YieldAsync\YieldClassGenerator.cs" />
+    <Compile Include="YieldAsync\YieldGenerator.cs" />
+    <Compile Include="YieldAsync\YieldStateGenerator.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

@@ -29,7 +29,7 @@ namespace SharpNative.Compiler.DlangAst
 //                     if (FixPropertyUnaryExpressions(node, out visit))
 //                return visit;
             if (node is IdentifierNameSyntax &&
-                (node.Parent is ExpressionSyntax || node.Parent is MethodDeclarationSyntax) &&
+                (node.Parent is ExpressionSyntax || node.Parent is MethodDeclarationSyntax || node.Parent is PropertyDeclarationSyntax) &&
                 !(node.Parent.Parent is InitializerExpressionSyntax) && !(node.Parent is MemberAccessExpressionSyntax) &&
                 !(node.Parent is QualifiedNameSyntax))
             {

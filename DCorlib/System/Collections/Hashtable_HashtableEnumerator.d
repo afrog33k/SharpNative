@@ -9,7 +9,7 @@ import System.Collections.Namespace;
   Hashtable ht = cast(Hashtable) null;
   Hashtable_Entry temp = cast(Hashtable_Entry) null;
   int index = -1;
-  Hashtable_EnumeratorType returnType = cast(Hashtable_EnumeratorType) null;
+  Hashtable_EnumeratorType returnType;// = cast(Hashtable_EnumeratorType) null;
   
 
 public    NObject  Current(IEnumerator j=null) @property  

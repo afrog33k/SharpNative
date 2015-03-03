@@ -4,7 +4,7 @@ import System.Collections.Namespace;
 import System.Collections.Generic.Namespace;
 import std.stdio;
 
-class ArrayIterator(T):IEnumerator_T!(T)
+class ArrayIterator(T):IEnumerator__G!(T)
 {
 	int index = -1;
 	Array_T!(T) _array;
@@ -16,7 +16,7 @@ class ArrayIterator(T):IEnumerator_T!(T)
 		//writeln(_array.Items[index]);
 	}
 
-	public T  Current(IEnumerator_T!(T) k=null)   @property
+	public T  Current(IEnumerator__G!(T) k=null)   @property
 	{
 		//writeln(_array is null);
 		//Console.WriteLine(_S("returning {0}"), BOX!(int)(index));
@@ -42,7 +42,7 @@ class ArrayIterator(T):IEnumerator_T!(T)
 
 	NObject Current(IEnumerator k=null) @property
 	{
-		return BOX!(T)(Current(cast(IEnumerator_T!(T))null)); // BOX should be adjusted to just pass classes as is
+		return BOX!(T)(Current(cast(IEnumerator__G!(T))null)); // BOX should be adjusted to just pass classes as is
 	}
 
 	void Reset(IEnumerator k=null)
@@ -478,7 +478,7 @@ public class Array_T(T=NObject) :  Array, ICollection_T!(T), IList
 
 	}
 
-	IEnumerator_T!(T) GetEnumerator(IEnumerable_T!(T) j=null)
+	IEnumerator__G!(T) GetEnumerator(IEnumerable__G!(T) j=null)
 	{
 		if(_iter is null)
 			_iter = new ArrayIterator!(T)(this);

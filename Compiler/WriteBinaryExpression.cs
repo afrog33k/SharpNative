@@ -95,6 +95,10 @@ namespace SharpNative.Compiler
                                (rightExpressionType.Type != null && (rightExpressionType.Type.IsValueType &&
                                                                      (rightExpressionType.ConvertedType.IsReferenceType)));
 
+                var unboxRight = rightExpressionType.ConvertedType != null &&
+                              (rightExpressionType.Type != null && (rightExpressionType.Type.IsReferenceType &&
+                                                                    (rightExpressionType.ConvertedType.IsValueType)));
+
                 var rightnull = rightExpression.ToFullString().Trim() == "null";
                 var leftnull = leftExpression != null && leftExpression.ToFullString().Trim() == "null";
 
@@ -376,9 +380,12 @@ namespace SharpNative.Compiler
                     Core.Write(writer, leftExpression);
                     writer.Write(boxLeft ? ")" : "");
                     writer.Write(operatorToken.ToString());
+                    writer.Write(unboxRight ? "UNBOX!(" + TypeProcessor.ConvertType(rightExpressionType.ConvertedType) + ")(" : "");
                     writer.Write(boxRight ? "BOX!(" + TypeProcessor.ConvertType(rightExpressionType.Type) + ")(" : "");
                     Core.Write(writer, rightExpression);
                     writer.Write(boxRight ? ")" : "");
+                    writer.Write(unboxRight ? ")" : "");
+
                 }
             }
         }

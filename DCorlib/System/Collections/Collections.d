@@ -11,7 +11,7 @@ alias System.Collections.IList.IList IList;
 alias System.Collections.SortedList.SortedList SortedList;
 alias System.Collections.Generic.IDictionary_TKey_TValue.IDictionary_TKey_TValue IDictionary_TKey_TValue;
 alias System.Collections.Generic.Dictionary_TKey_TValue.Dictionary_TKey_TValue Dictionary_TKey_TValue;
-alias System.Collections.Generic.IEnumerable_T.IEnumerable_T IEnumerable_T;
+alias System.Collections.Generic.IEnumerable__G.IEnumerable__G IEnumerable__G;
 alias System.Collections.Hashtable.Hashtable Hashtable;
 alias System.Collections.Hashtable_HashtableEnumerator.Hashtable_HashtableEnumerator Hashtable_HashtableEnumerator;
 alias System.Collections.Hashtable_ValueCollection.Hashtable_ValueCollection Hashtable_ValueCollection;

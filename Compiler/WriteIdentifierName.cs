@@ -18,11 +18,13 @@ namespace SharpNative.Compiler
     {
         public static void Go(OutputWriter writer, IdentifierNameSyntax identifier, bool byRef = false)
         {
-            var symbol = TypeProcessor.GetSymbolInfo(identifier).Symbol;
+            var symbolInfo = TypeProcessor.GetSymbolInfo(identifier);
+            var symbol = symbolInfo.Symbol;
 
             if (symbol == null)
             {
-                
+                //Yield issue ...
+                symbol = symbolInfo.CandidateSymbols[0];
             }
 
             if (symbol.IsStatic)

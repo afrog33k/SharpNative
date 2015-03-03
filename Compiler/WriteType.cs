@@ -109,7 +109,7 @@ namespace SharpNative.Compiler
                 var left = alias.Left;
                 var type = TypeProcessor.GetSymbolInfo(left).Symbol as INamespaceSymbol;
                 var name = left.ToString();
-                if (type != null && type.Name != name)
+                if (type != null && type.ToString() != name)
                 {
                     TypeProcessor.AddAlias(type, name );
                 }

@@ -23,6 +23,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CSharp;
 using Microsoft.CSharp.RuntimeBinder;
 using SharpNative.Compiler.DlangAst;
+using SharpNative.Compiler.YieldAsync;
 
 #endregion
 
@@ -74,7 +75,8 @@ namespace SharpNative.Compiler
             {
 //                if (!@namespace.Key.StartsWith("System") && !isCorlib)
 
-                var anyExtern = !@namespace.Key.DeclaringSyntaxReferences.Any();
+                var anyExtern = !@namespace.Key.DeclaringSyntaxReferences.Any() ||
+                                @namespace.Key.Name == "System";//.All(o => o.MetadataName != ("__YieldIterator`1"));
                 if (!anyExtern) // This should take care of corlib and external assemblies at once
                 {
                     // TODO: this should write nses for only types defined in binary, this should be a switch, we could be compiling corlib
@@ -304,6 +306,39 @@ namespace SharpNative.Compiler
                 decimal lastTemporaryIndex = 0;
 
                 Context.LastNode = _compilation.SyntaxTrees.First().GetRoot();
+                Context.Compilation = _compilation;
+
+                //Yield Support
+//               _compilation= _compilation.AddSyntaxTrees(SyntaxFactory.ParseSyntaxTree(@"
+//namespace System
+//{
+//    public abstract class __YieldIterator<T> : System.Collections.Generic.IEnumerable<T>, System.Collections.Generic.IEnumerator<T>
+//    {
+//        public T Current { get; protected set; }
+//
+//        public abstract System.Collections.Generic.IEnumerator<T> GetEnumerator();
+//        public abstract bool MoveNext();
+//
+//        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+//        {
+//            return GetEnumerator();
+//        }
+//
+//        public void Dispose()
+//        {
+//        }
+//
+//        object System.Collections.IEnumerator.Current
+//        {
+//            get { return Current; }
+//        }
+//
+//        public void Reset()
+//        {
+//            throw new NotImplementedException();
+//        }
+//    }
+//}"));
 
 
                 //Replace Object Initializers
@@ -314,6 +349,9 @@ namespace SharpNative.Compiler
 
                 FullyQualifyReferences();
 
+                ProcessYield();
+
+
                 //TODO: not needed for Dlang
                 //GetGenericSpecializations();
                 if (Driver.Verbose)
@@ -323,7 +361,7 @@ namespace SharpNative.Compiler
                 ProcessAnonymousTypes();
 
                 ProcessDelegates();
-
+                
                 ProcessTypes();
 
                 WriteNamespaces();
@@ -336,6 +374,20 @@ namespace SharpNative.Compiler
                     ((ex.InnerException != null)
                                       ? ex.InnerException.Message + ex.InnerException.StackTrace
                                       : ""));
+            }
+        }
+
+        private static void ProcessYield()
+        {
+            foreach (var syntaxTree in _compilation.SyntaxTrees)
+            {
+                var compilationUnit = ((CompilationUnitSyntax)syntaxTree.GetRoot());
+                var model = _compilation.GetSemanticModel(syntaxTree);
+                var rewriter = new YieldGenerator(_compilation,syntaxTree,model);
+
+                compilationUnit = (CompilationUnitSyntax)compilationUnit.Accept(rewriter);
+                _compilation = _compilation.ReplaceSyntaxTree(syntaxTree,
+                    SyntaxFactory.SyntaxTree(compilationUnit, null, syntaxTree.FilePath));
             }
         }
 
@@ -378,7 +430,7 @@ namespace SharpNative.Compiler
                     Syntax = o,
                     Symbol = GetModel(o).GetDeclaredSymbol(o),
                     TypeName =  WriteType.TypeName(GetModel(o).GetDeclaredSymbol(o))
-                }).Where(k => k.Symbol.ContainingType == null) // Ignore all nested classes
+                }).Where(k => k.Symbol.ContainingType == null && (k.Symbol.ContainingNamespace.FullNameWithDot() + k.TypeName)!= "System.Namespace.__YieldIterator__G") // Ignore all nested classes
                 .GroupBy(o => o.Symbol.ContainingNamespace.FullNameWithDot() + o.TypeName)
                 .ToList();
 

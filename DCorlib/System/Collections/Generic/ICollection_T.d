@@ -4,7 +4,7 @@ module System.Collections.Generic.ICollection_T;
 import System.Namespace;
 import System.Collections.Generic.Namespace;
 
- interface ICollection_T(T) :  IEnumerable_T!(T)
+ interface ICollection_T(T) :  IEnumerable__G!(T)
 {
 
   

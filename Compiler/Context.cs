@@ -65,7 +65,7 @@ namespace SharpNative.Compiler
 
         public Solution Solution { get; private set; }
         public Project Project { get; private set; }
-        public static Compilation Compilation { get; private set; }
+        public static Compilation Compilation { get;  set; }
         public SymbolNameMap SymbolNames { get; private set; }
 
 
@@ -83,6 +83,11 @@ namespace SharpNative.Compiler
 
         public static INamedTypeSymbol Object { get; set; }
 
+        public static INamedTypeSymbol Void { get; set; }
+
+        public static INamedTypeSymbol Int { get; set; }
+
+        public static INamedTypeSymbol Bool { get; set; }
         public static INamedTypeSymbol String { get; set; }
 
 
@@ -102,6 +107,11 @@ namespace SharpNative.Compiler
         {
             Object = compilation.FindType("System.Object");
             String = compilation.FindType("System.String");
+            Int = compilation.FindType("System.Int32");
+            Bool = compilation.FindType("System.Boolean");
+            Void = compilation.FindType("System.Void");
+
+
 
             Exception = compilation.FindType("System.Exception");
 

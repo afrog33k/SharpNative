@@ -77,7 +77,8 @@ namespace SharpNative.Compiler
                 property.AccessorList.Accessors.SingleOrDefault(
                     o => o.Keyword.RawKind == (decimal)SyntaxKind.SetKeyword);
 
-			var isStatic = property.Modifiers.Any (k=>k.IsKind(SyntaxKind.StaticKeyword));
+            var isYield = getter != null && getter.DescendantNodes().OfType<YieldStatementSyntax>().Any();
+            var isStatic = property.Modifiers.Any (k=>k.IsKind(SyntaxKind.StaticKeyword));
 
             ITypeSymbol iface;
             ISymbol[] proxies;
@@ -85,7 +86,8 @@ namespace SharpNative.Compiler
             var name = MemberUtilities.GetMethodName(property, ref isInterface, out iface, out proxies);
 
             var modifiers = property.Modifiers;
-            var type = ((IPropertySymbol)TypeProcessor.GetDeclaredSymbol(property)).Type;
+            var propertySymbol = (IPropertySymbol)TypeProcessor.GetDeclaredSymbol(property);
+            var type = propertySymbol.Type;
 
 
             var acccessmodifiers = MemberUtilities.GetAccessModifiers(property, isInterface);
@@ -104,7 +106,44 @@ namespace SharpNative.Compiler
 			var isindexer = indexerDeclarationSyntax != null;
             string getterbody = null;
             if (getterHasBody)
+            {
+
+              
+
                 getterbody = Core.WriteString(getter.Body, false, writer.Indent + 2);
+
+                if (!isProxy && isYield)
+                {
+                    var namedTypeSymbol = propertySymbol.Type as INamedTypeSymbol;
+                    if (namedTypeSymbol != null)
+                    {
+                        //                        var iteratortype = namedTypeSymbol.TypeArguments[0];
+                        //                        getterbody=String.Format("return new __IteratorBlock!({0})(delegate(__IteratorBlock!({0}) __iter){{ {1} }});",
+                        //                            TypeProcessor.ConvertType(iteratortype),getterbody);
+
+                        var className = propertySymbol.GetYieldClassName() + (
+                     (((INamedTypeSymbol)propertySymbol.Type).TypeArguments.Any() ? "__G" : ""));
+
+
+                      
+
+                        // writer.WriteLine(accessString + returnTypeString + methodSignatureString + @params2 + constraints);
+
+                        //writer.OpenBrace();
+
+                        if (!propertySymbol.IsStatic)
+                        {
+
+                            getterbody = ("return new " + className + "(this);");
+                        }
+                        else
+                        {
+                            getterbody =("return new " + className + "();");
+
+                        }
+                    }
+                }
+            }
             string setterbody = null;
 			if (setterHasBody)
 			{

@@ -4,8 +4,6 @@ alias System.Collections.Generic.IComparer_T.IComparer_T IComparer_T;
 
 alias System.Collections.Generic.IEqualityComparer_T.IEqualityComparer_T IEqualityComparer_T;
 
-alias System.Collections.Generic.IEnumerable_T.IEnumerable_T IEnumerable_T;
-
 alias System.Collections.Generic.List__G.List__G List__G;
 
 alias System.Collections.Generic.ICollection_T.ICollection_T ICollection_T;
@@ -20,7 +18,9 @@ alias System.Collections.Generic.Comparer_T.Comparer_T Comparer_T;
 
 alias System.Collections.Generic.EqualityComparer_T.EqualityComparer_T EqualityComparer_T;
 
-alias System.Collections.Generic.IEnumerator_T.IEnumerator_T IEnumerator_T;
+alias System.Collections.Generic.IEnumerator__G.IEnumerator__G IEnumerator__G;
+alias System.Collections.Generic.IEnumerable__G.IEnumerable__G IEnumerable__G;
+
 
 alias System.Collections.Generic.DefaultComparer_T.DefaultComparer_T DefaultComparer_T;
 

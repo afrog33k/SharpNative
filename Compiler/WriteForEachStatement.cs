@@ -83,11 +83,11 @@ namespace SharpNative.Compiler
                 writer.WriteIndent();
                 writer.Write(string.Format("auto {0} = ", foreachIter));
                 Core.Write(writer, foreachStatement.Expression);
-                writer.Write(String.Format(".GetEnumerator(cast(IEnumerable_T!({0}))null);\r\n",typeString));
+                writer.Write(String.Format(".GetEnumerator(cast(IEnumerable__G!({0}))null);\r\n",typeString));
                 writer.WriteLine(string.Format("while({0}.MoveNext())", foreachIter));
                 writer.OpenBrace();
 
-                writer.WriteLine(string.Format("{0}{1} = {2}.Current(cast(IEnumerator_T!({0}))null);", typeString,
+                writer.WriteLine(string.Format("{0}{1} = {2}.Current(cast(IEnumerator__G!({0}))null);", typeString,
                     WriteIdentifierName.TransformIdentifier(foreachStatement.Identifier.ValueText), foreachIter));
 
                 Core.WriteStatementAsBlock(writer, foreachStatement.Statement, false);
