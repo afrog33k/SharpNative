@@ -263,6 +263,9 @@
     <Folder name="CompilerServices">
      <File path="System\Runtime\CompilerServices\Namespace.d" />
     </Folder>
+    <Folder name="Serialization">
+     <File path="Namespace.d" />
+    </Folder>
     <Folder name="InteropServices">
      <File path="System\Runtime\InteropServices\Namespace.d" />
     </Folder>
@@ -281,6 +284,7 @@
    <File path="System\Activator.d" />
    <File path="System\Array.d" />
    <File path="System\Array_T.d" />
+   <File path="System\Attribute.d" />
    <File path="System\Boolean.d" />
    <File path="System\Byte.d" />
    <File path="System\Char.d" />
@@ -290,24 +294,46 @@
    <File path="System\DateTimeParse.d" />
    <File path="System\DayOfWeek.d" />
    <File path="System\Decimal.d" />
+   <File path="System\Delegate.d" />
    <File path="System\Double.d" />
    <File path="System\EmptyArray_T.d" />
    <File path="System\Environment.d" />
+   <File path="System\EventArgs.d" />
    <File path="System\GC.d" />
    <File path="System\ICloneable.d" />
+   <File path="System\IComparable.d" />
+   <File path="System\IComparable__G.d" />
+   <File path="System\IConvertible.d" />
+   <File path="System\IDisposable.d" />
+   <File path="System\IFormatProvider.d" />
+   <File path="System\IFormattable.d" />
    <File path="System\Int16.d" />
    <File path="System\Int32.d" />
    <File path="System\Int64.d" />
+   <File path="System\IntPtr.d" />
+   <File path="System\Locale.d" />
    <File path="System\Math.d" />
    <File path="System\Namespace.d" />
+   <File path="System\NException.d" />
    <File path="System\NObject.d" />
+   <File path="System\Nullable__G.d" />
+   <File path="System\PlatformID.d" />
+   <File path="System\Random.d" />
    <File path="System\SByte.d" />
    <File path="System\Single.d" />
    <File path="System\String.d" />
+   <File path="System\SystemException.d" />
    <File path="System\Timespan.d" />
+   <File path="System\Type.d" />
+   <File path="System\TypeCode.d" />
    <File path="System\UInt16.d" />
    <File path="System\UInt32.d" />
    <File path="System\UInt64.d" />
+   <File path="System\Version.d" />
+   <File path="System\__Boxing.d" />
+   <File path="System\__Constraints.d" />
+   <File path="System\__NativeMethods.d" />
+   <File path="System\__PrimitiveExtensions.d" />
    <File path="System\__YieldIterator__G.d" />
   </Folder>
  </Folder>

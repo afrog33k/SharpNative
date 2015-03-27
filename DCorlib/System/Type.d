@@ -33,17 +33,17 @@ public class Type:NObject
 
 	public Array_T!(System.Reflection.Namespace.MemberInfo) GetMembers(string name="")
 	{
-		return new Array_T!(MemberInfo)(__CC(__methods ~ __fields ~ __properties));
+		return new Array_T!(System.Reflection.Namespace.MemberInfo)(__CC!(System.Reflection.Namespace.MemberInfo[])(cast(System.Reflection.Namespace.MemberInfo[])__methods ~ cast(System.Reflection.Namespace.MemberInfo[])__fields ~ cast(System.Reflection.Namespace.MemberInfo[])__properties));
 	}
 
-	public MethodInfo GetMethods(String name=String.Empty)
+	public Array_T!(MethodInfo) GetMethods(String name=String.Empty)
 	{
-		return new Array_T!(MethodInfo)(__CC(__methods));
+		return new Array_T!(MethodInfo)(__CC!(MethodInfo[])(__methods));
 	}
 
 	public Array_T!(FieldInfo) GetFields(String name=String.Empty)
 	{
-		return new Array_T!(FieldInfo)(__CC(__fields));
+		return new Array_T!(FieldInfo)(__CC!(FieldInfo[])(__fields));
 	}
 
 	bool __SameParams(Type[] paramsA, Type[] paramsB)
@@ -125,37 +125,33 @@ public class Type:NObject
 		return __properties[index];
 	}
 
-	Type __Method(String Name, MethodInfo info)
+	Type __Method(string name, MethodInfo info)
 	{
-		info.Name = Name;
+		info.Name = _S(name);
 		__methods ~= info;
 		return this;
 	}
 
-	Type __Field(String Name, FieldInfo info)
+	Type __Field(string name, FieldInfo info)
 	{
-		info.Name = Name;
+		info.Name = _S(name);
 		__fields ~= info;
 		return this;
 	}
 
-	Type __Property(String Name, PropertyInfo info)
+	Type __Property(string name, PropertyInfo info)
 	{
-		info.Name = Name;
+		info.Name = _S(name);
 		__properties ~= info;
 		return this;
 	}
 
-	Type __Constructor(String Name, ConstructorInfo info)
+	Type __Constructor(string name, ConstructorInfo info)
 	{
-		info.Name = Name;
+		info.Name = _S(name);
 		__constructors ~= info;
 		return this;
 	}
-
-	
-
-	
 
 	override bool Equals(NObject other)
 	{

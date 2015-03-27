@@ -9,6 +9,7 @@ import std.typecons;
 public import System.__Constraints;
 public import System.__Boxing;
 public import System.__NativeMethods;
+public import System.__PrimitiveExtensions;
 
 
 alias std.typecons.scoped StructAlloc;

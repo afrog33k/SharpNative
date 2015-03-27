@@ -1379,16 +1379,16 @@ public class Type_T(T):Type
 			//	return newType;
 			//Console.WriteLine("Created instance of "  ~ typeof(newType).stringof);
 
-			static if(__isScalar!(T) || __isStruct!(T) || __isEnum!(T) || __isArray!(T))
+			/*static if(__isScalar!(T) || __isStruct!(T) || __isEnum!(T) || __isArray!(T))
 			{
 			auto boxed= BOX!(T)(newType);
 
 			//Console.WriteLine("returning object of "  ~ typeof(boxed).stringof);
 
 			return boxed;
-			}
+			}*/
 			
-			return newType;
+			return BOX!(T)(newType);
 			}
 			else
 				return null;
