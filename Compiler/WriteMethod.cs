@@ -6,6 +6,7 @@
 #region Imports
 
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
@@ -19,6 +20,74 @@ namespace SharpNative.Compiler
 {
     internal static class WriteMethod
     {
+
+        public static string GetParameterListAsString(ImmutableArray<IParameterSymbol> parameters, bool includeTypes = true, ITypeSymbol iface = null, bool writebraces = true)
+        {
+
+            var writer = new TempWriter(); // Temp Writer
+            if (writebraces)
+                writer.Write("(");
+            var firstParam = true;
+            foreach (var parameter in parameters)
+            {
+                var refKeyword = "";
+
+                if (parameter.RefKind==RefKind.Ref)
+                    refKeyword = " ref ";
+
+                if (parameter.RefKind==RefKind.Out)
+                    refKeyword = " out ";
+
+             //   if (parameter.RefKind==RefKind.None) //????
+               //     refKeyword = " in ";
+
+                bool isRef = parameter.RefKind == RefKind.Ref || parameter.RefKind == RefKind.Out;// parameter.Modifiers.Any(SyntaxKind.OutKeyword) ||
+                           //  parameter.Modifiers.Any(SyntaxKind.RefKeyword);
+                // || parameter.Modifiers.Any (SyntaxKind.InKeyword);
+                if (firstParam)
+                    firstParam = false;
+                else
+                    writer.Write(", ");
+
+                var isParams = parameter.IsParams;//.Any(SyntaxKind.ParamsKeyword);
+
+                //if (!isParams)
+                {
+                    var s = refKeyword + TypeProcessor.ConvertType(parameter.Type) + " ";
+                    if (includeTypes)
+                        writer.Write(s);
+                }
+                /* else //Framework depends too much on managed arrays even for params
+                 {
+                     var type = (TypeProcessor.GetTypeInfo(parameter.Type).Type ?? TypeProcessor.GetTypeInfo(parameter.Type).ConvertedType) as IArrayTypeSymbol;
+                     var s = refKeyword + TypeProcessor.ConvertType(type.ElementType) + "[]";
+
+                     if (includeTypes)
+                         writer.Write(s);
+
+                 }*/
+
+                writer.Write(WriteIdentifierName.TransformIdentifier(parameter.Name));
+                if (!parameter.HasExplicitDefaultValue)
+                    continue;
+                writer.Write(" = ");
+                Core.Write(writer, (SyntaxNode) parameter.ExplicitDefaultValue); //TODO ??
+            }
+            if (iface != null)
+            {
+                if (firstParam)
+                    firstParam = false;
+                else
+                    writer.Write(", ");
+
+                writer.Write(TypeProcessor.ConvertType(iface) + " __j = null");
+            }
+            if (writebraces)
+                writer.Write(")");
+            return writer.ToString();
+        }
+
+
         public static string GetParameterListAsString(SeparatedSyntaxList<ParameterSyntax> parameters,  bool includeTypes = true, ITypeSymbol iface=null, bool writebraces = true)
         {
            
@@ -206,7 +275,7 @@ namespace SharpNative.Compiler
                        // var iteratortype = namedTypeSymbol.TypeArguments[0];
 
                         var className =  methodSymbol.GetYieldClassName() +(
-                   (((INamedTypeSymbol)methodSymbol.ReturnType).TypeArguments.Any() ? "__G" : ""));
+                   ( ((INamedTypeSymbol)methodSymbol.ReturnType).TypeArguments.Any() && ((INamedTypeSymbol)methodSymbol.ReturnType).TypeArguments[0].TypeKind==TypeKind.TypeParameter) ? "__G" : "");
 
 
                         methodSignatureString = methodName + genericParameters;

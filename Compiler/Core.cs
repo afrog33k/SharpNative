@@ -200,6 +200,29 @@ namespace SharpNative.Compiler
         }
 
 
+        public static string WriteBlock(BlockSyntax block, bool writeBraces = true, int indent=0)
+        {
+            var writer = new TempWriter();
+            writer.Indent = indent;
+            if (writeBraces)
+                writer.OpenBrace();
+
+            //writer.Indent++;
+            foreach (var statement in block.Statements)
+            {
+                // writer.WriteIndent();
+                Write(writer, statement);
+            }
+
+            TriviaProcessor.ProcessTrivias(writer, block.DescendantTrivia());
+            // writer.Indent--;
+
+            if (writeBraces)
+                writer.CloseBrace();
+
+            return writer.ToString();
+        }
+
         public static void WriteBlock(OutputWriter writer, BlockSyntax block, bool writeBraces = true)
         {
             if (writeBraces)

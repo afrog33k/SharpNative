@@ -158,6 +158,8 @@ namespace SharpNative.Compiler
 
         public static TypeInfo GetTypeInfo(SyntaxNode node)
         {
+            if (node == null)
+                return new TypeInfo();
             var model = Program.GetModel(node).As<SemanticModel>();
             var typeInfo = model.GetTypeInfo(node);
 

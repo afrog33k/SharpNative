@@ -4,7 +4,7 @@ module System.Collections.Generic.InternalStringComparer;
 import System.Namespace;
 import System.Collections.Generic.Namespace;
 
- class InternalStringComparer :  EqualityComparer_T!(System.Namespace.String)
+ class InternalStringComparer :  EqualityComparer__G!(String)
 {
 
 

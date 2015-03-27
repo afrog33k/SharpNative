@@ -1,11 +1,11 @@
-module System.Collections.Generic.KeyValuePair_TKey_TValue;
+module System.Collections.Generic.KeyValuePair__G;
 
 
 import System.Namespace;
 import System.Text.Namespace;
 import System.Collections.Generic.Namespace;
 
-struct KeyValuePair_TKey_TValue(TKey , TValue)
+struct KeyValuePair__G(TKey , TValue)
 {
     private TKey key = TKey.init;
     private TValue value = TValue.init;
@@ -45,44 +45,46 @@ struct KeyValuePair_TKey_TValue(TKey , TValue)
 		return s.ToString();
     }
 
+	public void __init(){}
+
     public  void __init(TKey key, TValue value)
     {
 		this.key=key;
 		this.value=value;
     }
-    static KeyValuePair_TKey_TValue opCall(U...)(U args_)
+    static KeyValuePair__G opCall(U...)(U args_)
     {
-		KeyValuePair_TKey_TValue s;
+		KeyValuePair__G s;
 		s.__init(args_);
 		return s;
     }
 
-	public static class __Boxed_ : Boxed!(KeyValuePair_TKey_TValue!(TKey , TValue))
+	public static class __Boxed_ : Boxed!(KeyValuePair__G!(TKey , TValue))
 	{
 		import std.traits;
 
 		this()
 		{
-			super(__TypeNew!(KeyValuePair_TKey_TValue!(TKey , TValue))());
+			super(__TypeNew!(KeyValuePair__G!(TKey , TValue))());
 		}
 		override String ToString()
 		{
 			return __Value.ToString();
 		}
 
-		this(ref KeyValuePair_TKey_TValue!(TKey , TValue) value)
+		this(ref KeyValuePair__G!(TKey , TValue) value)
 		{
 			super(value);
 		}
 
 		U opCast(U)()
-			if(is(U:KeyValuePair_TKey_TValue!(TKey , TValue)))
+			if(is(U:KeyValuePair__G!(TKey , TValue)))
 			{
 				return __Value;
 			}
 
 		U opCast(U)()
-			if(!is(U:KeyValuePair_TKey_TValue!(TKey , TValue)))
+			if(!is(U:KeyValuePair__G!(TKey , TValue)))
 			{
 				return this;
 			}

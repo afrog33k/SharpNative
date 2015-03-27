@@ -179,8 +179,8 @@ namespace SharpNative.Compiler //TODO: clean up this code and its output
 
                     writer.WriteLine("if (" + fieldName + " is null)");
                     writer.OpenBrace();
-                    writer.Write(fieldName + " =  new " + "__Event!(" + typeString + ")(new Action_T!(" + typeString +
-                                 ")(&Add_" + name + "),new Action_T!(" + typeString + ")(&Remove_" + name + ") );");
+                    writer.Write(fieldName + " =  new " + "__Event!(" + typeString + ")(new Action__G!(" + typeString +
+                                 ")(&Add_" + name + "),new Action__G!(" + typeString + ")(&Remove_" + name + ") );");
                     writer.CloseBrace();
                     writer.Write("return " + fieldName + ";");
                     writer.CloseBrace();
@@ -255,8 +255,8 @@ namespace SharpNative.Compiler //TODO: clean up this code and its output
 
                     staticWriter.Write(name);
 
-                    staticWriter.Write(" =  new " + "__Event!(" + typeString + ")(new Action_T!(" + typeString +
-                                       ")(&Add_" + name + "),new Action_T!(" + typeString +
+                    staticWriter.Write(" =  new " + "__Event!(" + typeString + ")(new Action__G!(" + typeString +
+                                       ")(&Add_" + name + "),new Action__G!(" + typeString +
                                        ")(&Remove_" + name + ") )");
 
                     staticWriter.Write(";");
@@ -271,8 +271,8 @@ namespace SharpNative.Compiler //TODO: clean up this code and its output
 
                     staticWriter.Write(name);
 
-                    staticWriter.Write(" =  new " + "__Event!(" + typeString + ")(new Action_T!(" + typeString +
-                                       ")((&Add_" + name + ")),new Action_T!(" + typeString + ")((&Remove_" + name +
+                    staticWriter.Write(" =  new " + "__Event!(" + typeString + ")(new Action__G!(" + typeString +
+                                       ")((&Add_" + name + ")),new Action__G!(" + typeString + ")((&Remove_" + name +
                                        ")) )");
 
                     staticWriter.Write(";");

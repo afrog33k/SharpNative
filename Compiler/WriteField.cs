@@ -47,7 +47,9 @@ namespace SharpNative.Compiler
             return field.AttributeLists.Any(
                 l =>
                     l.Attributes.Any(
-                        a => a.Name.As<IdentifierNameSyntax>().Identifier.ValueText == "ThreadStatic"));
+                        a => a.Name is QualifiedNameSyntax ? (a.Name.As<QualifiedNameSyntax>().Right.Identifier.ValueText == "ThreadStatic") :
+                        a.Name is IdentifierNameSyntax && a.Name.As<IdentifierNameSyntax>().Identifier.ValueText == "ThreadStatic"
+                        ));
         }
 
         private static bool IsThreadStatic(this EventFieldDeclarationSyntax field)
@@ -55,7 +57,8 @@ namespace SharpNative.Compiler
             return field.AttributeLists.Any(
                 l =>
                     l.Attributes.Any(
-                        a => a.Name.As<IdentifierNameSyntax>().Identifier.ValueText == "ThreadStatic"));
+                        a => a.Name is QualifiedNameSyntax ? (a.Name.As<QualifiedNameSyntax>().Right.Identifier.ValueText == "ThreadStatic") :
+                        a.Name is IdentifierNameSyntax && a.Name.As<IdentifierNameSyntax>().Identifier.ValueText == "ThreadStatic"));
         }
 
 
@@ -77,8 +80,8 @@ namespace SharpNative.Compiler
             var isStatic = isConst;
             //Handle Auto Properties
 
-            if (modifiers.Any(SyntaxKind.PrivateKeyword))
-                writer.Write("private ");
+            // if (modifiers.Any(SyntaxKind.PrivateKeyword)) // Reflection cannot work with this, cant get address or set value
+            //   writer.Write("private ");
 
             if (modifiers.Any(SyntaxKind.PublicKeyword) || modifiers.Any(SyntaxKind.InternalKeyword) ||
                 modifiers.Any(SyntaxKind.ProtectedKeyword) || modifiers.Any(SyntaxKind.AbstractKeyword))

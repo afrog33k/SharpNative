@@ -243,7 +243,7 @@ namespace SharpNative.Compiler.YieldAsync
                 iterationState.BreakState = nextState;
 
                 var forStatement = SyntaxFactory.WhileStatement(StateMachineThisFixer.Fix(node.Condition) ?? Cs.True(), SyntaxFactory.Block(CaptureState(node.Statement, postState, nextState)));
-                iterationState.Statements.Add(forStatement);
+                iterationState.Statements.Add(StateMachineThisFixer.Fix(forStatement));
 
                 Close(iterationState);
 

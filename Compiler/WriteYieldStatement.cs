@@ -8,7 +8,7 @@ namespace SharpNative.Compiler
     {
         public static void Go(OutputWriter writer, YieldStatementSyntax yieldStatementSyntax)
         {
-
+            
             if (yieldStatementSyntax.ReturnOrBreakKeyword.IsKind(SyntaxKind.ReturnKeyword))
             {
                 writer.WriteLine("__iter.yieldReturn({0});", Core.WriteString(yieldStatementSyntax.Expression));

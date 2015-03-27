@@ -18,7 +18,8 @@ class Int64 : Boxed!long
     }
 
 	public override string toString() {
-		return to!string(__Value);
+		//return to!string(__Value);
+		return (__Value.stringof);//TODO on dmd 2.067-b4 to!string crashes ????
 	}
 
 	public static String ToString(long value)
@@ -28,7 +29,12 @@ class Int64 : Boxed!long
 
 	public override String ToString()
 	{
-		return new String(to!wstring(this.toString));
+		import std.array:appender;
+		import std.format;
+		//Almost there ;)
+		auto writer = appender!string();
+		formattedWrite(writer,"%d",__Value);
+		return new String(to!wstring(writer.data));
 	}
 
 	public override Type GetType()

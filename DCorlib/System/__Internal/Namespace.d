@@ -11,6 +11,7 @@ public class __ReflectionInfo
 	{
 		//Should move these to reflection info though
 		__TypeOf!(System.NObject.NObject)("System.Object");
+		__TypeOf!(int)("System.Int32");
 		__TypeOf!(NException)("System.Exception");
 	}
 }

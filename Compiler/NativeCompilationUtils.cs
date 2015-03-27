@@ -59,6 +59,7 @@ namespace SharpNative.Compiler
                 //              OptimizationFlags = "  -m64 -O  -inline -release \"-I/Projects/Experiments/SharpNative/ldc2-0.15.0/import\" ";
 
                 //              OptimizationFlags = "  -m64 -O  -inline -release \"-I/usr/local/Cellar/ldc/0.14.0/include/d\" ";
+                //-w -wi -v
                 OptimizationFlags = "  -inline -release -m64 -O  \"-IC:\\D\\dmd2\\windows\\lib\" ";
                 //                              OptimizationFlags = "  -inline -release -m64  -O  \"-I/usr/local/Cellar/dmd/2.066.0/include/d2\" ";
 

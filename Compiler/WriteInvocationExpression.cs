@@ -457,7 +457,7 @@ namespace SharpNative.Compiler
                                          TypeProcessor.GetSymbolInfo(value.Expression as NameSyntax).Symbol.Kind ==
                                          SymbolKind.Method);
                 var isdelegateassignment = ismemberexpression &&
-                                           initializerType.ConvertedType.TypeKind == TypeKind.Delegate;
+                                           initializerType.ConvertedType!=null&& initializerType.ConvertedType.TypeKind == TypeKind.Delegate;
                 var isstaticdelegate = isdelegateassignment &&
                                        ((memberaccessexpression != null &&
                                        TypeProcessor.GetSymbolInfo(memberaccessexpression).Symbol.IsStatic) ||
@@ -628,6 +628,8 @@ namespace SharpNative.Compiler
                 return false; //params cannot be used with named arguments
 
             int i = invocationExpression.ArgumentList.Arguments.IndexOf(argumentOpt);
+            if(i>=methodSymbol.Parameters.Length)
+                return false;
             return methodSymbol.Parameters.ElementAt(i).IsParams;
         }
 

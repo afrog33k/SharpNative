@@ -22,7 +22,7 @@ namespace SharpNative.Compiler
         private readonly TextWriter _writer;
         private readonly string _path;
         public int Indent;
-        private readonly StringBuilder _builder = new StringBuilder(5000);
+        private StringBuilder _builder = new StringBuilder(5000);
 
 
         public readonly List<ITypeSymbol> Imports = new List<ITypeSymbol>();
@@ -100,176 +100,13 @@ namespace SharpNative.Compiler
 
                 if (!IsNamespace)
                 {
-                    //              if (!IsInterface) 
-                    {
-
-                        if (!(this is TempWriter))
-                        {
-                            //Remove read only so we can write it
-                            if (File.Exists(_path))
-                                File.SetAttributes(_path, FileAttributes.Normal);
-                        }
-
-                        var finalBuilder = new StringBuilder();
-
-                        var forwardDeclarations = new List<string>();
-
-                        //                var myHeader = TypeProcessor.GetHeaderName(TypeState.Instance.Namespace + "." + TypeState.Instance.TypeName);
-                        //Process includes from types
-
-                        var cleanedupList = new List<ITypeSymbol>();
-                        foreach (var usedtype in Context.Instance.UsedTypes)
-                        {
-                            if (!cleanedupList.Contains(usedtype.OriginalDefinition) &&
-                            usedtype.TypeKind != TypeKind.TypeParameter)
-                                cleanedupList.Add(usedtype.OriginalDefinition);
-                        }
-
-                        //                var specializations = new List<string>();
-                        foreach (var usedType in cleanedupList)
-                        {
-                            if (!String.IsNullOrEmpty(usedType.Name))
-                            {
-                            }
-
-                            if (usedType.IsSubclassOf(Context.Instance.Type))
-                                continue;
-
-                            if (usedType.TypeKind == TypeKind.PointerType) //No need to import pointer types
-                            continue;
-
-                      
-                            if (!Imports.Contains(usedType))  //TODO: change this when "Assemblies" are implemented
-                            Imports.Add(usedType);
-                        }
-
-                        if (!Imports.Contains(Context.Object))
-                            Imports.Add(Context.Object);//TODO: change this when "Assemblies" are implemented
-
-                        var @namespace =
-                            Context.Instance.Type.ContainingNamespace.FullName().RemoveFromEndOfString(".Namespace");
-                        var moduleName = @namespace + "." + Context.Instance.TypeName;
-
-                        if (!FileExists)
-
-                        finalBuilder.Append("module " + moduleName + ";\n\n");
-
-                        Imports.Add(Context.Instance.Type);
-
-
-                        if (Imports != null)
-                        {
-                            finalBuilder.Append("\n");
-                            IEnumerable<ITypeSymbol> imports = Imports;
-
-                            var importGroups =
-                                imports.GroupBy(k => k.ContainingNamespace).Where(j => j.Key != null);//.Where(k => k.LastIndexOf('.') != -1)
-                            List<string> currentImports = new List<string>();
-                            foreach (var import in importGroups)
-                            {
-                                //if (import.Key.EndsWith("Namespace", StringComparison.Ordinal))
-                                {
-                                    if (Context.Namespaces.ContainsKey(import.Key))
-                                    {
-                                        var types = ((import).Union(Context.Namespaces[import.Key])).Distinct().ToArray();
-                                        Context.Namespaces[import.Key] = types;
-                                    }
-                                    else
-                                        Context.Namespaces[import.Key] = import.Distinct().ToArray();
-
-                                    if (import.Key != Context.Instance.Type)
-                                    {
-                                        var name = import.Key.GetModuleName();
-
-                                        if (!currentImports.Contains(name))
-                                        {
-                                            finalBuilder.Append("import " + name + ";\n");
-                                            currentImports.Add(name);
-                                        }
-                                    
-
-                                    }
-                                    
-                                }
-                            }
-
-                           
-                            //Add usings
-                            foreach (var @anamespace in Context.Instance.UsingDeclarations)
-                            {
-                                if (@anamespace.Alias == null) //Aliases are not imports
-                                {
-                                    var name = @anamespace.Name.ToFullString() + ".Namespace";
-                                    if (!currentImports.Contains(name))
-                                    {
-                                        finalBuilder.Append("import " + name + ";\n");
-                                        currentImports.Add(name);
-                                    }
-                                }
-                               
-                            }
-
-                            foreach (var type in Context.Instance.NamespaceAliases)
-                            {
-                                var name = type.Key.FullName(true,false);
-                                if (name!=type.Value)
-                                {
-                                    
-                                    finalBuilder.Append("alias " + name + " " + type.Value + ";\n");
-                                    // currentImports.Add(name);
-                                }
-                            }
-
-
-                            //Clear used types first
-                            //TypeProcessor.ClearUsedTypes();
-                            //Add aliases
-                            foreach (var type in Context.Instance.Aliases)
-                            {
-                                var name = type.Key.GetModuleName(false);
-                               // if (!currentImports.Contains(name))
-                                {
-                                    finalBuilder.Append("alias " + name + " " + type.Value+ ";\n");
-                                   // currentImports.Add(name);
-                                }
-                            }
-                        }
-
-                   
-                       
-
-                        if (forwardDeclarations.Count > 0)
-                            finalBuilder.Append(forwardDeclarations.Aggregate((a, b) => a + "\n" + b));
-
-                        finalBuilder.AppendLine();
-
-                        finalBuilder.Append(_builder);
-
-                        if (!(this is TempWriter))
-                        {
-                            if (!FileExists)
-                            {
-                                File.WriteAllText(_path, finalBuilder.ToString());
-                            }
-                            else
-                            {
-                                File.AppendAllText(_path, finalBuilder.ToString());
-
-                            }
-
-                            //Set read-only on generated files
-                            //                        File.SetAttributes(_path, FileAttributes.ReadOnly);
-                        }
-                    }
+                    Finalize();
                 }
                 else
                 {
                     if (!(this is TempWriter))
                     {
                         File.WriteAllText(_path, _builder.ToString());
-
-                        //Set read-only on generated files
-//                    File.SetAttributes(_path, FileAttributes.ReadOnly);
                     }
                 }
                 _writer.Dispose();
@@ -281,6 +118,158 @@ namespace SharpNative.Compiler
                     ((ex.InnerException != null)
                                     ? ex.InnerException.Message + ex.InnerException.StackTrace
                                     : ""));
+            }
+        }
+
+        public void Finalize()
+        {
+//              if (!IsInterface) 
+            {
+                if (!(this is TempWriter))
+                {
+                    //Remove read only so we can write it
+                    if (File.Exists(_path))
+                        File.SetAttributes(_path, FileAttributes.Normal);
+                }
+
+                var finalBuilder = new StringBuilder();
+
+                var forwardDeclarations = new List<string>();
+
+                //                var myHeader = TypeProcessor.GetHeaderName(TypeState.Instance.Namespace + "." + TypeState.Instance.TypeName);
+                //Process includes from types
+
+                var cleanedupList = new List<ITypeSymbol>();
+                foreach (var usedtype in Context.Instance.UsedTypes)
+                {
+                    if (!cleanedupList.Contains(usedtype.OriginalDefinition) &&
+                        usedtype.TypeKind != TypeKind.TypeParameter)
+                        cleanedupList.Add(usedtype.OriginalDefinition);
+                }
+
+                //                var specializations = new List<string>();
+                foreach (var usedType in cleanedupList)
+                {
+                    if (!String.IsNullOrEmpty(usedType.Name))
+                    {
+                    }
+
+                    if (usedType.IsSubclassOf(Context.Instance.Type))
+                        continue;
+
+                    if (usedType.TypeKind == TypeKind.PointerType) //No need to import pointer types
+                        continue;
+
+                    if (!Imports.Contains(usedType)) //TODO: change this when "Assemblies" are implemented
+                        Imports.Add(usedType);
+                }
+
+                if (!Imports.Contains(Context.Object))
+                    Imports.Add(Context.Object); //TODO: change this when "Assemblies" are implemented
+
+                var @namespace =
+                    Context.Instance.Type.ContainingNamespace.FullName().RemoveFromEndOfString(".Namespace");
+                var moduleName = @namespace + "." + Context.Instance.TypeName;
+
+                if (!FileExists && !(this is TempWriter))
+                    finalBuilder.Append("module " + moduleName + ";\n\n");
+
+                Imports.Add(Context.Instance.Type);
+
+                if (Imports != null)
+                {
+                    finalBuilder.Append("\n");
+                    IEnumerable<ITypeSymbol> imports = Imports;
+
+                    var importGroups =
+                        imports.GroupBy(k => k.ContainingNamespace).Where(j => j.Key != null);
+                        //.Where(k => k.LastIndexOf('.') != -1)
+                    List<string> currentImports = new List<string>();
+                    foreach (var import in importGroups)
+                    {
+                        //if (import.Key.EndsWith("Namespace", StringComparison.Ordinal))
+                        {
+                            if (Context.Namespaces.ContainsKey(import.Key))
+                            {
+                                var types = ((import).Union(Context.Namespaces[import.Key])).Distinct().ToArray();
+                                Context.Namespaces[import.Key] = types;
+                            }
+                            else
+                                Context.Namespaces[import.Key] = import.Distinct().ToArray();
+
+                            if (import.Key != Context.Instance.Type)
+                            {
+                                var name = import.Key.GetModuleName();
+
+                                if (!currentImports.Contains(name))
+                                {
+                                    finalBuilder.Append(WriteIndentToString() + "import " + name + ";\n");
+                                    currentImports.Add(name);
+                                }
+                            }
+                        }
+                    }
+
+                    //Add usings
+                    foreach (var @anamespace in Context.Instance.UsingDeclarations)
+                    {
+                        if (@anamespace.Alias == null) //Aliases are not imports
+                        {
+                            var name = @anamespace.Name.ToFullString() + ".Namespace";
+                            if (!currentImports.Contains(name))
+                            {
+                                finalBuilder.Append("import " + name + ";\n");
+                                currentImports.Add(name);
+                            }
+                        }
+                    }
+
+                    foreach (var type in Context.Instance.NamespaceAliases)
+                    {
+                        var name = type.Key.FullName(true, false);
+                        if (name != type.Value)
+                        {
+                            finalBuilder.Append("alias " + name + " " + type.Value + ";\n");
+                            // currentImports.Add(name);
+                        }
+                    }
+
+                    //Clear used types first
+                    //TypeProcessor.ClearUsedTypes();
+                    //Add aliases
+                    foreach (var type in Context.Instance.Aliases)
+                    {
+                        var name = type.Key.GetModuleName(false);
+                        // if (!currentImports.Contains(name))
+                        {
+                            finalBuilder.Append("alias " + name + " " + type.Value + ";\n");
+                            // currentImports.Add(name);
+                        }
+                    }
+                }
+
+                if (forwardDeclarations.Count > 0)
+                    finalBuilder.Append(forwardDeclarations.Aggregate((a, b) => a + "\n" + b));
+
+                finalBuilder.AppendLine();
+
+                if (!(this is TempWriter))
+                    finalBuilder.Append(_builder);
+                else
+                {
+                    _builder = finalBuilder.Append(_builder);
+                }
+
+                if (!(this is TempWriter))
+                {
+                    if (!FileExists)
+                        File.WriteAllText(_path, finalBuilder.ToString());
+                    else
+                        File.AppendAllText(_path, finalBuilder.ToString());
+
+                    //Set read-only on generated files
+                    //                        File.SetAttributes(_path, FileAttributes.ReadOnly);
+                }
             }
         }
 
@@ -318,6 +307,21 @@ namespace SharpNative.Compiler
             }
             //_writer.Write (new string (' ', Indent * 2)); // Weird error on System.Globalization.CultureInfo ... hangs
         }
+
+        public string WriteIndentToString()
+        {
+            var str = "";
+            var c = Indent * 2;
+            while (c > 0)
+            {
+                str+=(' ');
+                c--;
+            }
+            //_writer.Write (new string (' ', Indent * 2)); // Weird error on System.Globalization.CultureInfo ... hangs
+            return str;
+        }
+
+
 
         //        public bool IsInterface;
 

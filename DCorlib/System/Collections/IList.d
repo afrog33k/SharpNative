@@ -15,8 +15,8 @@ public     abstract bool  IsFixedSize( IList k =null) @property;
 public     abstract bool  IsReadOnly( IList k =null) @property;
   
 
-public    abstract void opIndexAssign( NObject  value, int index, IList k =null );
-public    abstract T opIndex(T)(int index, IList k =null);
+public    abstract NObject opIndexAssign(NObject  value, int index, IList __k =null );
+public    abstract NObject opIndex(int index, IList __k=null);
 
 
 public int Add(NObject value, IList k =null);

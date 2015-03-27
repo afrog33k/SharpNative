@@ -1,8 +1,8 @@
-﻿//Structs work but there is an issue with structs in arrays
+//Structs work but there is an issue with structs in arrays
 //Also Array code is too verbose and alot of unneccesary code is generated, can we partially decompile such
 //code using some kind of instrinsic probably from ILSPY ?
 
-public static class Program
+public  class Program
 {
     public class Test
     {
@@ -29,12 +29,8 @@ public static class Program
     {
         return 10;
     }
-    public static void Main()
-    {
-        var struct3 = new Test();
-        struct3.A = 32;
-
-        PrintStruct(new Test()
+    
+    Test tester = new Test()
         {
             A = new Test() { A = new Test() { A = 786 }.A }.A,
             B = new Test()
@@ -42,7 +38,13 @@ public static class Program
                 A = 67,
                 B = new Test() { A = 98, B = new Test() { A = GetNumber() } }
             }
-        });
+        };
+    public static void Main()
+    {
+        var struct3 = new Test();
+        struct3.A = 32;
+
+        PrintStruct(new Program().tester);
 
         System.Console.WriteLine("\n");
         var struct1 = new Test { A = 132 };

@@ -90,6 +90,7 @@ namespace SharpNative.Compiler
         public static INamedTypeSymbol Bool { get; set; }
         public static INamedTypeSymbol String { get; set; }
 
+        public static  INamedTypeSymbol ListT { get; set; }
 
         public static INamedTypeSymbol Exception { get; set; }
 
@@ -110,7 +111,7 @@ namespace SharpNative.Compiler
             Int = compilation.FindType("System.Int32");
             Bool = compilation.FindType("System.Boolean");
             Void = compilation.FindType("System.Void");
-
+            ListT = compilation.FindType("System.Collections.Generic.List`1");
 
 
             Exception = compilation.FindType("System.Exception");

@@ -16,7 +16,12 @@ namespace SharpNative.Compiler
     {
         public static void Go(OutputWriter writer, ImplicitArrayCreationExpressionSyntax array)
         {
-            var t = TypeProcessor.GetTypeInfo(array).Type;
+            var ti = TypeProcessor.GetTypeInfo(array);
+            var t = ti.Type;
+            if (ti.ConvertedType!=null && !(ti.ConvertedType == t)) // Alot of times we are using covariance here
+            {
+                t = ti.ConvertedType;
+            }
             var ptr = !t.As<IArrayTypeSymbol>().ElementType.IsValueType; // ? "" : "";
             var elementType = t.As<IArrayTypeSymbol>().ElementType;
             var type = TypeProcessor.ConvertType(elementType);

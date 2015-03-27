@@ -57,7 +57,7 @@ Array_T!(int[]) fiver = new Array_T!(int[])([ [1,2],[8],[3],[4],[6] ],2,3,4);
 
 Console.WriteLine(fiver.Ranks);
 */
-public class Array_T(T=NObject) :  Array, ICollection_T!(T), IList
+public class Array_T(T=NObject) :  Array, ICollection__G!(T), IList
 //if(!is(T:void))
 {
 	private int index_;
@@ -241,7 +241,16 @@ public class Array_T(T=NObject) :  Array, ICollection_T!(T), IList
 	}
 	public void Reverse()
 	{
+		//TODO: write own which is faster
+		//std.algorithm.reverse(_items);
 		_items.reverse;
+	}
+
+	public void Reverse(int index,int length)
+	{
+		auto subarray = _items[index..length];
+		auto restofarray = _items[0..index];
+		_items = restofarray ~ subarray;
 	}
 
 
@@ -257,7 +266,10 @@ public class Array_T(T=NObject) :  Array, ICollection_T!(T), IList
 	}
 
 	
-
+public void __AdjustLength(int newLength)
+{
+		_items.length = newLength;
+}
 
 	public override Type GetType()
 	{
@@ -266,27 +278,9 @@ public class Array_T(T=NObject) :  Array, ICollection_T!(T), IList
 
 	public override String ToString()
 	{
-		//Console.WriteLine(GetType());
-		//return GetType().FullName;
-		//auto csName = (T.stringof);
-		//return _S(csName ~ "[]");
-
-		//auto name =""; __TypeOf!(T).FullName.Text ~ "[]";
-
-		/*if(is(T:Array_T!(T)))
-		{
-		name += "[]";
-		}
-		else
-		{
-
-		}*/
-		//	if(Items is null || Items.length==0)
-		{
+		
 			return _S(__TypeOf!(T).FullName.Text ~ "[]");
-		}
-		//	else
-		//		return _S(Items.toString);
+		
 	}
 
 	//Adds foreach support
@@ -347,7 +341,7 @@ public class Array_T(T=NObject) :  Array, ICollection_T!(T), IList
 		}
 
 	//Needs fix, look at MatrixTest.cs
-	final  void opIndexAssign(T value, int[] index...)
+	final  T opIndexAssign(T value, int[] index...)
 	{
 		//Console.WriteLine("Assigning ...");
 		int[] _indices = index; // .dup is slew
@@ -356,7 +350,7 @@ public class Array_T(T=NObject) :  Array, ICollection_T!(T), IList
 		auto len =cast(int)_indices.length;
 
 
-		//Optimize common scenarios, slight performance boosts ... Add others
+		//Optimize common scenarios, slight performance boost ... Add others
 
 		if(index.length==2) 
 		{
@@ -390,15 +384,17 @@ public class Array_T(T=NObject) :  Array, ICollection_T!(T), IList
 
 		_items[finalindex] =value;
 
+		return _items[finalindex];
 	}
 
 
 
-	final  void opIndexAssign(T value, int index)  {
+	final  T opIndexAssign(T value, int index)  {
 		//if (index >= _items.length)
 		//	throw new ArgumentOutOfRangeException(new String("index"));
 
 		_items[index] = value;
+		return _items[index];
 	}
 
 	final  ref T opIndex(int index) { //TODO: ref could be a bad idea 
@@ -407,6 +403,11 @@ public class Array_T(T=NObject) :  Array, ICollection_T!(T), IList
 		//	throw new ArgumentOutOfRangeException(new String("index"));
 
 		return _items[index];
+	}
+
+	NObject opIndex(int index, IList __k = null)
+	{
+		return BOX!(T)(_items[index]);
 	}
 
 	//Needs fix, look at MatrixTest.cs
@@ -493,39 +494,39 @@ public class Array_T(T=NObject) :  Array, ICollection_T!(T), IList
 
 
 	//ICollection Methods
-	void Add(T item, ICollection_T!(T) j=null)
+	void Add(T item, ICollection__G!(T) j=null)
 	{
 		throw new NotSupportedException();
 	}
 
-	public  bool  IsReadOnly(ICollection_T!(T) j=null) @property
+	public  bool  IsReadOnly(ICollection__G!(T) j=null) @property
 	{
 		throw new NotSupportedException();
 	}
 
 
-	bool Remove(T item,ICollection_T!(T) j=null)
+	bool Remove(T item,ICollection__G!(T) j=null)
 	{
 		throw new NotSupportedException();
 	}
 
-	bool Contains(T item,ICollection_T!(T) j=null)
+	bool Contains(T item,ICollection__G!(T) j=null)
 	{
 		throw new NotSupportedException();
 	}
 
-	public void CopyTo(Array_T!(T) other, int arrayIndex,ICollection_T!(T) j=null)
+	public void CopyTo(Array_T!(T) other, int arrayIndex,ICollection__G!(T) j=null)
 	{	
 			other.Items = _items[arrayIndex..$].dup;	
 	}
 
 
-	void Clear(ICollection_T!(T) j=null)
+	void Clear(ICollection__G!(T) j=null)
 	{
 		throw new NotSupportedException();
 	}
 
-	int Count(ICollection_T!(T) j=null) @property
+	int Count(ICollection__G!(T) j=null) @property
 	{
 		return cast(int)_items.length;
 	}
@@ -567,9 +568,10 @@ public class Array_T(T=NObject) :  Array, ICollection_T!(T), IList
 	bool IsReadOnly(IList k = null) @property{
 		return true;
 	}
-	void opIndexAssign(NObject value, int index, IList k = null)
+	NObject opIndexAssign(NObject value, int index, IList k = null)
 	{
 		_items[index] = Cast!(T)(value);
+		return BOX!(T)(_items[index]);
 	}
 
 	int Add(NObject value, IList k = null){

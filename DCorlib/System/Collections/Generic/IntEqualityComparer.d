@@ -4,7 +4,7 @@ module System.Collections.Generic.IntEqualityComparer;
 import System.Namespace;
 import System.Collections.Generic.Namespace;
 
- class IntEqualityComparer :  EqualityComparer_T!(int)
+ class IntEqualityComparer :  EqualityComparer__G!(int)
 {
 
 

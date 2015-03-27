@@ -1,4 +1,4 @@
-module System.Collections.Generic.EqualityComparer_T;
+module System.Collections.Generic.EqualityComparer__G;
 
 
 import System.Namespace;
@@ -7,17 +7,17 @@ import System.Collections.Generic.Namespace;
 //import CsRoot.Namespace;
 //import System.Runtime.InteropServices.Namespace;
 
- class EqualityComparer_T( T ) :  NObject ,  System.Collections.Namespace.IEqualityComparer ,  IEqualityComparer_T!(T)
+ class EqualityComparer__G( T ) :  NObject ,  System.Collections.Namespace.IEqualityComparer ,  IEqualityComparer__G!(T)
 {
 
-  static EqualityComparer_T!(T) _default;
+  static EqualityComparer__G!(T) _default;
 
-public  abstract int IEqualityComparer_T_GetHashCode(T obj) ;
+public  abstract int GetHashCode(T obj,IEqualityComparer__G!(T) __j=null) ;
 
-public  abstract bool IEqualityComparer_T_Equals(T x, T y) ;
+public  abstract bool Equals(T x, T y,IEqualityComparer__G!(T) __j=null) ;
   
 
-public static    EqualityComparer_T!(T)  Default() @property  {
+public static    EqualityComparer__G!(T)  Default() @property  {
 
     {
 
@@ -28,7 +28,7 @@ public static    EqualityComparer_T!(T)  Default() @property  {
 }
 
 
-int IEqualityComparer_GetHashCode(NObject obj) 
+int GetHashCode(NObject obj,IEqualityComparer __j=null) 
   {
 
     if (obj is null)
@@ -46,7 +46,7 @@ int IEqualityComparer_GetHashCode(NObject obj)
   
 }
 
-bool IEqualityComparer_Equals(NObject x, NObject y) 
+bool Equals(NObject x, NObject y,IEqualityComparer __j=null) 
   {
 
     if (x==y)
@@ -129,7 +129,7 @@ public int IndexOf(Array_T!(T) array, T value, int startIndex, int endIndex)
         //_default= new DefaultComparer_T!(T)();
       
 }
-      _default = cast(EqualityComparer_T!(T)) null;
+      _default = cast(EqualityComparer__G!(T)) null;
 
     
 }

@@ -35,7 +35,7 @@ public    NObject  SyncRoot() @property  {
   }
 
 
-public void CopyTo(Array_T!(NObject[]) array, int index) 
+public void CopyTo(Array_T!(NObject) array, int index) 
   {
     //ht.CopyToCollection(array, index, Hashtable_EnumeratorType.KEY);
   }

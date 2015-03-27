@@ -18,7 +18,11 @@ namespace SharpNative.Compiler
     {
         public static void Go(OutputWriter writer, AnonymousMethodExpressionSyntax expression)
         {
-            Go(writer, expression.ParameterList.Parameters, expression.Block, TypeProcessor.GetTypeInfo(expression));
+            if (expression.ParameterList != null)
+                Go(writer, expression.ParameterList.Parameters, expression.Block, TypeProcessor.GetTypeInfo(expression));
+            else
+                Go(writer, new SeparatedSyntaxList<ParameterSyntax>(), expression.Block, TypeProcessor.GetTypeInfo(expression));
+
         }
 
         public static void Go(OutputWriter writer, ParenthesizedLambdaExpressionSyntax expression)

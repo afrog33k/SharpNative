@@ -37,7 +37,9 @@ namespace SharpNative.Compiler
             var typeString = TypeProcessor.ConvertType(foreachStatement.Type) + " ";
 
             var foreachCount = Context.Instance.ForeachCount++;
-            if (types.Type is IArrayTypeSymbol)
+            var isListT = types.Type.OriginalDefinition == Context.ListT;
+            var isArray = types.Type is IArrayTypeSymbol;
+            if (isArray || isListT)
             {//Lets just for through the array, iterators are slow ... really slow
                 var forIter = "__for" + foreachCount;
                 var forArray = "__varfor" + foreachCount;
@@ -50,8 +52,8 @@ namespace SharpNative.Compiler
 
                // writer.WriteIndent();
                 writer.WriteLine("auto {0} = {1};", forArray, expressiono);
-                writer.WriteLine("for (int {0}=0;{0} < {2}.length; {0}++)", forIter, //Special case to support iterating "params" array
-                    WriteIdentifierName.TransformIdentifier(foreachStatement.Identifier.ValueText), forArray);
+                writer.WriteLine("for (int {0}=0;{0} < {2}.{3}; {0}++)", forIter, //Special case to support iterating "params" array
+                    WriteIdentifierName.TransformIdentifier(foreachStatement.Identifier.ValueText), forArray, isListT?"Count" :"length");
                
                 writer.OpenBrace();
                 writer.WriteLine("auto {0} = {1}[{2}];", WriteIdentifierName.TransformIdentifier(foreachStatement.Identifier.ValueText), forArray, forIter);

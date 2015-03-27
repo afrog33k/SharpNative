@@ -29,28 +29,64 @@ public class Console :  NObject
 		//}
 public static void Write(T)(T value) if(is(T==float))
 {
-		write(value.toString);		
+		write(BOX!(value).ToString());		
 }
 
 public static void Write(T)(T value) if(is(T==double))
 {
-		write(value.toString);		
+		write(BOX!(value).ToString());		
 }
 
 
 public static void Write(T)(T value) if(is(T==int))
 {
-		write(value.toString);		
+		write(value);		
 }
+
+public static void Write(T)(T value) if(is(T==wchar))
+{
+	write(value);		
+}
+
+
+public static void WriteLine(T)(T value) if(is(T==wchar))
+{
+
+		writeln(value);		
+}
+
+public static void WriteLine(short value)
+{
+	writeln(value);
+}
+
+
+public static void Write(short value)
+{
+	write(value);
+}
+
+
+public static void WriteLine(wchar value)
+{
+
+	writeln(value);		
+}
+
+public static void Write(wchar value)
+{
+	write(value);		
+}
+
 
 public static void WriteLine(T)(T value) if(is(T==int))
 {
-		writeln(value.toString);		
+	writeln(value);		
 }
 
 public static void WriteLine(T)(T value) if(is(T==double))
 {
-		writeln(value.toString);		
+		writeln(BOX!(T)(value).ToString());		
 }
 
 
@@ -69,7 +105,7 @@ public static void WriteLine(long value)
 }
 public static void WriteLine(T)(T value) if(is(T==float))
 {
-	writeln(value.toString);		
+	writeln(value);		//TODO: find out why dmd 2.067-b4 toString errors
 }
 
 

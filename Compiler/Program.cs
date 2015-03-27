@@ -108,12 +108,14 @@ namespace SharpNative.Compiler
 
                         //Reflection Info
                         writer.WriteLine("\n\nimport System.Namespace;");
+                        writer.WriteLine("\n\nimport System.Reflection.Namespace;");
+
                         //To be on the safe side, import all namespaces except us... this allows us to create correct reflectioninfo
                         //gtest-053.cs
-//                        foreach (var @name in namespaces.DistinctBy(o=>o.Key).Except(@namespace)) //Cant work leads to cycles
-//                        {
-//                            writer.WriteLine("import {0};", @name.Key.GetModuleName(false));
-//                        }
+                        //                        foreach (var @name in namespaces.DistinctBy(o=>o.Key).Except(@namespace)) //Cant work leads to cycles
+                        //                        {
+                        //                            writer.WriteLine("import {0};", @name.Key.GetModuleName(false));
+                        //                        }
                         writer.WriteLine("public class __ReflectionInfo");
                         writer.OpenBrace();
                         writer.WriteLine("static this()");
@@ -127,7 +129,8 @@ namespace SharpNative.Compiler
                             {
 
                                 //Get its specializations
-                                foreach (var specialization in GetGenericSpecializations(type).DistinctBy(k=>k.FullName()))
+                                foreach (var specialization in GetGenericSpecializations(type).DistinctBy(k=>
+                                    k))
                                 {
                                     //TODO fix nested types
                                     //if (specialization.ContainingType == null)
@@ -139,14 +142,9 @@ namespace SharpNative.Compiler
                                             writer.WriteLine("import {0};", @name.GetModuleName(false));
                                         }
                                             var genericName = GetGenericMetadataName(specialization);
-                                        string boxed;
-                                        if (specialization.TypeKind == TypeKind.Struct)
-                                        {
-                                           
-                                            boxed = "__Boxed_";
-                                        }
-                                        writer.WriteLine("__TypeOf!(" + TypeProcessor.ConvertType(specialization,true,true,false) + "" + ")(\"" + genericName
-                                            + "\");");
+                                      
+                                       
+                                        WriteReflectionInfo(writer, specialization, genericName);
                                     }
                                 }
                             }
@@ -158,10 +156,9 @@ namespace SharpNative.Compiler
                                 {
                                     writer.WriteLine("import {0};", @name.GetModuleName(false));
                                 }
+                               
                                 var genericName = GetGenericMetadataName((INamedTypeSymbol) type);
-                                writer.WriteLine("__TypeOf!(" + TypeProcessor.ConvertType(type, true, true, false) + ")(\"" + genericName
-                                           + "\");");
-                                //                                writer.WriteLine("__TypeOf!(" + TypeProcessor.ConvertType(type, true, true, true) + ")(\"" + type.ContainingNamespace.FullNameWithDotCSharp() + (type.ContainingType != null ? (type.ContainingType.Name + "+") : "") + type.MetadataName + "\");");
+                                WriteReflectionInfo(writer, type, genericName);
                             }
                         }
                         writer.CloseBrace();
@@ -170,6 +167,102 @@ namespace SharpNative.Compiler
                     }
                 }
             }
+        }
+
+        private static void WriteReflectionInfo(OutputWriter writer, ITypeSymbol specialization, string genericName)
+        {
+            if (specialization.TypeKind == TypeKind.Interface)
+            {
+                //for now no interfaces in reflection
+
+                return;
+            }
+            writer.WriteLine("__TypeOf!(" + TypeProcessor.ConvertType(specialization, true, true, false) + "" + ")(\"" +
+                             genericName
+                             + "\")");
+            foreach (var member in specialization.GetMembers())
+            {
+                if (member is IFieldSymbol)
+                {
+                    var field = member as IFieldSymbol;
+                    if (field.AssociatedSymbol == null)
+                    {
+                        // Ignore compiler generated backing fields ... for properties etc ...
+                        writer.WriteLine(
+                            !field.IsConst
+                                ? ".__Field(\"{0}\", new FieldInfo__G!({1},{2})(function {2} ({1}* __{4}){{ return __{4}.{3};}},function void ({1}* __{4}, {2} __{0}){{ __{4}.{3} = __{0};}}))"
+                                : ".__Field(\"{0}\", new FieldInfo__G!({1},{2})(function {2} ({1}* __{4}){{ return __{4}.{3};}},null))",
+                            field.Name,
+                            TypeProcessor.ConvertType(field.ContainingType),
+                            TypeProcessor.ConvertType(field.Type),
+                            WriteIdentifierName.TransformIdentifier(field.Name),
+                            field.ContainingType.Name);
+                    }
+                }
+                else if (member is IPropertySymbol)
+                {
+                    var property = member as IPropertySymbol;
+                   if (property.IsAbstract == false)
+                    {
+                        // Ignore compiler generated backing fields ... for properties etc ...
+                        // //.__Property("Counter",new PropertyInfo__G!(Simple,int)(function int (Simple a){ return a.Counter();},function void (Simple a,int _age){ a.Counter(_age);})) // Need to explicitly set the interfaces etc ...
+
+                        writer.WriteLine(
+                                 ".__Property(\"{0}\", new PropertyInfo__G!({1},{2})(" + (property.GetMethod!=null? "function {2} ({1}* __{4}){{ return __{4}.{3}();}}" :"null") +","+ (property.SetMethod!=null?"function void ({1}* __{4}, {2} __{0}){{ __{4}.{3}(__{0});}}" :"null") +"))",
+                               
+                            property.Name,
+                            TypeProcessor.ConvertType(property.ContainingType),
+                            TypeProcessor.ConvertType(property.Type),
+                            WriteIdentifierName.TransformIdentifier(property.Name),
+                            property.ContainingType.Name);
+                    }
+                }
+                   
+                    //Constructors
+                else if (member is IMethodSymbol)
+                {
+                    var method = member as IMethodSymbol;
+                    if (method.AssociatedSymbol == null && method.IsAbstract==false)
+                    {
+
+                        if (method.MethodKind == MethodKind.Constructor || method.MethodKind==MethodKind.StaticConstructor)
+                            //TODO, need a fix for static constructors
+                        {
+                            //.__Method("TellEm", new MethodInfo__G!(Simple,void function(Simple,int))(&Simple.TellEm))
+                            // Ignore compiler generated backing fields ... for properties etc ...
+                            writer.WriteLine(
+
+                                ".__Constructor(\"{0}\", new ConstructorInfo__G!({1},{2} function({4}))( ({4})=> "+ (specialization.TypeKind==TypeKind.Struct?"" :"new ") +"{1}({5})))"
+                                ,
+                                method.Name,
+                                TypeProcessor.ConvertType(method.ContainingType),
+                                TypeProcessor.ConvertType(method.ContainingType),
+                                "this",
+                                //WriteIdentifierName.TransformIdentifier(method.Name),
+                                WriteMethod.GetParameterListAsString(method.Parameters, true, null, false),
+                                WriteMethod.GetParameterListAsString(method.Parameters, false, null, false)
+                                );
+                        }
+                        else
+                        {
+                            //.__Method("TellEm", new MethodInfo__G!(Simple,void function(Simple,int))(&Simple.TellEm))
+                            // Ignore compiler generated backing fields ... for properties etc ...
+                            writer.WriteLine(
+
+                                ".__Method(\"{0}\", new MethodInfo__G!({1},{2} function({4}))(&{1}.{3}))"
+                                ,
+                                method.Name,
+                                TypeProcessor.ConvertType(method.ContainingType),
+                                TypeProcessor.ConvertType(method.ReturnType),
+                                WriteIdentifierName.TransformIdentifier(method.Name),
+                                WriteMethod.GetParameterListAsString(method.Parameters, true, null, false));
+                        }
+                    }
+
+                }
+
+            }
+            writer.Write(";");
         }
 
         private static List<INamespaceSymbol> GetAllNamespaces(INamedTypeSymbol specialization)
@@ -186,7 +279,7 @@ namespace SharpNative.Compiler
         public static string GetGenericMetadataName(this INamedTypeSymbol specialization)
         {
             //Todo Add support for Arrays and Inner classes
-            return specialization.ContainingNamespace.FullNameWithDotCSharp() + specialization.MetadataName +
+            return specialization.ContainingNamespace.FullNameWithDotCSharp() + (specialization.ContainingType!=null? specialization.ContainingType.MetadataName +"+" : "") + specialization.MetadataName +
             (specialization.TypeArguments.Any() ? ("[" +
 
                    

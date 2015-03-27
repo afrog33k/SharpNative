@@ -63,10 +63,11 @@ namespace SharpNative.Compiler
                 isInterface)
                 accessmodifiers += ("public ");
 
-            if (method.Modifiers.Any(SyntaxKind.PrivateKeyword))
-                accessmodifiers += ("private ");
+            // Reflection cannot work with this, cant get address or set value
+            //if (method.Modifiers.Any(SyntaxKind.PrivateKeyword))
+            //    accessmodifiers += ("private ");
 
-          
+
             if (method.Modifiers.Any(SyntaxKind.StaticKeyword))
                 accessmodifiers += ("static ");
 

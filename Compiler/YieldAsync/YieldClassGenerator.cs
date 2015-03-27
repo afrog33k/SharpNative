@@ -74,12 +74,17 @@ namespace SharpNative.Compiler.YieldAsync
 
 
             ITypeSymbol elementType = null;
-            if(method is IMethodSymbol)
-            elementType = ((INamedTypeSymbol)(method as IMethodSymbol).ReturnType).TypeArguments[0];
+            if (method is IMethodSymbol)
+            {
+                elementType = ((INamedTypeSymbol) (method as IMethodSymbol).ReturnType).TypeArguments.FirstOrDefault();
+            }
             else if (method is IPropertySymbol)
             {
-                elementType = ((INamedTypeSymbol)(method as IPropertySymbol).Type).TypeArguments[0];
+                elementType = ((INamedTypeSymbol) (method as IPropertySymbol).Type).TypeArguments.FirstOrDefault();
             }
+
+            if (elementType == null)
+                elementType = Context.Object;
 
             var currentProperty = Cs.Property(elementType.ToTypeSyntax(), "Current");
             members.Add(currentProperty);

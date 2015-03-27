@@ -4,16 +4,18 @@ using System.Reflection;
 
  class ReflectionTest
 {
+ 	//Order of declaration is important for this version of reflection
+ 	 //  int Age = 90; //need to specifically support this
+    public string _name = "Peter File";
    // public const int Height = 100; //c# orders consts after others (reflection)
  	
     public static int Width;
     public static int Weight;
     public static string Name;
-    public const int Height = 100; //c# orders consts after others (reflection)
+    public static int Height = 100; //c# orders consts after others (reflection)
     
     
-   //  int Age = 90; //need to specifically support this
-    public string _name = "Peter File";
+  
 
     public static void Write()
     {

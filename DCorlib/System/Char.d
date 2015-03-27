@@ -61,7 +61,12 @@ public static bool IsWhiteSpace(String str, int index) {
 
 	public override String ToString()
 	{
-		return new String(to!wstring(this.toString));
+		import std.array:appender;
+		import std.format;
+		//Almost there ;)
+		auto writer = appender!string();
+		formattedWrite(writer,"%c",__Value);
+		return new String(to!wstring(writer.data));
 	}
 
 	public override Type GetType()

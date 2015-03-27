@@ -23,12 +23,15 @@ namespace SharpNative.Compiler
             var isEnumSwitch = false;
 
             var symbol = TypeProcessor.GetTypeInfo(switchStatement.Expression);
+            if (symbol.Type != null) // Sometimes its null why ?
+            {
 
-            if (symbol.Type.SpecialType == SpecialType.System_String)
-                isStringSwitch = true;
+                if (symbol.Type.SpecialType == SpecialType.System_String)
+                    isStringSwitch = true;
 
-            if (symbol.Type.TypeKind == TypeKind.Enum)
-                isEnumSwitch = true;
+                if (symbol.Type.TypeKind == TypeKind.Enum)
+                    isEnumSwitch = true;
+            }
 
             if (!(switchStatement.Expression is LiteralExpressionSyntax))
 				writer.WriteLine ("switch(" + Core.WriteString (switchStatement.Expression) + (isStringSwitch ? ".Hash" : "") + (isEnumSwitch ? ".__Value" : "") + ")");

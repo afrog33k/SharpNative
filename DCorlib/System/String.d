@@ -186,7 +186,7 @@ class StringHelper
 
 
 
-class String : NObject
+class String : NObject//, IComparable, IComparable__G!(String)
 {
 	wstring text;
 	//	char[] text;
@@ -220,7 +220,7 @@ class String : NObject
 	}
 
 	public __gshared String Empty = new String("");
-	public __gshared String Null =  new String(cast(string)null);
+	public __gshared String Null =  new String(cast(wstring)null);
 
 	static this()
 	{
@@ -342,6 +342,27 @@ class String : NObject
 	
 	}
 
+	
+
+	public  int CompareTo(NObject object, IComparable j=null)
+	{
+		if(object is null)
+			return 1;
+		if(is(object:String))
+		{
+			auto aStr = cast(String) object;
+			return aStr.Text.opCmp(this.Text);
+		}
+		return -1;
+	}
+
+	public  int CompareTo(String object, IComparable__G!(String) j=null)
+	{
+
+		return object.Text.opCmp(this.Text);
+
+	}
+
 	final wchar opIndex(int index) {
 		if (index >= text.length)
 			throw new ArgumentOutOfRangeException(new String("index"));
@@ -435,9 +456,19 @@ class String : NObject
 	//Faster internal concat
 	public  String Concat(wstring other)
 	{
+		auto ntext = text~other;
 		//using this makes concats in D faster than those in C# (otherwise they are about 3 times  slower)... so all s+=other especially when we are using plain strings should become
 		// s.Concat(other)
-		text ~=  other;
+		//text ~=  other;
+		return _S(ntext);
+	}
+
+	//Faster internal concat
+	public  String Concat(String other)
+	{
+		//using this makes concats in D faster than those in C# (otherwise they are about 3 times  slower)... so all s+=other especially when we are using plain strings should become
+		// s.Concat(other)
+		text ~=  other.Text;
 		return this;
 	}
 

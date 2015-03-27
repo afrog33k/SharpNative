@@ -34,7 +34,7 @@ namespace SharpNative.Compiler
             return members.ToArray();
         }
         private static bool WriteArrayElements(InitializerExpressionSyntax initializer, OutputWriter writer,
-            Dictionary<int, int> inferred, int level, bool omitbraces = false)
+            Dictionary<int, int> inferred, int level, bool omitbraces = false, ITypeSymbol elementType=null)
         {
             level++;
             if (!omitbraces)
@@ -52,7 +52,21 @@ namespace SharpNative.Compiler
                 if (iexpression is InitializerExpressionSyntax)
                     WriteArrayElements(iexpression as InitializerExpressionSyntax, writer, inferred, level, omitbraces);
                 else
-                    Core.Write(writer, iexpression);
+                {
+                    if (elementType != null)
+                    {
+                       // var type = TypeProcessor.GetTypeInfo(iexpression);
+                        //Need to do this like a binary i.e. compare all
+                        WriteBinaryExpression.WriteIt(writer,default(SyntaxToken),null,iexpression);
+                       // Core.Write(writer, iexpression);
+                    }
+                    else
+                    {
+                        Core.Write(writer, iexpression);
+
+                    }
+                   
+                }
             }
             if (!omitbraces)
                 writer.Write("]");
@@ -106,11 +120,11 @@ namespace SharpNative.Compiler
                             /*+ Enumerable.Range (0, _aType.Rank).Select (l => "[]").Aggregate ((a, b) => a + b).ToString ()*/+
                                      "[])(");
                         if (_aType.Rank == 1)
-                            first = WriteArrayElements(initializer, writer, inferredDimensions, 0);
+                            first = WriteArrayElements(initializer, writer, inferredDimensions, 0,false,_aType.ElementType);
                         else
                         {
                             writer.Write("[");
-                            first = WriteArrayElements(initializer, writer, inferredDimensions, 0, true);
+                            first = WriteArrayElements(initializer, writer, inferredDimensions, 0, true, _aType.ElementType);
                             writer.Write("]");
                         }
                         // if (_aType != null)

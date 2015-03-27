@@ -81,7 +81,7 @@ namespace SharpNative.Compiler
                     //No need to convert these ... lets just put the correct suffix ourselves
 
 
-                    if (typeInfo.ConvertedType != typeInfo.Type)
+                    if (typeInfo.ConvertedType != typeInfo.Type && typeInfo.ConvertedType.IsPrimitiveInteger() && typeInfo.Type.IsPrimitiveInteger())
                     {
                         writer.Write("cast({0})",TypeProcessor.ConvertType(typeInfo.ConvertedType)); //TODO: add better, less clumsy conversion
                     }

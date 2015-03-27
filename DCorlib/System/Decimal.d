@@ -344,7 +344,7 @@ struct Decimal
 
 	string toString() // Temp fix for test-9
 	{
-		return lo.toString;
+		return std.conv.to!(string)(lo);
 	}
 
 	bool opEquals(Decimal other)

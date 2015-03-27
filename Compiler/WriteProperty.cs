@@ -110,7 +110,7 @@ namespace SharpNative.Compiler
 
               
 
-                getterbody = Core.WriteString(getter.Body, false, writer.Indent + 2);
+                getterbody = Core.WriteBlock(getter.Body, false, writer.Indent + 2);
 
                 if (!isProxy && isYield)
                 {
@@ -121,11 +121,11 @@ namespace SharpNative.Compiler
                         //                        getterbody=String.Format("return new __IteratorBlock!({0})(delegate(__IteratorBlock!({0}) __iter){{ {1} }});",
                         //                            TypeProcessor.ConvertType(iteratortype),getterbody);
 
-                        var className = propertySymbol.GetYieldClassName() + (
-                     (((INamedTypeSymbol)propertySymbol.Type).TypeArguments.Any() ? "__G" : ""));
+                        var className = propertySymbol.GetYieldClassName()+(
+                   (((INamedTypeSymbol)propertySymbol.Type).TypeArguments.Any() && ((INamedTypeSymbol)propertySymbol.Type).TypeArguments[0].TypeKind == TypeKind.TypeParameter) ? "__G" : "");
 
 
-                      
+
 
                         // writer.WriteLine(accessString + returnTypeString + methodSignatureString + @params2 + constraints);
 
@@ -134,11 +134,11 @@ namespace SharpNative.Compiler
                         if (!propertySymbol.IsStatic)
                         {
 
-                            getterbody = ("return new " + className + "(this);");
+                            getterbody = writer.WriteIndentToString() + ("return new " + className + "(this);");
                         }
                         else
                         {
-                            getterbody =("return new " + className + "();");
+                            getterbody = writer.WriteIndentToString() + ("return new " + className + "();");
 
                         }
                     }
@@ -150,13 +150,13 @@ namespace SharpNative.Compiler
 				setterbody = Core.WriteString (setter.Body, false, writer.Indent + 2);
 				if (isindexer)
 				{
-					setterbody += "return value;";
+					setterbody +=  writer.WriteIndentToString()+ "return value;";
 				}
 				else
 				{
 				    if (hasGetter)
 				    {
-				        setterbody += "return " + name + ";";
+				        setterbody += writer.WriteIndentToString() + "return " + name + ";";
 				    }
 
 				}
@@ -217,8 +217,8 @@ namespace SharpNative.Compiler
 
                     if (indexerDeclarationSyntax == null)
                     {
-                        setterbody = " " + name + "=" + "value" + ";";
-                        getterbody = " return " + name + ";";
+                        setterbody = writer.WriteIndentToString() + name + "=" + "value" + ";";
+                        getterbody = writer.WriteIndentToString() + "return " + name + ";";
                     }
                     else
                     {
@@ -229,8 +229,8 @@ namespace SharpNative.Compiler
                            // parameters2 = WriteMethod.GetParameterListAsString(@params.Parameters, iface: proxies == null ? iface : null, writebraces: false);
                         }
 
-                        setterbody = " return opIndexAssign(value," + parameters2 + ");";// + "=" + "value" + ";";
-                        getterbody = " return opIndex(" + parameters2 + ");";
+                        setterbody = writer.WriteIndentToString() + "return opIndexAssign(value," + parameters2 + ");";// + "=" + "value" + ";";
+                        getterbody = writer.WriteIndentToString() + "return opIndex(" + parameters2 + ");";
                     }
 
 
@@ -283,12 +283,12 @@ namespace SharpNative.Compiler
                 {
                     if (!isindexer)
                     {
-                        var returnValue = hasGetter ? "return value;" :"";
+                        var returnValue = hasGetter ? writer.WriteIndentToString() + "return value;" :"";
                         writer.WriteLine (string.Format("{0} {2} {6}{1}({2} value{3}){4} {{{5} = value;{7}}}", acccessmodifiers, name, hasGetter?typeString :"void", (iface != null ? ("," + TypeProcessor.ConvertType (iface) + " __ig=null") : ""), isOverride, fieldName, args,returnValue));
                     }
                     else
                     {
-                        var returnValue = hasGetter ? "return value;" : "";
+                        var returnValue = hasGetter ? writer.WriteIndentToString() + "return value;" : "";
 
                         writer.WriteLine (string.Format("{0} {2} {1}({2} value,{3}){4} {{{5} = value;{6}}}" , acccessmodifiers, name, typeString, parameters, isOverride, fieldName, returnValue));
                     }

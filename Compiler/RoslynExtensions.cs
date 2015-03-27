@@ -135,6 +135,9 @@ namespace SharpNative.Compiler
             var _operator = member as OperatorDeclarationSyntax;
             var _convoperator = member as ConversionOperatorDeclarationSyntax;
             var indexer = member as IndexerDeclarationSyntax;
+            var destructor = member as DestructorDeclarationSyntax;
+            var constructor = member as ConstructorDeclarationSyntax;
+
 
 
             //TODO: might have to add support for parameters
@@ -179,6 +182,18 @@ namespace SharpNative.Compiler
             {
                 return ("[]");
             }
+
+            if (destructor != null)
+            {
+                return "~this()"; //destructor.Identifier.Text;
+            }
+
+            if (constructor != null)
+            {
+                return "this()"; //destructor.Identifier.Text;
+            }
+
+            
 
             throw new NotImplementedException(member.ToFullString());
         }
@@ -719,6 +734,8 @@ namespace SharpNative.Compiler
 
         public static bool IsPrimitive(this ITypeSymbol type)
         {
+            if (type == null)
+                return false;
             switch (type.SpecialType)
             {
                 case SpecialType.System_Boolean:
@@ -737,6 +754,7 @@ namespace SharpNative.Compiler
                 case SpecialType.System_UInt32:
                 case SpecialType.System_UInt64:
                 case SpecialType.System_Void:
+                case SpecialType.System_String:
                     return true;
                 default:
                     return false;

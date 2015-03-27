@@ -6,6 +6,7 @@
 #region Imports
 
 using System;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -25,13 +26,21 @@ namespace SharpNative.Compiler.DlangAst
 
         public override SyntaxNode Visit(SyntaxNode node)
         {
+            Context.LastNode = node;
+            try
+            {
+
+                if (node is NameEqualsSyntax)
+                    return (node);
+          
 //			SyntaxNode visit; //Needs update
 //                     if (FixPropertyUnaryExpressions(node, out visit))
 //                return visit;
             if (node is IdentifierNameSyntax &&
-                (node.Parent is ExpressionSyntax || node.Parent is MethodDeclarationSyntax || node.Parent is PropertyDeclarationSyntax) &&
-                !(node.Parent.Parent is InitializerExpressionSyntax) && !(node.Parent is MemberAccessExpressionSyntax) &&
-                !(node.Parent is QualifiedNameSyntax))
+             //   (node.Parent is ExpressionSyntax || node.Parent is MethodDeclarationSyntax || node.Parent is PropertyDeclarationSyntax
+               // || node.Parent is BlockSyntax) &&
+                !(node.Parent.Parent is InitializerExpressionSyntax) &&
+                !(node.Parent is QualifiedNameSyntax) && !(node.Parent is MemberAccessExpressionSyntax) && !(node.Parent is ThisExpressionSyntax))
             {
                 //Lets fully qualify these so that we can have property code working
                 var symbolInfo = _semanticModel.GetSymbolInfo(node);
@@ -45,15 +54,70 @@ namespace SharpNative.Compiler.DlangAst
                                       symbolInfo.Symbol.Name;
                         return SyntaxFactory.ParseExpression(newName);
                     }
-                    if
-                        (symbolInfo.Symbol.ContainingType != null && !symbolInfo.Symbol.IsStatic)
-                        return SyntaxFactory.ParseExpression("this." + symbolInfo.Symbol.Name);
+                    else
+                    {
+                       
+                        var firstParent =
+                            TypeProcessor.GetDeclaredSymbol(node.Ancestors().OfType<BaseTypeDeclarationSyntax>().First());
+                        //_semanticModel.GetSymbolInfo(node.Ancestors().OfType<BaseTypeDeclarationSyntax>().First());
+                        if (symbolInfo.Symbol.ContainingType != null && !symbolInfo.Symbol.IsStatic && symbolInfo.Symbol.ContainingType == firstParent)
+                            return SyntaxFactory.ParseExpression("this." + symbolInfo.Symbol.Name);
+                    }
                     return base.Visit(node);
                 }
-                return base.Visit(node);
+            }
+
+            if (node is MemberAccessExpressionSyntax &&
+                //   (node.Parent is ExpressionSyntax || node.Parent is MethodDeclarationSyntax || node.Parent is PropertyDeclarationSyntax
+                // || node.Parent is BlockSyntax) &&
+                !(node.Parent.Parent is InitializerExpressionSyntax) &&
+              !(node.Parent is QualifiedNameSyntax) && !(node.Parent is MemberAccessExpressionSyntax) && !(node.Parent is ThisExpressionSyntax))
+            {
+                var nodeasMember = node as MemberAccessExpressionSyntax;
+                if (!(nodeasMember.Expression is ThisExpressionSyntax))
+                { 
+                //Lets fully qualify these so that we can have property code working
+                var symbolInfo = _semanticModel.GetSymbolInfo(node);
+
+                    if (symbolInfo.Symbol != null &&
+                        (symbolInfo.Symbol.Kind == SymbolKind.Field || symbolInfo.Symbol.Kind == SymbolKind.Property))
+                    {
+                        if (symbolInfo.Symbol.ContainingType != null && symbolInfo.Symbol.IsStatic)
+                        {
+                            var newName = symbolInfo.Symbol.ContainingType.GetFullNameCSharp() + "." +
+                                          symbolInfo.Symbol.Name;
+                            return SyntaxFactory.ParseExpression(newName);
+                        }
+                        else
+                        {
+                            ISymbol symbol = TypeProcessor.GetSymbolInfo((node as MemberAccessExpressionSyntax).Expression).Symbol;
+                            if (
+                                symbol != null && (!(symbol
+                                    is
+                                    ILocalSymbol) && !(symbol is IParameterSymbol) && symbol.Name != ".ctor"))
+                            {
+                                var firstParent =
+                                    TypeProcessor.GetDeclaredSymbol(
+                                        node.Ancestors().OfType<BaseTypeDeclarationSyntax>().First());
+                                //_semanticModel.GetSymbolInfo(node.Ancestors().OfType<BaseTypeDeclarationSyntax>().First());
+                                if (symbolInfo.Symbol.ContainingType != null && !symbolInfo.Symbol.IsStatic &&
+                                    symbolInfo.Symbol.ContainingType == firstParent)
+                                    return SyntaxFactory.ParseExpression("this." + node.ToFullString());
+                            }
+
+                        }
+                    }
+                    return base.Visit(node);
+                }
             }
 
             return base.Visit(node);
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
         }
 
 

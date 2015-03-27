@@ -1,12 +1,12 @@
 module System.Collections.Generic.Namespace;
 
-alias System.Collections.Generic.IComparer_T.IComparer_T IComparer_T;
+alias System.Collections.Generic.IComparer__G.IComparer__G IComparer__G;
 
-alias System.Collections.Generic.IEqualityComparer_T.IEqualityComparer_T IEqualityComparer_T;
+alias System.Collections.Generic.IEqualityComparer__G.IEqualityComparer__G IEqualityComparer__G;
 
 alias System.Collections.Generic.List__G.List__G List__G;
 
-alias System.Collections.Generic.ICollection_T.ICollection_T ICollection_T;
+alias System.Collections.Generic.ICollection__G.ICollection__G ICollection__G;
 
 alias System.Collections.Generic.Dictionary_TKey_TValue.Dictionary_TKey_TValue Dictionary_TKey_TValue;
 
@@ -16,7 +16,7 @@ alias System.Collections.Generic.IList__G.IList__G IList__G;
 
 alias System.Collections.Generic.Comparer_T.Comparer_T Comparer_T;
 
-alias System.Collections.Generic.EqualityComparer_T.EqualityComparer_T EqualityComparer_T;
+alias System.Collections.Generic.EqualityComparer__G.EqualityComparer__G EqualityComparer__G;
 
 alias System.Collections.Generic.IEnumerator__G.IEnumerator__G IEnumerator__G;
 alias System.Collections.Generic.IEnumerable__G.IEnumerable__G IEnumerable__G;
@@ -30,7 +30,7 @@ alias System.Collections.Generic.KeyNotFoundException.KeyNotFoundException KeyNo
 
 alias System.Collections.Generic.List__G_EnumeratorT.List__G_EnumeratorT List__G_EnumeratorT;
 
-alias System.Collections.Generic.KeyValuePair_TKey_TValue.KeyValuePair_TKey_TValue KeyValuePair_TKey_TValue;
+alias System.Collections.Generic.KeyValuePair__G.KeyValuePair__G KeyValuePair__G;
 
 alias System.Collections.Generic.Dictionary_TKey_TValue_EnumeratorTKey_TValue.Dictionary_TKey_TValue_EnumeratorTKey_TValue Dictionary_TKey_TValue_EnumeratorTKey_TValue;
 
@@ -62,19 +62,17 @@ alias System.Collections.Generic.Dictionary_TKey_TValue_ValueCollection_Enumerat
 
 alias System.Collections.Generic.Dictionary_TKey_TValue_KeyCollection_EnumeratorTKey_TValue.Dictionary_TKey_TValue_KeyCollection_EnumeratorTKey_TValue Dictionary_TKey_TValue_KeyCollection_EnumeratorTKey_TValue;
 
-// Generic version of IComparable.
 
-public interface IComparable__G(T)
+// If we ever implement more interfaces on IReadOnlyCollection, we should also update RuntimeTypeCache.PopulateInterfaces() in rttype.cs
+public interface IReadOnlyCollection__G(T) : IEnumerable__G!(T)
 {
-	// Interface does not need to be marked with the serializable attribute
-	// Compares this object to another object, returning an integer that
-	// indicates the relationship. An implementation of this method must return
-	// a value less than zero if this is less than object, zero
-	// if this is equal to object, or a value greater than zero
-	// if this is greater than object.
-	// 
-	int CompareTo(T other, IComparable__G!(T) __j =null);
+	public     abstract int  Count(IReadOnlyCollection__G!(T) j = null) @property;
+}
 
+public interface IReadOnlyList__G(T) : IReadOnlyCollection__G!(T)
+{
+
+	public abstract T opIndex(int index, IReadOnlyList__G!(T) j=null);
 }
 
 public interface IDictionary__G(TKey,TValue)
@@ -108,3 +106,7 @@ public class Dictionary__G(TKey,TValue)
 		 __dict[key]=value;
 	}
 }
+
+
+
+

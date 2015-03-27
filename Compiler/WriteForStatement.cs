@@ -21,7 +21,7 @@ namespace SharpNative.Compiler
             tempWriter.Indent = writer.Indent;
 
             var initializers = forStatement.Initializers;
-            var initCount = (initializers.Count + forStatement.Declaration.Variables.Count);
+            var initCount = initializers.Count + (forStatement.Declaration!=null?forStatement.Declaration.Variables.Count :0);
             if (initCount > 1)
             {
                 tempWriter.WriteLine("//For loop");

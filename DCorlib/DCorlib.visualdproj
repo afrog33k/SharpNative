@@ -212,23 +212,23 @@
      <File path="System\Collections\Generic\Dictionary_TKey_TValue_ValueCollectionTKey_TValue.d" />
      <File path="System\Collections\Generic\Dictionary_TKey_TValue_ValueCollection_EnumeratorTKey_TValue.d" />
      <File path="System\Collections\Generic\EnumIntEqualityComparer_T.d" />
-     <File path="System\Collections\Generic\EqualityComparer_T.d" />
+     <File path="System\Collections\Generic\EqualityComparer__G.d" />
      <File path="System\Collections\Generic\GenericComparer_T.d" />
      <File path="System\Collections\Generic\GenericEqualityComparer_T.d" />
-     <File path="System\Collections\Generic\ICollection_T.d" />
-     <File path="System\Collections\Generic\IComparer_T.d" />
+     <File path="System\Collections\Generic\ICollection__G.d" />
+     <File path="System\Collections\Generic\IComparer__G.d" />
      <File path="System\Collections\Generic\IDictionary_TKey_TValue.d" />
-     <File path="System\Collections\Generic\IEnumerable_T.d" />
-     <File path="System\Collections\Generic\IEnumerator_T.d" />
-     <File path="System\Collections\Generic\IEqualityComparer_T.d" />
-     <File path="System\Collections\Generic\IList_T.d" />
+     <File path="System\Collections\Generic\IEnumerable__G.d" />
+     <File path="System\Collections\Generic\IEnumerator__G.d" />
+     <File path="System\Collections\Generic\IEqualityComparer__G.d" />
+     <File path="System\Collections\Generic\IList__G.d" />
      <File path="System\Collections\Generic\IntEqualityComparer.d" />
      <File path="System\Collections\Generic\InternalStringComparer.d" />
      <File path="System\Collections\Generic\KeyNotFoundException.d" />
-     <File path="System\Collections\Generic\KeyValuePair_TKey_TValue.d" />
+     <File path="System\Collections\Generic\KeyValuePair__G.d" />
      <File path="System\Collections\Generic\Link.d" />
-     <File path="System\Collections\Generic\List_T.d" />
      <File path="System\Collections\Generic\List_T_EnumeratorT.d" />
+     <File path="System\Collections\Generic\List__G.d" />
      <File path="System\Collections\Generic\Old.zip" />
      <File path="System\Collections\Generic\System.Collections.Generic.Namespace.d" />
     </Folder>
@@ -248,11 +248,15 @@
     <File path="System\Collections\IList.d" />
     <File path="System\Collections\SortedList.d" />
    </Folder>
+   <Folder name="Globalization">
+    <File path="System\Globalization\Namespace.d" />
+   </Folder>
    <Folder name="IO">
     <File path="System\IO\File.d" />
     <File path="System\IO\System.IO.Namespace.d" />
    </Folder>
    <Folder name="Reflection">
+    <File path="System\Reflection\Internal.d" />
     <File path="System\Reflection\Namespace.d" />
    </Folder>
    <Folder name="Runtime">
@@ -264,20 +268,27 @@
     </Folder>
    </Folder>
    <Folder name="Text">
-    <File path="System\Text\IFormatProvider.d" />
     <File path="System\Text\Namespace.d" />
     <File path="System\Text\StringBuilder.d" />
+   </Folder>
+   <Folder name="Threading">
+    <File path="System\Threading\Namespace.d" />
    </Folder>
    <Folder name="__Internal">
     <File path="System\__Internal\Namespace.d" />
     <File path="System\__Internal\xxhash.d" />
    </Folder>
+   <File path="System\Activator.d" />
    <File path="System\Array.d" />
    <File path="System\Array_T.d" />
    <File path="System\Boolean.d" />
    <File path="System\Byte.d" />
    <File path="System\Char.d" />
    <File path="System\Console.d" />
+   <File path="System\DateTime.d" />
+   <File path="System\DateTimeKind.d" />
+   <File path="System\DateTimeParse.d" />
+   <File path="System\DayOfWeek.d" />
    <File path="System\Decimal.d" />
    <File path="System\Double.d" />
    <File path="System\EmptyArray_T.d" />
@@ -293,9 +304,11 @@
    <File path="System\SByte.d" />
    <File path="System\Single.d" />
    <File path="System\String.d" />
+   <File path="System\Timespan.d" />
    <File path="System\UInt16.d" />
    <File path="System\UInt32.d" />
    <File path="System\UInt64.d" />
+   <File path="System\__YieldIterator__G.d" />
   </Folder>
  </Folder>
 </DProject>

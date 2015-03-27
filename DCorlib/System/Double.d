@@ -33,9 +33,25 @@ class Double : Boxed!double
 		return new String(to!wstring(value));
 	}
 
+	
+	
+
 	public override String ToString()
 	{
-		return new String(to!wstring(this.toString));
+		import core.stdc.stdio;
+		import std.array:appender;
+		import std.format;
+		//Almost there ;)
+		auto writer = appender!string();
+		formattedWrite(writer,"%G",__Value);
+		return _S(writer.data);
+		//char[256] buf;
+		//buf.length = 256;
+		//vsprintf(cast(char*)buf, cast(const(char*))"%.17g",cast(char*) __Value);
+	//	//buf.length = core.stdc.string.strlen(cast(char*)buf);
+
+		//printf( "%.*s", cast(char*)buf );
+		//return _S("");//; new String(buf);
 	}
 
 	public override Type GetType()

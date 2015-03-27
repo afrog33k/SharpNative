@@ -52,7 +52,7 @@ assert(metadata.invokeMethod("getSquare", instance, 4) == 16);
 /// Copyright: © 2013 Ognjen Ivkovic
 //module ShardTools.Reflection;
 //import ShardTools.ExceptionTools;
-import std.range;
+/*import std.range;
 import std.variant;
 import std.traits;
 import std.algorithm;
@@ -2434,3 +2434,4 @@ version(unittest) {
 
 
 
+*/

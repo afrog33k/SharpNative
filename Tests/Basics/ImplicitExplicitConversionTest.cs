@@ -1,6 +1,6 @@
 struct RomanNumeral
 {
-    private int value;
+     int value;
 
     public RomanNumeral(int value)  //constructor
     {
@@ -30,7 +30,7 @@ struct RomanNumeral
 
 struct BinaryNumeral
 {
-    private int value;
+     int value;
 
     public BinaryNumeral(int value)  //constructor
     {
@@ -73,7 +73,7 @@ class TestConversions
         System.Console.WriteLine(binary);
 
         // Keep the console window open in debug mode.
-        System.Console.WriteLine("Press any key to exit.");
+       // System.Console.WriteLine("Press any key to exit.");
       //  System.Console.ReadKey();
     }
 }

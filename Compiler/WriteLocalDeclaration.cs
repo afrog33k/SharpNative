@@ -26,12 +26,21 @@ namespace SharpNative.Compiler
                 writer.WriteIndent();
                
                 {
-                    var str = TypeProcessor.ConvertType(declaration.Declaration.Type);
-                   // if (str == "NObject") // Dlangs casting is slow //Kills BoxingTest unfortunately as boxed types are also used to make unbound generics work :(
+                    try
+                    {
+                        var str = TypeProcessor.ConvertType(declaration.Declaration.Type);
+                        //This fails sometimes
+                        // if (str == "NObject") // Dlangs casting is slow 
                         // Looks harmless but is actually a performance optimization ... makes CastTest improve by a whole lot
-                     //   writer.Write("auto ");
-                    //else
+                        //   writer.Write("auto ");//Kills BoxingTest unfortunately as boxed types are also used to make unbound generics work :(
+                        //else
                         writer.Write(str);
+                    }
+                    catch (Exception ex)
+                    {
+                        writer.Write("auto");   
+                    }
+                   
 
                     writer.Write(" ");
 

@@ -39,8 +39,14 @@ class Array : NObject
 		array.Reverse();
 	}
 
+	public static void Reverse(U)(Array_T!(U) array, int index, int length)
+	{
+		array.Reverse(index, length);
+	}
+
 	public static void Resize(U)(Array_T!(U) array, int newLength)
 	{
+		if(array !is null)
 		array.Resize(newLength);
 	}
 
@@ -65,20 +71,28 @@ class Array : NObject
 
 	public static void Copy(U)(Array_T!(U) _array,Array_T!(U) array, ulong count)
 	{
-		_array.CopyTo(array,0,cast(int)count);
+		for(int c = 0; c < count; c++)
+			array[c] = _array[c];
+		//_array.CopyTo(array,0,cast(int)count);
 	}
 
 
 
 	public static void Copy(U)(Array_T!(U) _array,int startIndex,Array_T!(U) array,int startIndexDest, ulong count)
 	{
-		_array.CopyTo(array,0,cast(int)count);
+		//_array.CopyTo(array,0,cast(int)count);
+		for(int c = 0; c < count; c++)
+			array[startIndex+c] = _array[startIndexDest+c];
+
 	}
 
 	public static void Copy(U)(Array_T!(U) _array,int startIndex,Array array,int startIndexDest, ulong count)
 	{
 		auto _fqArray = cast(Array_T!(U))array;
-		_array.CopyTo(_fqArray,0,cast(int)count);
+		//_array.CopyTo(_fqArray,0,cast(int)count);
+
+		for(int c = 0; c < count; c++)
+			_fqArray[startIndex+c] = _array[startIndexDest+c];
 	}
 
 
@@ -88,6 +102,23 @@ class Array : NObject
 		//_array.CopyTo(array,0,cast(int)count);
 	}
 
+//TODO: Implement these
+	import System.Collections.Generic.Namespace;
+	public static int BinarySearch(T)(Array_T!(T) _items, int index, int count, T item,  IComparer__G!(T) comparer)
+	{
+		return -1;
+	}
+
+	public static int LastIndexOf(T)(Array_T!(T) _items, T  item, int index, int count)
+	{
+		return -1;
+	}
 	
+
+
+	public static void Sort(T)(Array_T!(T) _items, int index, int count, IComparer__G!(T) comparer)
+	{
+		
+	}
 }
 

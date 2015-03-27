@@ -1,10 +1,10 @@
 ﻿module System.Collections.Namespace;
 import std.c.string : memmove, memset;
 import std.math;
-import System.Collections.Generic.IComparer_T;
+import System.Collections.Generic.IComparer__G;
 
 
-alias System.Collections.Generic.ICollection_T.ICollection_T ICollection_T;
+alias System.Collections.Generic.ICollection__G.ICollection__G ICollection__G;
 alias System.Collections.Generic.IList__G.IList__G IList__G;
 alias System.Collections.IList.IList IList;
 
@@ -26,23 +26,7 @@ alias System.Collections.IEqualityComparer.IEqualityComparer IEqualityComparer;
 
 
 
-    // The IComparable interface is implemented by classes that support an
-    // ordering of instances of the class. The ordering represented by
-    // IComparable can be used to sort arrays and collections of objects
-    // that implement the interface.
-    // 
-		public interface IComparable
-		{
-			// Interface does not need to be marked with the serializable attribute
-			// Compares this object to another object, returning an integer that
-			// indicates the relationship. An implementation of this method must return
-			// a value less than zero if this is less than object, zero
-			// if this is equal to object, or a value greater than zero
-			// if this is greater than object.
-			// 
-			int CompareTo(Object obj, IComparable __j=null);
-		}
-
+   
    
 
 
@@ -485,9 +469,16 @@ public class ArrayList : NObject, IList
 	bool IsSynchronized(ICollection j = null) @property{return false;}
 	bool IsFixedSize(IList k = null) @property{return false;}
 	bool IsReadOnly(IList k = null) @property{return false;}
-	void opIndexAssign(NObject value, int index, IList k = null){
+	NObject opIndexAssign(NObject value, int index, IList k = null){
 	list[index] = value;
+		return list[index];
 	}
+
+	NObject opIndex(int index, IList __k = null)
+	{
+		return list[index];
+	}
+
 	int Add(NObject value, IList k = null){
 	list ~= value;
 		return cast(int)list.length;
@@ -508,7 +499,151 @@ public class ArrayList : NObject, IList
 	void RemoveAt(int index, IList k = null){}
 }
 
+import System.Namespace;
+import System.Collections.Generic.Namespace;
 
+struct DictionaryEntry
+{
+    private NObject _key = cast(NObject) null;
+    private NObject _value = cast(NObject) null;
+
+    public NObject Key() 
+    {
+		{
+			return this._key;
+        }
+
+    }
+
+    public NObject Key(NObject value ) 
+    {
+		{
+			this._key=value;
+        }
+		return Key;
+    }
+
+
+    public NObject Value() 
+    {
+		{
+			return this._value;
+        }
+
+    }
+
+    public NObject Value(NObject value ) 
+    {
+		{
+			this._value=value;
+        }
+		return Value;
+    }
+
+
+    public  void __init(NObject key, NObject value)
+    {
+		this._key=key;
+		this._value=value;
+    }
+    void __init(){}//default xtor
+    static DictionaryEntry opCall(__U...)(__U args_)
+    {
+		DictionaryEntry s;
+		s.__init(args_);
+		return s;
+    }
+
+	public String ToString()
+	{
+		return GetType().FullName;
+	}
+
+	public static class __Boxed_ : Boxed!(DictionaryEntry)
+	{
+		import std.traits;
+
+		this()
+		{
+			super(DictionaryEntry.init);
+		}
+		public override String ToString()
+		{
+			return __Value.ToString();
+		}
+
+		this(ref DictionaryEntry value)
+		{
+			super(value);
+		}
+
+		U opCast(U)()
+			if(is(U:DictionaryEntry))
+			{
+				return __Value;
+			}
+
+		U opCast(U)()
+			if(!is(U:DictionaryEntry))
+			{
+				return this;
+			}
+
+		auto opDispatch(string op, Args...)(Args args)
+		{
+			enum name = op;
+			return __traits(getMember, __Value, name)(args);
+		}
+
+		public override Type GetType()
+		{
+			return __Value.GetType();
+		}
+	}
+
+	public __Boxed_ __Get_Boxed()
+	{
+		return new __Boxed_(this);
+	}
+	alias __Get_Boxed this;
+
+	public Type GetType()
+	{
+		return __TypeOf!(typeof(this));
+	}
+}
+
+
+import System.Namespace;
+import System.Collections.Namespace;
+import System.Collections.Generic.Namespace;
+
+interface IDictionaryEnumerator : System.Collections.Namespace.IEnumerator
+{
+    // Returns the key of the current element of the enumeration. The returned
+    // value is undefined before the first call to GetNext and following
+    // a call to GetNext that returned false. Multiple calls to
+    // GetKey with no intervening calls to GetNext will return
+    // the same object.
+    // 
+
+    public NObject Key(IDictionaryEnumerator __ig=null);
+    // Returns the value of the current element of the enumeration. The
+    // returned value is undefined before the first call to GetNext and
+    // following a call to GetNext that returned false. Multiple calls
+    // to GetValue with no intervening calls to GetNext will
+    // return the same object.
+    // 
+
+    public NObject Value(IDictionaryEnumerator __ig=null);
+    // GetBlock will copy dictionary values into the given Array.  It will either
+    // fill up the array, or if there aren't enough elements, it will
+    // copy as much as possible into the Array.  The number of elements
+    // copied is returned.
+    // 
+
+    public System.Collections.Namespace.DictionaryEntry Entry(IDictionaryEnumerator __ig=null);
+}
 
 
 
