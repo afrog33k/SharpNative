@@ -278,9 +278,7 @@ public void __AdjustLength(int newLength)
 
 	public override String ToString()
 	{
-		
-			return _S(__TypeOf!(T).FullName.Text ~ "[]");
-		
+					return _S(__TypeOf!(T).FullName.Text ~ "[]");
 	}
 
 	//Adds foreach support

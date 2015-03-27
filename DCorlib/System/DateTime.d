@@ -372,7 +372,8 @@ struct DateTime
 
     public static DateTime Parse(String s)
     {
-		return (DateTimeParse.Parse(s, DateTimeFormatInfo.CurrentInfo, DateTimeStyles.None));
+		//return (DateTimeParse.Parse(s, DateTimeFormatInfo.CurrentInfo, DateTimeStyles.None));
+		return DateTime();
     }
     // Constructs a DateTime from a string. The string must specify a
     // date and optionally a time in a culture-specific or universal format.

@@ -883,7 +883,6 @@ public class MethodInfo: MethodBase
 	}
 }
 
-
 class MethodInfo__G(T...) : MethodInfo
 {
 	
@@ -1085,8 +1084,6 @@ return null;
 
 }
 
-
-
 public class ConstructorInfo: MethodBase
 {
 
@@ -1134,7 +1131,6 @@ public class ConstructorInfo: MethodBase
 		return null;
 	}
 }
-
 
 class ConstructorInfo__G(T...) : ConstructorInfo
 {
@@ -1320,7 +1316,6 @@ class ConstructorInfo__G(T...) : ConstructorInfo
 
 }
 
-
 public class Type_T(T):Type
 {
 
@@ -1384,14 +1379,14 @@ public class Type_T(T):Type
 			//	return newType;
 			//Console.WriteLine("Created instance of "  ~ typeof(newType).stringof);
 
-			//static if(__isScalar!(T) || __isStruct!(T) || __isEnum!(T) || __isArray!(T))
-			//{
-		//	auto boxed= BOX!(T)(newType);
+			static if(__isScalar!(T) || __isStruct!(T) || __isEnum!(T) || __isArray!(T))
+			{
+			auto boxed= BOX!(T)(newType);
 
 			//Console.WriteLine("returning object of "  ~ typeof(boxed).stringof);
 
-			//return boxed;
-			//}
+			return boxed;
+			}
 			
 			return newType;
 			}
@@ -1407,14 +1402,7 @@ public class Type_T(T):Type
 		}
 	}
 
-	public override Array_T!(String) GetMember(String name)
-	{
-		return null;
-	}
-
-	string[] __members;
-	void*[] __memberPointers;
-
+	
 
 	this(string csName=null)
 	{

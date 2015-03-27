@@ -7,6 +7,14 @@ import std.conv;
 
 import System.Namespace;
 
+public class DateTimeFormatInfo
+{
+}
+
+
+
+
+
 public class CultureInfo : NObject
 {
 }
