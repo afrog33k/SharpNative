@@ -71,7 +71,22 @@ namespace SharpNative.Compiler
                 if (!parameter.HasExplicitDefaultValue)
                     continue;
                 writer.Write(" = ");
-                Core.Write(writer, (SyntaxNode) parameter.ExplicitDefaultValue); //TODO ??
+                if (parameter.ExplicitDefaultValue is SyntaxNode)
+                {
+                    Core.Write(writer, (SyntaxNode) (parameter.ExplicitDefaultValue)); //TODO ??
+                }
+                else
+                {
+                    if(parameter.ExplicitDefaultValue is string)
+                        writer.Write("_S(\""+parameter.ExplicitDefaultValue.ToString()+"\")");
+                    else
+                    {
+                        writer.Write(parameter.ExplicitDefaultValue.ToString());
+
+                    }
+
+                }
+               
             }
             if (iface != null)
             {

@@ -62,12 +62,12 @@ namespace SharpNative.Compiler
                         if (useType)
                         {
                             writer.Write(TypeProcessor.ConvertType(destType) + "." + "op_Implicit_" +
-                                         TypeProcessor.ConvertType(correctConverter.ReturnType).Replace(".","_"));
+                                         TypeProcessor.ConvertType(correctConverter.ReturnType, false, true, false).Replace(".","_"));
                         }
                         else
                         {
                             writer.Write(TypeProcessor.ConvertType(castingFrom) + "." + "op_Implicit_" +
-                                         TypeProcessor.ConvertType(correctConverter.ReturnType).Replace(".", "_"));
+                                         TypeProcessor.ConvertType(correctConverter.ReturnType, false, true, false).Replace(".", "_"));
                         }
                     }
                     writer.Write("(");

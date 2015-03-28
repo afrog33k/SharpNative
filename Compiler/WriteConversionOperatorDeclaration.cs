@@ -28,7 +28,7 @@ namespace SharpNative.Compiler
 
             temp.Write(" " +
                        ((method.ImplicitOrExplicitKeyword.RawKind != (decimal) SyntaxKind.ExplicitKeyword)
-                           ? ("op_Implicit_" + TypeProcessor.ConvertType(method.Type).Replace(".", "_"))
+                           ? ("op_Implicit_" + TypeProcessor.ConvertType(method.Type,false,true,false).Replace(".", "_"))
                            : "op_Explicit"));
             //writer.Write(" op_Explicit");
 //            writer.Write(TypeProcessor.ConvertType(method.Type));

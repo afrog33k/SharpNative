@@ -19,7 +19,7 @@ template __isCharacter(T)
 
 template __isScalar(T)
 {
-	enum __isScalar = __isInteger!(T) || __isCharacter!(T);
+	enum __isScalar = __isInteger!(T) || __isCharacter!(T) || is(T==bool);
 }
 
 template __isEnum(T)

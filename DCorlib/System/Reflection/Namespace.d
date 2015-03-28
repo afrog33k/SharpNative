@@ -589,15 +589,15 @@ class PropertyInfo__G(C,T) : PropertyInfo
 	setter_type _setter;
 
 
-	NObject[] GetCustomAttributes(bool inherit){
+	override NObject[] GetCustomAttributes(bool inherit){
 	return null;
 	}
-		NObject[] GetCustomAttributes(Type attributeType, bool inherit){return null;}
-			bool IsDefined(Type attributeType, bool inherit){return false;}
-				MethodInfo[] GetAccessors(bool nonPublic){return null;}
-					MethodInfo GetGetMethod(bool nonPublic){return null;}
-						MethodInfo GetSetMethod(bool nonPublic){return null;}
-							ParameterInfo[] GetIndexParameters(){return null;}
+	override	NObject[] GetCustomAttributes(Type attributeType, bool inherit){return null;}
+	override		bool IsDefined(Type attributeType, bool inherit){return false;}
+	override			MethodInfo[] GetAccessors(bool nonPublic){return null;}
+	override				MethodInfo GetGetMethod(bool nonPublic){return null;}
+	override					MethodInfo GetSetMethod(bool nonPublic){return null;}
+	override						ParameterInfo[] GetIndexParameters(){return null;}
 							
 	this(getter_type getter, setter_type setter)
 	{

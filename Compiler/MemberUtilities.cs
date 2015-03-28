@@ -375,6 +375,22 @@ namespace SharpNative.Compiler
             }
             return true;
         }
+
+        public static bool CompareArguments(ImmutableArray<ITypeSymbol> a, ImmutableArray<ITypeParameterSymbol> b)
+        {
+            if (a == null && b == null)
+                return true;
+
+            if (a.Length != b.Length)
+                return false;
+
+            for (int index = 0; index < a.Length; index++)
+            {
+                if (a[index] != b[index])
+                    return false;
+            }
+            return true;
+        }
         public static bool CompareParameters(ImmutableArray<IParameterSymbol> a, ImmutableArray<IParameterSymbol> b)
         {
             if (a == null && b == null)

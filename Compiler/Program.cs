@@ -178,14 +178,17 @@ namespace SharpNative.Compiler
 
                 return;
             }
-            writer.WriteLine("__TypeOf!(" + TypeProcessor.ConvertType(specialization, true, true, false) + "" + ")(\"" +
+            writer.WriteLine("__TypeOf!(" + TypeProcessor.ConvertType(specialization,false, true, false) + "" + ")(\"" +
                              genericName
                              + "\")");
 
-            writer.WriteLine(".__Setup(" + (specialization.BaseType!=null?("__TypeOf!(" + TypeProcessor.ConvertType(specialization.BaseType, true, true, false)+")") :"null") + "," + (specialization.Interfaces.Length>0? ("[" + specialization.Interfaces.Select(k=> "__TypeOf!("+TypeProcessor.ConvertType(k, true, true, false)+")").Aggregate((a,b)=>a + "," + b) +"]") : "null") + ")");
+            writer.WriteLine(".__Setup(" + (specialization.BaseType!=null?("__TypeOf!(" + TypeProcessor.ConvertType(specialization.BaseType, false, true, false)+")") :"null") + "," + (specialization.Interfaces.Length>0? ("[" + specialization.Interfaces.Select(k=> "__TypeOf!("+TypeProcessor.ConvertType(k, false, true, false)+")").Aggregate((a,b)=>a + "," + b) +"]") : "null") + ")");
             bool writtenGetType = false;
             foreach (var member in specialization.GetMembers().DistinctBy(l=>l))
             {
+                //TODO: Add explicit interface method support
+                if (member.Name.Contains("."))
+                    continue;
 
                 if (member is IFieldSymbol)
                 {
@@ -231,10 +234,19 @@ namespace SharpNative.Compiler
                     //Constructors
                 else if (member is IMethodSymbol)
                 {
-                    if(specialization.TypeKind==TypeKind.Enum)
+                    if(specialization.TypeKind==TypeKind.Enum || specialization.TypeKind == TypeKind.Delegate)
                         continue;
 
+                   
+
                     var method = member as IMethodSymbol;
+
+                    if (method.IsGenericMethod && MemberUtilities.CompareArguments(method.TypeArguments, method.TypeParameters))
+                    {
+                        //Add support for unbound generic methods
+                        continue;
+                    }
+
                     if (method.Name == "GetType" && method.Parameters == null)
                         writtenGetType = true;
 
@@ -265,17 +277,38 @@ namespace SharpNative.Compiler
                         }
                         else
                         {
-                            //.__Method("TellEm", new MethodInfo__G!(Simple,void function(Simple,int))(&Simple.TellEm))
-                            // Ignore compiler generated backing fields ... for properties etc ...
-                            writer.WriteLine(
+                            if (method.MethodKind == MethodKind.Conversion)
+                            {
+                                var mname = method.Name;
+                                if (method.Name == "op_Implicit")
+                                    mname += "_"+ TypeProcessor.ConvertType(method.ReturnType, false, true, false).Replace(".", "_");
+                                //.__Method("TellEm", new MethodInfo__G!(Simple,void function(Simple,int))(&Simple.TellEm))
+                                // Ignore compiler generated backing fields ... for properties etc ...
+                                writer.WriteLine(
 
-                                ".__Method(\"{0}\", new MethodInfo__G!({1},{2} function({4}))(&{1}.{3}))"
-                                ,
-                                method.Name,
-                                TypeProcessor.ConvertType(method.ContainingType),
-                                TypeProcessor.ConvertType(method.ReturnType),
-                                WriteIdentifierName.TransformIdentifier(name),
-                                WriteMethod.GetParameterListAsString(method.Parameters, true, iface, false));
+                                    ".__Method(\"{0}\", new MethodInfo__G!({1},{2} function({4}))(&{1}.{3}))"
+                                    ,
+                                    method.Name,
+                                    TypeProcessor.ConvertType(method.ContainingType),
+                                    TypeProcessor.ConvertType(method.ReturnType),
+                                    WriteIdentifierName.TransformIdentifier(mname),
+                                    WriteMethod.GetParameterListAsString(method.Parameters, true, iface, false));
+                            }
+                            else
+                            {
+                                //.__Method("TellEm", new MethodInfo__G!(Simple,void function(Simple,int))(&Simple.TellEm))
+                                // Ignore compiler generated backing fields ... for properties etc ...
+                                writer.WriteLine(
+
+                                    ".__Method(\"{0}\", new MethodInfo__G!({1},{2} function({4}))(&{1}.{3}))"
+                                    ,
+                                    method.Name,
+                                    TypeProcessor.ConvertType(method.ContainingType),
+                                    TypeProcessor.ConvertType(method.ReturnType),
+                                    WriteIdentifierName.TransformIdentifier(name),
+                                    WriteMethod.GetParameterListAsString(method.Parameters, true, iface, false));
+                            }
+                          
                         }
                     }
 

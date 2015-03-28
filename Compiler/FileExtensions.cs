@@ -123,7 +123,7 @@ namespace SharpNative.Compiler
                 {
                         var @property = symbol as IPropertySymbol;
 
-                        if (@property != null && (@property.ContainingType.BaseType != null && @property.ContainingType.BaseType.GetAllMembers().OfType<IEventSymbol>().Any(k => k.Name == @property.Name) && @property.IsOverride == false))
+                        if (@property != null && (@property.ContainingType.BaseType != null && @property.ContainingType.BaseType.GetAllMembers().OfType<IPropertySymbol>().Any(k => k.Name == @property.Name) && @property.IsOverride == false))
                         {
                             return true;
                         }
@@ -135,12 +135,12 @@ namespace SharpNative.Compiler
 
                 case SymbolKind.Field: // New Field is nothing special, base field
                 {
-                        var @field = symbol as IFieldSymbol;
-                        if (@field != null && (@field.ContainingType.BaseType != null && @field.ContainingType.BaseType.GetAllMembers().OfType<IEventSymbol>().Any(k => k.Name == @field.Name) && @field.IsOverride == false))
+                      /*  var @field = symbol as IFieldSymbol;
+                        if (@field != null && (@field.ContainingType.BaseType != null && @field.ContainingType.BaseType.GetAllMembers().OfType<IFieldSymbol>().Any(k => k.Name == @field.Name) && @field.IsOverride == false))
                         {
                             return true;
-                        }
-
+                        }*/
+                        return false;
                     }
                     break;
             }

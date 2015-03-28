@@ -470,12 +470,12 @@ namespace SharpNative.Compiler
                         if (useType)
                         {
                             writer.Write(TypeProcessor.ConvertType(initializerType.Type) + "." + "op_Implicit_" +
-                                TypeProcessor.ConvertType(correctConverter.ReturnType).Replace(".", "_"));
+                                TypeProcessor.ConvertType(correctConverter.ReturnType, false, true, false).Replace(".", "_"));
                         }
                         else
                         {
                             writer.Write(TypeProcessor.ConvertType(initializerType.ConvertedType) + "." + "op_Implicit_" +
-                                TypeProcessor.ConvertType(correctConverter.ReturnType).Replace(".", "_"));
+                                TypeProcessor.ConvertType(correctConverter.ReturnType, false, true, false).Replace(".", "_"));
                         }
                         writer.Write("(");
                         Core.Write(writer, value.Expression);
@@ -506,12 +506,12 @@ namespace SharpNative.Compiler
                         if (useType)
                         {
                             writer.Write(TypeProcessor.ConvertType(initializerType.Type) + "." + "op_Implicit_" +
-                                TypeProcessor.ConvertType(correctConverter.ReturnType).Replace(".", "_"));
+                                TypeProcessor.ConvertType(correctConverter.ReturnType, false, true, false).Replace(".", "_"));
                         }
                         else
                         {
                             writer.Write(TypeProcessor.ConvertType(initializerType.ConvertedType) + "." + "op_Implicit_" +
-                                TypeProcessor.ConvertType(correctConverter.ReturnType).Replace(".", "_"));
+                                TypeProcessor.ConvertType(correctConverter.ReturnType, false, true, false).Replace(".", "_"));
                         }
                         writer.Write("(");
                         Core.Write(writer, value.Expression);

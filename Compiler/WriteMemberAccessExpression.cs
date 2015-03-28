@@ -115,7 +115,7 @@ namespace SharpNative.Compiler
                     }
                 }
 
-                if (!methodSymbol.ContainingType.IsAnonymousType &&
+              /*  if (!methodSymbol.ContainingType.IsAnonymousType &&
                     (methodSymbol.DeclaringSyntaxReferences.Any() &&
                      methodSymbol.DeclaringSyntaxReferences.FirstOrDefault()
                          .GetSyntax()
@@ -125,7 +125,7 @@ namespace SharpNative.Compiler
                     //TODO: this means that new is not supported on external libraries, anonymous types cannot be extended
                     //					//why doesnt roslyn give me this information ?
                     memberName += "_";
-                }
+                }*/
             }
 
             var isGet = false;

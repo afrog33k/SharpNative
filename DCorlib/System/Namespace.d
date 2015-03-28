@@ -458,6 +458,13 @@ class __Delegate(T): Delegate
 		funcs = null;
 	}
 
+	this(NObject object, IntPtr func)
+	{
+		dFunc = __ToDelegate(cast(typeof(T.funcptr)) func.m_value);
+		dFunc.ptr = cast(void*) object;
+		funcs = null;
+	}
+
 	this(typeof(T.funcptr) func) // Allows direct storage of functions too
 	{
 		dFunc = __ToDelegate(func);

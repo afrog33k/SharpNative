@@ -3,6 +3,18 @@ module System.__Boxing;
 import System.Namespace;
 
 template __BoxesTo(T)
+if(__isPointer!(T) && is(T==int*))
+{
+	alias __BoxesTo = IntPtr;
+}
+
+template __BoxesTo(T)
+if(__isInterface!(T))
+{
+	alias __BoxesTo = T;
+}
+
+template __BoxesTo(T)
 if(__isClass!(T))
 {
 	alias __BoxesTo = T;
