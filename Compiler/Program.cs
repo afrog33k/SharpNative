@@ -12,6 +12,7 @@ using System.Data;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -180,8 +181,12 @@ namespace SharpNative.Compiler
             writer.WriteLine("__TypeOf!(" + TypeProcessor.ConvertType(specialization, true, true, false) + "" + ")(\"" +
                              genericName
                              + "\")");
-            foreach (var member in specialization.GetMembers())
+
+            writer.WriteLine(".__Setup(" + (specialization.BaseType!=null?("__TypeOf!(" + TypeProcessor.ConvertType(specialization.BaseType, true, true, false)+")") :"null") + "," + (specialization.Interfaces.Length>0? ("[" + specialization.Interfaces.Select(k=> "__TypeOf!("+TypeProcessor.ConvertType(k, true, true, false)+")").Aggregate((a,b)=>a + "," + b) +"]") : "null") + ")");
+            bool writtenGetType = false;
+            foreach (var member in specialization.GetMembers().DistinctBy(l=>l))
             {
+
                 if (member is IFieldSymbol)
                 {
                     var field = member as IFieldSymbol;
@@ -202,7 +207,12 @@ namespace SharpNative.Compiler
                 else if (member is IPropertySymbol)
                 {
                     var property = member as IPropertySymbol;
-                   if (property.IsAbstract == false)
+                    bool isiface = false;
+                    ITypeSymbol iface;
+                    ISymbol[] proxies;
+                    var name = MemberUtilities.GetMethodName(property, ref isiface, out iface, out proxies);
+                    //TODO... set/specify interfaces
+                    if (property.IsAbstract == false)
                     {
                         // Ignore compiler generated backing fields ... for properties etc ...
                         // //.__Property("Counter",new PropertyInfo__G!(Simple,int)(function int (Simple a){ return a.Counter();},function void (Simple a,int _age){ a.Counter(_age);})) // Need to explicitly set the interfaces etc ...
@@ -221,7 +231,17 @@ namespace SharpNative.Compiler
                     //Constructors
                 else if (member is IMethodSymbol)
                 {
+                    if(specialization.TypeKind==TypeKind.Enum)
+                        continue;
+
                     var method = member as IMethodSymbol;
+                    if (method.Name == "GetType" && method.Parameters == null)
+                        writtenGetType = true;
+
+                    bool isiface = false;
+                    ITypeSymbol iface;
+                    ISymbol[] proxies;
+                    var name = MemberUtilities.GetMethodName(method,ref isiface,out iface, out proxies);
                     if (method.AssociatedSymbol == null && method.IsAbstract==false)
                     {
 
@@ -254,14 +274,17 @@ namespace SharpNative.Compiler
                                 method.Name,
                                 TypeProcessor.ConvertType(method.ContainingType),
                                 TypeProcessor.ConvertType(method.ReturnType),
-                                WriteIdentifierName.TransformIdentifier(method.Name),
-                                WriteMethod.GetParameterListAsString(method.Parameters, true, null, false));
+                                WriteIdentifierName.TransformIdentifier(name),
+                                WriteMethod.GetParameterListAsString(method.Parameters, true, iface, false));
                         }
                     }
 
                 }
+                
 
             }
+            if(!writtenGetType)
+                writer.WriteLine(".__Method(\"GetType\", new MethodInfo__G!({0},System.Namespace.Type function())(&{0}.GetType))", TypeProcessor.ConvertType(specialization, true, true, false));
             writer.Write(";");
         }
 
@@ -379,10 +402,17 @@ namespace SharpNative.Compiler
                             string.Join("", buildResult.Diagnostics.Select(o => "\n  " + o.ToString())));
                     }
                 }
+                else
+                {
+                   //  CurrentAssembly = Assembly.LoadFile(exePath);
+                    
+                }
                 if (Driver.Verbose)
                     Console.WriteLine("Built in " + sw.Elapsed.TotalMilliseconds + " ms");
             }
         }
+
+        public static Assembly CurrentAssembly { get; set; }
 
         private static bool isCorlib = false;
         private static void Generate(IEnumerable<string> extraTranslation)

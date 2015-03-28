@@ -4,7 +4,7 @@ import System.Namespace;
 
 class Activator : NObject
 {
-	public static NObject CreateInstance(Type type, Array_T!(Type) args) //Just testing
+	public static NObject CreateInstance(Type type, Array_T!(NObject) args) //Just testing
         {
 			if (type is null)
                 throw new ArgumentNullException(_S("type"));

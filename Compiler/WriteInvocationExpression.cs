@@ -180,19 +180,20 @@ namespace SharpNative.Compiler
                     var declaringSyntaxReferences =
                         methodSymbol.DeclaringSyntaxReferences.Select(j => j.GetSyntax())
                             .OfType<MethodDeclarationSyntax>();
-                    var any = declaringSyntaxReferences.Any();
+                    var methodDeclarationSyntaxs = declaringSyntaxReferences as MethodDeclarationSyntax[] ?? declaringSyntaxReferences.ToArray();
+                    var any = methodDeclarationSyntaxs.Any();
                     if (any &&
-                        declaringSyntaxReferences.FirstOrDefault()
+                        methodDeclarationSyntaxs.FirstOrDefault()
                             .As<MethodDeclarationSyntax>()
                             .Modifiers.Any(SyntaxKind.NewKeyword))
                     {
                         //TODO: this means that new is not supported on external libraries
                         //                  //why doesnt roslyn give me this information ?
-                        methodName += "_";
+                        //methodName += "_"; //Not needed anymore :)
                     }
 
                     if (any &&
-                        declaringSyntaxReferences.FirstOrDefault()
+                        methodDeclarationSyntaxs.FirstOrDefault()
                             .As<MethodDeclarationSyntax>()
                             .Modifiers.Any(SyntaxKind.NewKeyword))
                     {
@@ -314,6 +315,14 @@ namespace SharpNative.Compiler
             ITypeSymbol typeSymbol = null;
 
             bool isOverloaded = methodSymbol.ContainingType.GetMembers(methodSymbol.Name).OfType<IMethodSymbol>().Any(j => j.TypeParameters == methodSymbol.TypeParameters && ParameterMatchesWithRefOutIn(methodSymbol, j));
+
+            WriteArguments(writer, invocationExpression, arguments, firstParameter, inParams, methodSymbol, foundParamsArray, typeSymbol, isOverloaded, symbol);
+        }
+
+        private static void WriteArguments(OutputWriter writer, InvocationExpressionSyntax invocationExpression,
+            SeparatedSyntaxList<ArgumentSyntax> arguments, bool firstParameter, bool inParams, IMethodSymbol methodSymbol, bool foundParamsArray,
+            ITypeSymbol typeSymbol, bool isOverloaded, ISymbol symbol)
+        {
             foreach (var arg in arguments.Select(o => new TransformedArgument(o)))
             {
                 if (firstParameter)
@@ -333,64 +342,19 @@ namespace SharpNative.Compiler
                             .StartsWith("Array_T"))
                     {
                         inParams = true;
-                        // var elemType = TypeProcessor.ConvertType((typeSymbol as IArrayTypeSymbol).ElementType);
+
                         var s = TypeProcessor.ConvertType(typeSymbol);
                         writer.Write("__ARRAY!(" + s + ")([");
                     }
                 }
 
-                //Not needed for dlang
-                //                if (arg != null
-                //                    && arg.ArgumentOpt.RefOrOutKeyword.RawKind != (decimal) SyntaxKind.None
-                //                    && TypeProcessor.GetSymbolInfo(arg.ArgumentOpt.Expression).Symbol is IFieldSymbol)
-                //                {
-                //                    
-                //                }
-                //                    throw new Exception("ref/out cannot reference fields, only local variables.  Consider using ref/out on a local variable and then assigning it into the field. " + Utility.Descriptor(invocationExpression));
-
-                //              if (argumentType.Type == null) {
-                //                  if (argumentType.ConvertedType == null)
-                //                      writer.Write ("null");
-                //                  else
-                //                      writer.Write ("(cast("+TypeProcessor.ConvertType(argumentType.ConvertedType)+") null)");
-                //              }
-                //               
-                //                else if (argumentType.Type.IsValueType && !argumentType.ConvertedType.IsValueType)
-                //                {
-                //                    //Box
-                //                  writer.Write("BOX!("+TypeProcessor.ConvertType(argumentType.Type) +")(");
-                //                    //When passing an argument by ref or out, leave off the .Value suffix
-                //                    if (arg != null && arg.ArgumentOpt.RefOrOutKeyword.RawKind != (decimal)SyntaxKind.None)
-                //                        WriteIdentifierName.Go(writer, arg.ArgumentOpt.Expression.As<IdentifierNameSyntax>(), true);
-                //                    else
-                //                        arg.Write(writer);
-                //
-                //                    writer.Write(")");
-                //                }
-                //                else if (!argumentType.Type.IsValueType && argumentType.ConvertedType.IsValueType)
-                //                {
-                //                    //UnBox
-                //                  writer.Write("cast(" + TypeProcessor.ConvertType(argumentType.Type) + ")(");
-                //                    if (arg != null && arg.ArgumentOpt.RefOrOutKeyword.RawKind != (decimal)SyntaxKind.None)
-                //                        WriteIdentifierName.Go(writer, arg.ArgumentOpt.Expression.As<IdentifierNameSyntax>(), true);
-                //                    else
-                //                        arg.Write(writer);
-                //                    writer.Write(")");
-                //                }
-                //                else
-                //                {
-                //                    if (arg != null && arg.ArgumentOpt.RefOrOutKeyword.RawKind != (decimal)SyntaxKind.None)
-                //                        WriteIdentifierName.Go(writer, arg.ArgumentOpt.Expression.As<IdentifierNameSyntax>(), true);
-                //                    else
-                //                        arg.Write(writer);
-                //                }
-                ProcessArgument(writer, arg.ArgumentOpt, isOverloaded && argumentType.Type.IsValueType && (arg.ArgumentOpt.RefOrOutKeyword.RawKind == (decimal)SyntaxKind.None));
+                ProcessArgument(writer, arg.ArgumentOpt,
+                    isOverloaded && argumentType.Type.IsValueType &&
+                    (arg.ArgumentOpt.RefOrOutKeyword.RawKind == (decimal) SyntaxKind.None));
             }
 
             if (inParams)
-            {
                 writer.Write("])");
-            }
 
             if (!foundParamsArray && methodSymbol.Parameters.Any() && methodSymbol.Parameters.Last().IsParams)
             {
@@ -398,19 +362,18 @@ namespace SharpNative.Compiler
                 {
                     var s = TypeProcessor.ConvertType(typeSymbol);
                     writer.Write("__ARRAY!(" + s + ")([])");
-
                 }
                 else
                     writer.Write("null"); //params method called without any params argument.  Send null.
-             }
+            }
 
             if (symbol.ContainingType.TypeKind == TypeKind.Interface) // Need it as specialized as possible
             {
                 if (!firstParameter)
                     writer.Write(",");
-                writer.Write("cast({0}) null",TypeProcessor.ConvertType(symbol.ContainingType));
+                writer.Write("cast({0}) null", TypeProcessor.ConvertType(symbol.ContainingType));
             }
-        
+
             writer.Write(")");
         }
 

@@ -87,14 +87,75 @@ namespace SharpNative.Compiler
             return null;
         }
 
-//        public static ImmutableArray<ISymbol> ExplicitInterfaceImplementations(this ISymbol symbol)
-//        {
-//            return symbol.TypeSwitch(
-//                (IEventSymbol @event) => @event.ExplicitInterfaceImplementations.As<ISymbol>(),
-//                (IMethodSymbol method) => method.ExplicitInterfaceImplementations.As<ISymbol>(),
-//                (IPropertySymbol property) => property.ExplicitInterfaceImplementations.As<ISymbol>(),
-//                _ => ImmutableArray.Create<ISymbol>());
-//        }
+
+        public static bool IsNew(this ISymbol symbol)
+        {
+            switch (symbol.Kind)
+            {
+                case SymbolKind.Event:
+                {
+                    var @event = symbol as IEventSymbol;
+
+                    if (@event != null && (@event.ContainingType.BaseType != null && @event.ContainingType.BaseType.GetAllMembers().OfType<IEventSymbol>().Any(k => k.Name==@event.Name) && @event.IsOverride==false))
+                    {
+                        return true;
+                    }
+
+
+                    }
+                    break;
+
+                case SymbolKind.Method:
+                {
+                        var @method = symbol as IMethodSymbol;
+                        if (@method != null && (@method.ContainingType.BaseType != null && @method.ContainingType.BaseType.GetAllMembers().OfType<IMethodSymbol>().Any(k => MemberUtilities.CompareMethods(k,@method)) && @method.IsOverride == false))
+                        {
+                            return true;
+                        }
+                     
+                        
+
+                    }
+                    break;
+                    
+
+                case SymbolKind.Property:
+                {
+                        var @property = symbol as IPropertySymbol;
+
+                        if (@property != null && (@property.ContainingType.BaseType != null && @property.ContainingType.BaseType.GetAllMembers().OfType<IEventSymbol>().Any(k => k.Name == @property.Name) && @property.IsOverride == false))
+                        {
+                            return true;
+                        }
+
+                    }
+                    
+                    break;
+                    
+
+                case SymbolKind.Field: // New Field is nothing special, base field
+                {
+                        var @field = symbol as IFieldSymbol;
+                        if (@field != null && (@field.ContainingType.BaseType != null && @field.ContainingType.BaseType.GetAllMembers().OfType<IEventSymbol>().Any(k => k.Name == @field.Name) && @field.IsOverride == false))
+                        {
+                            return true;
+                        }
+
+                    }
+                    break;
+            }
+
+            return false;
+        }
+
+        //        public static ImmutableArray<ISymbol> ExplicitInterfaceImplementations(this ISymbol symbol)
+        //        {
+        //            return symbol.TypeSwitch(
+        //                (IEventSymbol @event) => @event.ExplicitInterfaceImplementations.As<ISymbol>(),
+        //                (IMethodSymbol method) => method.ExplicitInterfaceImplementations.As<ISymbol>(),
+        //                (IPropertySymbol property) => property.ExplicitInterfaceImplementations.As<ISymbol>(),
+        //                _ => ImmutableArray.Create<ISymbol>());
+        //        }
 
         public static bool IsOverridable(this ISymbol symbol)
         {

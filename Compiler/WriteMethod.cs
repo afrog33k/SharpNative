@@ -207,7 +207,7 @@ namespace SharpNative.Compiler
 
             else
             {
-                accessString = MemberUtilities.GetAccessModifiers(method, isInterface);
+                accessString = MemberUtilities.GetAccessModifiers(method, isInterface || methodSymbol.IsAbstract);
             }
 
 

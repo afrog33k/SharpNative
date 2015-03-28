@@ -263,11 +263,11 @@
     <Folder name="CompilerServices">
      <File path="System\Runtime\CompilerServices\Namespace.d" />
     </Folder>
-    <Folder name="Serialization">
-     <File path="Namespace.d" />
-    </Folder>
     <Folder name="InteropServices">
      <File path="System\Runtime\InteropServices\Namespace.d" />
+    </Folder>
+    <Folder name="Serialization">
+     <File path="Namespace.d" />
     </Folder>
    </Folder>
    <Folder name="Text">
@@ -313,6 +313,7 @@
    <File path="System\IntPtr.d" />
    <File path="System\Locale.d" />
    <File path="System\Math.d" />
+   <File path="System\MulticastDelegate.d" />
    <File path="System\Namespace.d" />
    <File path="System\NException.d" />
    <File path="System\NObject.d" />
@@ -329,6 +330,7 @@
    <File path="System\UInt16.d" />
    <File path="System\UInt32.d" />
    <File path="System\UInt64.d" />
+   <File path="System\ValueType.d" />
    <File path="System\Version.d" />
    <File path="System\__Boxing.d" />
    <File path="System\__Constraints.d" />

@@ -6,17 +6,56 @@
 #region Imports
 
 using System;
+using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Emit;
+using Microsoft.CSharp.RuntimeBinder;
 
 #endregion
 
 namespace SharpNative.Compiler
 {
+  
     internal static class WriteLocalDeclaration
     {
+
+        public static Assembly Compile(params string[] sources)
+        {
+            var assemblyFileName = "gen" + Guid.NewGuid().ToString().Replace("-", "") + ".dll";
+            var compilation = CSharpCompilation.Create(assemblyFileName,
+                options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
+                syntaxTrees: from source in sources
+                             select CSharpSyntaxTree.ParseText(source),
+                references: new[]
+        {
+            AssemblyMetadata.CreateFromFile(typeof(object).Assembly.Location).GetReference(),
+                    AssemblyMetadata.CreateFromFile(typeof(RuntimeBinderException).Assembly.Location).GetReference(),
+                    AssemblyMetadata.CreateFromFile(typeof(DynamicAttribute).Assembly.Location).GetReference(),
+        });
+
+            EmitResult emitResult;
+
+            using (var ms = new MemoryStream())
+            {
+                emitResult = compilation.Emit(ms);
+
+                if (emitResult.Success)
+                {
+                    var assembly = Assembly.Load(ms.GetBuffer());
+                    return assembly;
+                }
+            }
+
+            var message = string.Join("\r\n", emitResult.Diagnostics);
+            throw new ApplicationException(message);
+        }
+
         public static void Go(OutputWriter writer, LocalDeclarationStatementSyntax declaration)
         {
             foreach (var variable in declaration.Declaration.Variables)
@@ -132,10 +171,38 @@ namespace SharpNative.Compiler
                     return;
                 }
 
-                Core.Write(writer, value);
+                //CTFE
+              /* var aVal =  EvaluateValue(value);
+                if (String.IsNullOrEmpty(aVal))
+                {
+                    writer.Write(aVal);
+                }
+                else*/
+                    Core.Write(writer, value);
             }
             else
                 writer.Write(TypeProcessor.DefaultValue(declaration.Declaration.Type));
+        }
+
+        private static string EvaluateValue(ExpressionSyntax val)
+        {
+            try
+            {
+//Should be able to extend this to do some basic CTFE and speed up pure method calls
+                // var assembly = Compile(code);
+                var type2 = Program.CurrentAssembly.GetType("Primes");
+                var method = type2.GetMethod("AddPrimes", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+                var result = method.Invoke(null, new object[] {10000});
+
+
+                // var constantval = Program.GetModel(value).GetConstantValue(result);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message + ex.StackTrace);
+                //throw;
+            }
+            return null;
         }
 
         private static void WriteBox(OutputWriter writer, ITypeSymbol type, ExpressionSyntax value)

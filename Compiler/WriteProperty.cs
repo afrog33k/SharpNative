@@ -90,7 +90,7 @@ namespace SharpNative.Compiler
             var type = propertySymbol.Type;
 
 
-            var acccessmodifiers = MemberUtilities.GetAccessModifiers(property, isInterface);
+            var acccessmodifiers = MemberUtilities.GetAccessModifiers(property, isInterface || propertySymbol.IsAbstract);
 
             var typeString = TypeProcessor.ConvertType(type);
 

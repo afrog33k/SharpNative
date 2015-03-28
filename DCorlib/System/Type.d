@@ -36,9 +36,21 @@ public class Type:NObject
 		return new Array_T!(System.Reflection.Namespace.MemberInfo)(__CC!(System.Reflection.Namespace.MemberInfo[])(cast(System.Reflection.Namespace.MemberInfo[])__methods ~ cast(System.Reflection.Namespace.MemberInfo[])__fields ~ cast(System.Reflection.Namespace.MemberInfo[])__properties));
 	}
 
-	public Array_T!(MethodInfo) GetMethods(String name=String.Empty)
+	public Array_T!(MethodInfo) GetMethods()
 	{
+		if(BaseType !is null)
+		{
+			auto baseMethods = BaseType.GetMethods();
+			return new Array_T!(MethodInfo)(__CC!(MethodInfo[])(__methods ~ baseMethods.Items));
+		}
+		
 		return new Array_T!(MethodInfo)(__CC!(MethodInfo[])(__methods));
+	}
+
+	//BindingFlags bindingAttr
+	public Array_T!(MethodInfo) GetMethods(BindingFlags bindingAttr)
+	{
+		return GetMethods();
 	}
 
 	public Array_T!(FieldInfo) GetFields(String name=String.Empty)
@@ -62,6 +74,7 @@ public class Type:NObject
 			if(paramsA[c]!=paramsB[c])
 				return false;
 		}
+
 		return true;
 	}
 
@@ -71,8 +84,14 @@ public class Type:NObject
 
 		for(int c =0; c < __methods.length; c++)
 		{
-			if(__methods[c].Name==name && __SameParams(__methods[c].Params, params))
+			//Console.WriteLine("__methods[c].Params" ~ std.conv.to!string(__methods[c].Params.length));
+			if(__methods[c].Name==name) 
 			{
+				if((params !is null)&&!__SameParams(__methods[c].Params, params))
+				{
+					
+				}
+
 				index = c;
 				break;
 			}
@@ -153,6 +172,13 @@ public class Type:NObject
 		return this;
 	}
 
+	Type __Setup(Type baseClass, Type[] interfaces...)
+	{
+		BaseType = baseClass;
+		Interfaces = interfaces;
+		return this;
+	}
+
 	override bool Equals(NObject other)
 	{
 	
@@ -201,5 +227,10 @@ public class Type:NObject
 
 
 		return false;
+	}
+
+	public override String ToString()
+	{
+		return FullName;
 	}
 }

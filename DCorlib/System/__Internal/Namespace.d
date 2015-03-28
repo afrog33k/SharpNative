@@ -9,9 +9,18 @@ public class __ReflectionInfo
 {
 	static this()
 	{
+		import System.Reflection.Namespace;
 		//Should move these to reflection info though
-		__TypeOf!(System.NObject.NObject)("System.Object");
+		__TypeOf!(NObject)("System.Object")
+			.__Method("ToString", new MethodInfo__G!(NObject,String function())(&NObject.ToString))
+			.__Method("Equals", new MethodInfo__G!(NObject,bool function(NObject obj))(&NObject.Equals))
+			.__Method("GetHashCode", new MethodInfo__G!(NObject,int function())(&NObject.GetHashCode))
+			.__Method("GetType", new MethodInfo__G!(NObject,System.Namespace.Type function())(&NObject.GetType));
 		__TypeOf!(int)("System.Int32");
 		__TypeOf!(NException)("System.Exception");
 	}
 }
+//ToString
+//Equals
+//GetHashCode
+//GetType

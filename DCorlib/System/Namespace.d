@@ -40,10 +40,11 @@ alias System.Delegate.Delegate Delegate;
 alias System.EventArgs.EventArgs EventArgs;
 alias System.NException.NException NException;
 alias System.TimeSpan.TimeSpan TimeSpan;
-
+alias System.MulticastDelegate.MulticastDelegate MulticastDelegate;
 
 alias System.Random.Random Random;
 alias System.TypeCode.TypeCode TypeCode;
+alias System.ValueType.ValueType ValueType;
 
 alias System.String.String String;
 alias System.Array.Array Array;

@@ -834,6 +834,53 @@ public class MethodBase : MemberInfo
 	}
 }
 
+public struct RuntimeMethodHandle// : ISerializable
+{
+	IntPtr value;
+
+	this (IntPtr v)
+	{
+		value = v;
+	}
+
+	/*RuntimeMethodHandle (SerializationInfo info, StreamingContext context)
+	{
+		if (info == null)
+			throw new ArgumentNullException ("info");
+
+		MonoMethod mm = ((MonoMethod) info.GetValue ("MethodObj", typeof (MonoMethod)));
+		value = mm.MethodHandle.Value;
+		if (value == IntPtr.Zero)
+			throw new SerializationException (Locale.GetText ("Insufficient state."));
+	}
+*/
+	public IntPtr Value() @property {
+		
+			return value;
+	
+	}
+
+	/*// This is from ISerializable
+	public void GetObjectData (SerializationInfo info, StreamingContext context)
+	{
+		if (info == null)
+			throw new ArgumentNullException ("info");
+
+		if (value == IntPtr.Zero)
+			throw new SerializationException ("Object fields may not be properly initialized");
+
+		info.AddValue ("MethodObj", (MonoMethod) MethodBase.GetMethodFromHandle (this), typeof (MonoMethod));
+	}*/
+
+	
+
+	//[SecurityPermission (SecurityAction.Demand, UnmanagedCode = true)]
+		public IntPtr GetFunctionPointer ()
+		{
+			return  value;
+		}
+}
+
 public class MethodInfo: MethodBase
 {
 	Type[] Params; //Temporary measure
@@ -841,6 +888,8 @@ public class MethodInfo: MethodBase
 	public  override MemberTypes MemberType()@property {  
 		return MemberTypes.Method;
 	}
+
+	RuntimeMethodHandle MethodHandle;
 	
 
 	public  Type ReturnType;// { get { throw new NotImplementedException(); } }
@@ -883,9 +932,13 @@ public class MethodInfo: MethodBase
 	}
 }
 
+
+
 class MethodInfo__G(T...) : MethodInfo
 {
 	
+
+
 
 	alias std.traits.ReturnType!(T[1])          return_type;
 	alias ParameterTypeTuple!(T[1])  param_types;
@@ -894,23 +947,23 @@ class MethodInfo__G(T...) : MethodInfo
 	method_type _method;
 	//delegate_type _delegate;
 
-NObject[] GetCustomAttributes(bool inherit) {
+override NObject[] GetCustomAttributes(bool inherit) {
 return null;
 }
-	NObject[] GetCustomAttributes(Type attributeType, bool inherit){
+override	NObject[] GetCustomAttributes(Type attributeType, bool inherit){
 	return null;
 	}
-		bool IsDefined(Type attributeType, bool inherit){
+override		bool IsDefined(Type attributeType, bool inherit){
 		return false;
 		}
-			MethodAttributes Attributes() @property{
+override			MethodAttributes Attributes() @property{
 			return MethodAttributes.init;
 			}
-				NObject Invoke(NObject obj, BindingFlags invokeAttr, Binder binder, NObject[] parameters, CultureInfo culture)
+override				NObject Invoke(NObject obj, BindingFlags invokeAttr, Binder binder, NObject[] parameters, CultureInfo culture)
 				{
 				return null;
 				}
-					MethodInfo GetBaseDefinition(){
+override					MethodInfo GetBaseDefinition(){
 					return null;
 					}
 
@@ -918,6 +971,8 @@ return null;
 	this(method_type method)
 	{
 		_method = method;
+
+		MethodHandle = RuntimeMethodHandle(new IntPtr(cast(long)&method));
 
 		foreach(i, ty; param_types)
 		{
@@ -927,32 +982,7 @@ return null;
 
 	}
 
-	/*this(delegate_type method)
-	{
-	_delegate = method;
-	}*/
-
-	/*override Object Invoke(null_t, Object[] _arguments)
-	{
-		return _invoke(null, _arguments);
-	}
-
-	override Object Invoke(void* pod, Object[] _arguments) 
-	{
-		/*if(pod)
-		{
-		static if(__traits(isStaticFunction, T[1]))
-		throw new Exception("Invoke Failed: Struct Pointer Provided for Static Method");
-		}
-		else
-		{
-		static if(!__traits(isStaticFunction, T[1]))
-		throw new Exception("Invoke Failed: Struct Pointer is Null");
-		}*/
-
-		/*return _invoke(&pod, _arguments);
-	}*/
-
+	
 	override NObject Invoke(NObject obj, Array_T!(NObject) _arguments)
 	{
 		if(obj)
@@ -1013,14 +1043,14 @@ return null;
 		foreach(i, ty; param_types)
 		{
 			alias type = param_types[i];
-			auto arg = cast(param_types[i])cast(void*)(_arguments[i]);
+			auto arg = cast(__BoxesTo!(type))cast(void*)(_arguments[i]);
 
 
-			if(cast(Boxed!(type))_arguments[i])
+			if(cast(__BoxesTo!(type))_arguments[i])
 			{
 				//Boxed Value, this is Ok
 
-				args[i] = ((cast(Boxed!(type))cast(void*)_arguments[i])).__Value;
+				args[i] = UNBOX!(type)(_arguments[i]);//((cast(__BoxesTo!(type))cast(void*)_arguments[i])).__Value;
 
 			}
 			else {
@@ -1032,7 +1062,7 @@ return null;
 										"Expected \'" ~ param_types[i].stringof ~ "\', " ~
 										"Received \'" ~ _arguments[i].toString ~ "\'.");
 				}
-				args[i] = arg;
+				//args[i] = arg;
 			}
 
 		}
@@ -1143,22 +1173,22 @@ class ConstructorInfo__G(T...) : ConstructorInfo
 	method_type _method;
 	//delegate_type _delegate;
 
-	NObject[] GetCustomAttributes(bool inherit) {
+	override NObject[] GetCustomAttributes(bool inherit) {
 		return null;
 	}
-	NObject[] GetCustomAttributes(Type attributeType, bool inherit){
+	override NObject[] GetCustomAttributes(Type attributeType, bool inherit){
 		return null;
 	}
-	bool IsDefined(Type attributeType, bool inherit){
+	override bool IsDefined(Type attributeType, bool inherit){
 		return false;
 	}
-	MethodAttributes Attributes() @property{
+	override MethodAttributes Attributes() @property{
 		return MethodAttributes.init;
 	}
-	NObject Invoke(NObject obj, BindingFlags invokeAttr, Binder binder, NObject[] parameters, CultureInfo culture){
+	override NObject Invoke(NObject obj, BindingFlags invokeAttr, Binder binder, NObject[] parameters, CultureInfo culture){
 		return null;
 	}
-	MethodInfo GetBaseDefinition(){
+	override MethodInfo GetBaseDefinition(){
 		return null;
 	}
 
@@ -1627,7 +1657,7 @@ public class Type_T(T):Type
 		return cast(string)FullName;
 	}
 
-	public  override String ToString()
+	public override String ToString()
 	{
 		return FullName;
 	}

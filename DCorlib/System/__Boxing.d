@@ -2,6 +2,30 @@ module System.__Boxing;
 
 import System.Namespace;
 
+template __BoxesTo(T)
+if(__isClass!(T))
+{
+	alias __BoxesTo = T;
+}
+
+template __BoxesTo(T)
+if(__isStruct!(T))
+{
+	alias __BoxesTo = T.__Boxed_;
+}
+
+template __BoxesTo(T)
+if(__isScalar!(T))
+{
+	alias __BoxesTo = Boxed!T;
+}
+
+template __BoxesTo(T)
+if(__isEnum!(T))
+{
+	alias __BoxesTo = BoxedEnum!T;
+}
+
 static Boxed!T BOX(T)(T value)
 if(__isStruct!(T))
 {
@@ -177,14 +201,6 @@ NObject __BOXPrimitive(T)(T value)
 	return null; // This is not a primitive
 }
 
-//}
-
-//template UNBOX(T)
-//{
-//  static T UNBOX(Boxed!(T) boxed)
-//{
-//	return  boxed.Value;
-//}
 
 static T UNBOX(T,U)(U nobject) 
 {
@@ -193,60 +209,54 @@ static T UNBOX(T,U)(U nobject)
 		return  cast(T) nobject;
 	}
 
-	//Im probably going to need to genericise the Boxing operation and all assignments to sth of type object will have to do a cast
-	//static if(is(U:Boxed!(T))) // Generics saved the day ... phew faster comparisons prevent casting issues ... not always applicable e.g. we have to use typeid or object
-	{
-		return (Cast!(Boxed!(T))(nobject)).__Value;//(cast(T) cast(void*) obj)
-
-	}
-	//Comparisons can work if we use typeid .... but that slows down things significantly ... so this could be an option ...
-	//throw new InvalidCastException(new String("Cannot cast " ~ nobject.classinfo.name ~ " to " ~ T.stringof));
-	//{
-
-	//}
-	//import std.traits;
-
-	//Console.WriteLine(TypeTuple!(T));
-	//Console.WriteLine(TemplateArgsOf!(typeof(nobject)));
-	//Console.WriteLine(Object.classinfo.getHash(cast(void*)typeid(nobject)));
-
-
-	//writeln(typeid(nobject));
-	//assert(is(TemplateArgsOf!(typeof(nobject)) == TypeTuple!(T)));
-	//guess we have to cheat and use traits
-
-	//	if(typeof(nobject).classinfo == typeid(Boxed!(T)).classinfo ) //Typeid is slew exponential even
- 	//if(is(TemplateArgsOf!(typeof(nobject)) == TypeTuple!(T)))
-	//{
-	//	return (cast(Boxed!(T))nobject).Value;
-	//}
-
-	//throw new InvalidCastException(new String("Cannot cast " ~ nobject.classinfo.name ~ " to " ~ T.stringof));
-
+	return (Cast!(Boxed!(T))(nobject)).__Value;
 
 }
-//}
+
+//Reflection Support for fields and properties, fixes up structs 
+static T* UNBOX_R(T,U)(ref U nobject) 
+if(is(T==class)) // This should never happen /// how did you box a class and why ?
+{
+		return  cast(T*)&(nobject);
+}
+	
+
+static T* UNBOX_R(T,U)(U nobject) 
+if(!is(T==class))
+{
+	/*static if(is(T==class)) // This should never happen /// how did you box a class and why ?
+	{
+		return  &(cast(T) nobject);
+	}*/
+	return &((Cast!(Boxed!(T))(nobject)).__Value);
+}
+
 
 public class BoxedEnum(T): Enum
 {
-	T Value;
+	T __Value;
 	this(T value)
 	{
-		Value = value;
+		__Value = value;
 	}
 
 	override string toString()
 	{
-		return Value.toString;
+		return __Value.toString;
 	}
 
 	override String ToString()
 	{
-		return _S(Value.toString);
+		return _S(__Value.toString);
 	}
 
 	override Type GetType()
 	{
 		return __TypeOf!(typeof(this));
+	}
+
+	T opCast()
+	{
+		return __Value;
 	}
 }
