@@ -44,7 +44,7 @@ namespace SharpNative.Compiler
 
                 temp.Write(TypeProcessor.ConvertType(param.Type) + " ");
 
-                temp.Write(WriteIdentifierName.TransformIdentifier(param.Identifier.ValueText));
+                temp.Write(WriteIdentifierName.TransformIdentifier(param.Identifier.Text));
             }
 
             temp.Write(")");

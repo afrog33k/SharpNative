@@ -19,7 +19,7 @@ namespace SharpNative.Compiler
             writer.WriteIndent();
             writer.Write("goto ");
             writer.Write((method.CaseOrDefaultKeyword != default(SyntaxToken))
-                ? method.CaseOrDefaultKeyword.ValueText
+                ? method.CaseOrDefaultKeyword.Text
                 : "");
             writer.Write(" ");
 

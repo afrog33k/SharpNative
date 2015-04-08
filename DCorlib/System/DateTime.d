@@ -428,8 +428,8 @@ struct DateTime
 
     public DateTime Subtract(TimeSpan val)
     {
-		//return new DateTime((long)(m_ticks - (ulong)val.m_ticks));
-		return DateTime.Now;
+		return  DateTime(cast(long)(m_ticks - cast(ulong)val.m_ticks));
+		//return DateTime.Now;
     }
 
     public DateTime ToLocalTime()
@@ -798,7 +798,7 @@ struct DateTime
     {
 		if(((ticks&Cast!(long)(DateTime.TickMask))<DateTime.MinTicks)||((ticks&Cast!(long)(DateTime.TickMask))>DateTime.MaxTicks))
 		{
-			throw  new ArgumentOutOfRangeException(_S("ticks"), _S("Ticks must be between DateTime.MinValue.Ticks and DateTime.MaxValue.Ticks."));
+			//throw  new ArgumentOutOfRangeException(_S("ticks"), _S("Ticks must be between DateTime.MinValue.Ticks and DateTime.MaxValue.Ticks."));
 		}
 		this.m_ticks=Cast!(ulong)(ticks);
     }

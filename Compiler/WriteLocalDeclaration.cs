@@ -85,7 +85,7 @@ namespace SharpNative.Compiler
 
 
 
-                    writer.Write(WriteIdentifierName.TransformIdentifier(variable.Identifier.ValueText));
+                    writer.Write(WriteIdentifierName.TransformIdentifier(variable.Identifier.Text));
                     writer.Write(" = ");
 
                      WriteInitializer(writer, declaration, variable);
@@ -111,6 +111,11 @@ namespace SharpNative.Compiler
                 var nullAssignment = value.ToFullString().Trim() == "null";
                 var convertedType = initializerType.ConvertedType;
                 var type = initializerType.Type;
+                if (type == null && convertedType == null) //TODO: Rare Case (Compiling csnative corlib... need to find a solution, for now just write it out
+                {
+                    Core.Write(writer, value);
+                    return;
+                }
                
 				var shouldBox = type != null && (type.IsValueType) &&
                                 !convertedType.IsValueType;
@@ -121,6 +126,8 @@ namespace SharpNative.Compiler
                                          (isname &&
                                           TypeProcessor.GetSymbolInfo(value as NameSyntax).Symbol.Kind ==
                                           SymbolKind.Method);
+
+
                 var isdelegateassignment = ismemberexpression &&
                                            convertedType.TypeKind == TypeKind.Delegate;
                 var isstaticdelegate = isdelegateassignment &&
@@ -165,11 +172,11 @@ namespace SharpNative.Compiler
                     return;
                 }
 
-                if (type == null && convertedType == null)
-                {
-                    writer.Write("null");
-                    return;
-                }
+//                if (type == null && convertedType == null)
+//                {
+//                    writer.Write("null");
+//                    return;
+//                }
 
                 //CTFE
               /* var aVal =  EvaluateValue(value);

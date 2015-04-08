@@ -10,8 +10,6 @@ alias System.Collections.Generic.ICollection__G.ICollection__G ICollection__G;
 
 alias System.Collections.Generic.Dictionary_TKey_TValue.Dictionary_TKey_TValue Dictionary_TKey_TValue;
 
-alias System.Collections.Generic.IDictionary_TKey_TValue.IDictionary_TKey_TValue IDictionary_TKey_TValue;
-
 alias System.Collections.Generic.IList__G.IList__G IList__G;
 
 alias System.Collections.Generic.Comparer_T.Comparer_T Comparer_T;
@@ -75,10 +73,28 @@ public interface IReadOnlyList__G(T) : IReadOnlyCollection__G!(T)
 	public abstract T opIndex(int index, IReadOnlyList__G!(T) j=null);
 }
 
-public interface IDictionary__G(TKey,TValue)
+public interface IDictionary__G(TKey,TValue)  : ICollection__G!(KeyValuePair__G!(TKey, TValue))
 {
-	public TValue opIndex(TKey key, IDictionary__G!(TKey,TValue) j=null);
-	public void opIndexAssign(TKey key, TValue value, IDictionary__G!(TKey,TValue) j = null);
+	
+	public void Add(TKey key, TValue value, IDictionary__G!(TKey,TValue) __j=null) ;
+
+	public bool ContainsKey(TKey key, IDictionary__G!(TKey,TValue) __j=null) ;
+
+	public bool Remove(TKey key, IDictionary__G!(TKey,TValue) __j=null) ;
+
+	public bool TryGetValue(TKey key,  out TValue value, IDictionary__G!(TKey,TValue) __j=null) ;
+
+
+	public     TValue opIndexAssign(TValue value, TKey key, IDictionary__G!(TKey, TValue) __j = null);
+
+	public     TValue opIndex(TKey key, IDictionary__G!(TKey,TValue) __j=null);
+
+
+
+	public      ICollection__G!(TKey)  Keys(IDictionary__G!(TKey,TValue) __j=null) @property;
+
+
+	public      ICollection__G!(TValue)  Values(IDictionary__G!(TKey,TValue) __j=null) @property;
 }
 
 //Temporary Dictionary Implementation

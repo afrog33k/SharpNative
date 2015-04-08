@@ -6,7 +6,10 @@
 #region Imports
 
 using System;
+using System.Globalization;
 using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -27,14 +30,15 @@ namespace SharpNative.Compiler
                 return;
             }
 
-            if (str.StartsWith("@"))
+            if (str.StartsWith("@\""))
             {
-                str = "\"" +
+                str = "r" + FixUpLiterals(EncodeNonAsciiCharacters(FixUpLiterals(str.Substring(1))));
+                /*str = "\"" +
                       str.RemoveFromStartOfString("@\"")
                           .RemoveFromEndOfString("\"")
                           .Replace("\\", "\\\\")
                           .Replace("\"\"", "\\\"")
-                          .Replace("\r\n", "\\n") + "\"";
+                          .Replace("\r\n", "\\n") + "\"";*/
             }
 
             var typeInfo = TypeProcessor.GetTypeInfo(expression);
@@ -46,23 +50,24 @@ namespace SharpNative.Compiler
 
             if (type != null && type.SpecialType == SpecialType.System_String)
             {
-
-                if (str != "null")
-				if(inSwitch)
-                    writer.Write(  str );
-				else
-					writer.Write("_S(" + str + ")");
-					
+                if (str.Contains("\\u") || str.Contains("\\x"))
+               
+                str = FixUpLiterals(EncodeNonAsciiCharacters(FixUpLiterals(str)));
+                if (str == "null")
+                {
+                    if (inSwitch)
+                        writer.Write("-1");
+                    else
+                        writer.Write("null");
+                }
+                else if (inSwitch)
+                {
+                    writer.Write(str);
+                }
                 else
                 {
-
-					if(inSwitch)
-						writer.Write( "-1");
-					else
-						writer.Write("null");
-
-                    
                 }
+                writer.Write("_S(" + str + ")");
             }
             else if (type != null && type.Name == "Nullable")//Nullable Support
             {
@@ -75,6 +80,16 @@ namespace SharpNative.Compiler
             {
                 if(type.SpecialType==SpecialType.System_Boolean)
                     writer.Write(str);
+                else if (type.SpecialType == SpecialType.System_Char)
+                {
+
+if(str.Contains("\\u") || str.Contains("\\x"))
+                    writer.Write("cast(wchar)"+FixUpCharacterLiteral(str));
+else
+{
+    writer.Write(str);
+}
+                }
                 else
                 {
 
@@ -109,6 +124,62 @@ namespace SharpNative.Compiler
         static string[] integerTypeSuffixes = {  "UL", "Ul", "uL", "ul", "LU", "Lu", "lU", "lu","U", "u", "L" ,"l" };
 		static string[] dintegerTypeSuffixes = {  "UL", "UL", "UL", "UL", "UL", "UL", "UL", "UL", "U", "U", "L", "L" };
 
+        static string EncodeNonAsciiCharacters(string value)
+        {
+            StringBuilder sb = new StringBuilder();
+            foreach (char c in value)
+            {
+                if (c > 127)
+                {
+                    // This character is too big for ASCII
+                    string encodedValue = "\\u" + ((int)c).ToString("x4");
+                    sb.Append(encodedValue);
+                }
+                else
+                {
+                    sb.Append(c);
+                }
+            }
+            return sb.ToString();
+        }
+
+        static string FixUpLiterals(string value)
+        {
+            string v = Regex.Replace(
+                            value,
+                            @"\\x(?<Value>[a-zA-Z0-9]{1,2})",
+                            m =>
+            {
+                return "\\x" + (int.Parse(m.Groups["Value"].Value, NumberStyles.HexNumber)).ToString("x2");
+            });
+            v = Regex.Replace(
+                            v,
+                            @"\\u(?<Value>[a-zA-Z0-9]{4})",
+                            m =>
+            {
+                return "\\u" + (int.Parse(m.Groups["Value"].Value, NumberStyles.HexNumber)).ToString("x4");
+            });
+            return v;
+        }
+
+        static string FixUpCharacterLiteral(string value)
+        {
+            string v = Regex.Replace(
+                            value,
+                            @"\\x(?<Value>[a-zA-Z0-9]{1,2})",
+                            m =>
+            {
+                return "0x" + (int.Parse(m.Groups["Value"].Value, NumberStyles.HexNumber)).ToString("x2");
+            });
+            v = Regex.Replace(
+                            v,
+                            @"\\u(?<Value>[a-zA-Z0-9]{4})",
+                            m =>
+            {
+                return "0x" + (int.Parse(m.Groups["Value"].Value, NumberStyles.HexNumber)).ToString("x4");
+            });
+            return v.Replace("'", "");
+        }
 
     }
 }

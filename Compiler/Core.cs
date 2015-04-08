@@ -174,7 +174,8 @@ namespace SharpNative.Compiler
             else if (node is IndexerDeclarationSyntax)
                 WriteIndexer.Go(writer, node.As<IndexerDeclarationSyntax>());
             else if (node is StackAllocArrayCreationExpressionSyntax)
-                writer.Write(node.ToFullString() + "//TODO: StackAlloc not supported yet");
+                WriteStackArrayCreation.Go(writer, node.As<StackAllocArrayCreationExpressionSyntax>());
+//                writer.Write(node.ToFullString() + "//TODO: StackAlloc not supported yet");
             else if (node is YieldStatementSyntax)
                 WriteYieldStatement.Go(writer, node.As<YieldStatementSyntax>());
             else

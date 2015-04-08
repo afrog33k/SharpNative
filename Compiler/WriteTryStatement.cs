@@ -30,10 +30,10 @@ namespace SharpNative.Compiler
                     else
                     {
                         writer.WriteLine("catch(" + TypeProcessor.ConvertType(catchClause.Declaration.Type) + " " +
-                                         (string.IsNullOrWhiteSpace(catchClause.Declaration.Identifier.ValueText)
+                                         (string.IsNullOrWhiteSpace(catchClause.Declaration.Identifier.Text)
                                              ? "__ex"
                                              : WriteIdentifierName.TransformIdentifier(
-                                                 catchClause.Declaration.Identifier.ValueText)) + ")");
+                                                 catchClause.Declaration.Identifier.Text)) + ")");
                     }
                     writer.OpenBrace();
 

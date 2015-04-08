@@ -185,7 +185,7 @@ namespace SharpNative.Compiler
                         imports.GroupBy(k => k.ContainingNamespace).Where(j => j.Key != null);
                         //.Where(k => k.LastIndexOf('.') != -1)
                     List<string> currentImports = new List<string>();
-                    foreach (var import in importGroups)
+                    foreach (IGrouping<INamespaceSymbol, ITypeSymbol> import in importGroups)
                     {
                         //if (import.Key.EndsWith("Namespace", StringComparison.Ordinal))
                         {
@@ -224,6 +224,10 @@ namespace SharpNative.Compiler
                         }
                     }
 
+                    if(!Context.TypeImports.ContainsKey(Context.Instance.Type))
+                    Context.TypeImports.Add(Context.Instance.Type,currentImports);
+                    
+                    
                     foreach (var type in Context.Instance.NamespaceAliases)
                     {
                         var name = type.Key.FullName(true, false);

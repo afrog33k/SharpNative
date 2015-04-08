@@ -20,7 +20,7 @@ namespace SharpNative.Compiler
     {
         public static void Go(OutputWriter writer, ObjectCreationExpressionSyntax expression)
         {
-            var type = TypeProcessor.GetTypeInfo(expression).Type;
+            var type = TypeProcessor.GetTypeInfo(expression.Type).Type;
 
             if (expression.Initializer != null)
             {
@@ -70,12 +70,12 @@ namespace SharpNative.Compiler
               
             }
 
-            if (type.SpecialType == SpecialType.System_Object)
+            if (type!=null && type.SpecialType == SpecialType.System_Object)
             {
                 //new object() results in the NObject type being made.  This is only really useful for locking
                 writer.Write("new NObject()");
             }
-            else if (type.OriginalDefinition is INamedTypeSymbol &&
+            else if (type != null &&  type.OriginalDefinition is INamedTypeSymbol &&
                      type.OriginalDefinition.As<INamedTypeSymbol>().SpecialType == SpecialType.System_Nullable_T)
             {
                 //new'ing up a Nullable<T> has special sematics in C#.  If we're calling this with no parameters, just use null. Otherwise just use the parameter.

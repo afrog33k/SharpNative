@@ -55,6 +55,18 @@ public static void WriteLine(T)(T value) if(is(T==wchar))
 		writeln(value);		
 }
 
+public static void WriteLine(ubyte value)
+{
+	writeln(value);
+}
+
+
+public static void Write(ubyte value)
+{
+	write(value);
+}
+
+
 public static void WriteLine(short value)
 {
 	writeln(value);
@@ -151,7 +163,7 @@ public static void WriteLine(wstring value)
 	}
 
 	//Generic
-	public static void WriteLine(T)(T anything) if(!is(T==double) && !is(T==float) && !is(T==int)&&!is(T:NObject)) 
+	/*public static void WriteLine(T)(T anything) if(!is(T==double) && !is(T==float) && !is(T==int)&&!is(T:NObject)) 
 	{
 		writeln(anything);
 	}
@@ -159,7 +171,7 @@ public static void WriteLine(wstring value)
 	public static void Write(T)(T anything) if(!is(T==double) && !is(T==float) && !is(T==int) &&!is(T:NObject)) 
 	{
 		write(anything);
-	}
+	}*/
 	
 	
 	//	public static void WriteLine(Boolean aString)
@@ -169,11 +181,14 @@ public static void WriteLine(wstring value)
 	
 	public static void WriteLine(String aString) // All raw string classes should be aware of .Text property
 	{
+		
 		if(aString !is null)
 		writeln(aString.Text);
 		else
 			writeln();
 	}
+
+
 
 	public static void Write(String aString) // All raw string classes should be aware of .Text property
 	{
@@ -181,6 +196,8 @@ public static void WriteLine(wstring value)
 			write(aString.Text);
 			
 	}
+
+
 
 	public static void WriteLine(NObject aString) // All raw string classes should be aware of .Text property
 	{

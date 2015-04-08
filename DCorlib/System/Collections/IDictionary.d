@@ -8,19 +8,19 @@ import System.Collections.Namespace;
 {
   
 
-public     abstract bool  IsReadOnly(IDictionary j =null) @property;
+public      bool  IsReadOnly(IDictionary j =null) @property;
   
 
-public     abstract bool  IsFixedSize(IDictionary j =null) @property;
+public      bool  IsFixedSize(IDictionary j =null) @property;
   
 
-public     abstract ICollection  Keys(IDictionary j =null) @property;
+public      ICollection  Keys(IDictionary j =null) @property;
   
 
-public     abstract ICollection  Values(IDictionary j =null) @property;
+public      ICollection  Values(IDictionary j =null) @property;
   
 
-public    abstract void opIndexAssign( NObject  value, NObject key,IDictionary j =null );
+public    NObject  opIndexAssign( NObject  value, NObject key,IDictionary j =null );
 
 public void Add(NObject key, NObject value,IDictionary j =null);
 

@@ -218,7 +218,7 @@ namespace SharpNative.Compiler
                     paramType = method.ParameterList.Parameters[1];
             }
 
-            var token = method.OperatorToken.ValueText;
+            var token = method.OperatorToken.Text;
 
             var methodBody = "";
 
@@ -235,7 +235,8 @@ namespace SharpNative.Compiler
             if (methodName == "opOpAssign")
                 token = token.Substring(0, 1);
 
-            if (methodName == "opBinary")
+            //We are going to have to rewrite this bit later ... for now all overloads are called directly
+        /*    if (methodName == "opBinary")
             {
 
                 writer.WriteLine("public final " + returnType + " " + methodName +
@@ -270,7 +271,7 @@ namespace SharpNative.Compiler
                     String.Format(
                         " (string _op) ({0} other)\r\n\tif(_op==\"{2}\")\r\n\t{{ \r\n\t\treturn {1}(this); \r\n\t}}\r\n\r\n",
                         TypeProcessor.ConvertType(paramType.Type), actualMethodName, token));
-            }
+            }*/
 
             var @params = method.ParameterList.Parameters;
 

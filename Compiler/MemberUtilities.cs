@@ -84,7 +84,7 @@ namespace SharpNative.Compiler
             interfaceImplemented = null;
             proxies = null;
            
-            var name = WriteIdentifierName.TransformIdentifier(OverloadResolver.MethodName(methodSymbol));
+            var name = WriteIdentifierName.TransformIdentifier(methodSymbol.Name);
 
             if (methodSymbol.ContainingType.TypeKind == TypeKind.Interface)
             {
@@ -360,6 +360,16 @@ namespace SharpNative.Compiler
             CompareArguments(interfaceMethod.TypeArguments , methodSymbol.TypeArguments);
         }
 
+        public static bool CompareMethodsWithReturnType(IMethodSymbol interfaceMethod, IMethodSymbol methodSymbol)
+        {
+            if (interfaceMethod == null || methodSymbol == null)
+                return false;
+            return interfaceMethod.Name == methodSymbol.Name && interfaceMethod.ReturnType == methodSymbol.ReturnType 
+                &&
+            CompareParameters(interfaceMethod.Parameters, methodSymbol.Parameters) &&
+            CompareArguments(interfaceMethod.TypeArguments, methodSymbol.TypeArguments);
+        }
+
         public static bool CompareArguments(ImmutableArray<ITypeSymbol> a, ImmutableArray<ITypeSymbol> b)
         {
             if (a == null && b == null)
@@ -421,20 +431,21 @@ namespace SharpNative.Compiler
         {
             writer.Write("&");
             var symbol = TypeProcessor.GetSymbolInfo(expression).Symbol;
-            if (symbol is IMethodSymbol)
+//         
+//            else
+            {
+            Core.Write(writer, expression);
+                if (symbol is IMethodSymbol && !(expression is GenericNameSyntax))
             {
                 //Type inference for delegates
                 var methodSymbol =  symbol as IMethodSymbol;
-                var methodName = TypeProcessor.ConvertType(methodSymbol.ContainingType) +"."+ WriteIdentifierName.TransformIdentifier(methodSymbol.Name);
-                var specializedMethod = methodName +
+             //   var methodName = TypeProcessor.ConvertType(methodSymbol.ContainingType) +"."+ WriteIdentifierName.TransformIdentifier(methodSymbol.Name);
+                var specializedMethod = //methodName +
                                         (methodSymbol.TypeArguments.Any() ?( "!("+
                                         methodSymbol.TypeArguments.Select(k => TypeProcessor.ConvertType(k))
                                             .Aggregate((a, b) => a + "," + b) +")"): "");
                 writer.Write(specializedMethod);
             }
-            else
-            {
-            Core.Write(writer, expression);
 
             }
         }

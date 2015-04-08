@@ -33,6 +33,11 @@ template __isStruct(T)
 }
 
 
+template __isCSStruct(T)
+{
+	enum __isCSStruct =  __isStruct!(T);
+}
+
 template __isClass(T)
 {
 	enum __isClass =  is(T==class) && is(T:NObject);

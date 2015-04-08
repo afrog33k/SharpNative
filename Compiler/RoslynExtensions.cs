@@ -21,10 +21,10 @@ namespace SharpNative.Compiler
         public static string GetYieldClassName(this ISymbol symbol)
         {
             if(symbol is IMethodSymbol)
-            return "YieldEnumerator_" + ((IMethodSymbol) symbol).Name;
+            return "__YieldEnumerator_" + ((IMethodSymbol) symbol).Name;
             else
             {
-             return   "YieldEnumerator_" + ((IPropertySymbol)symbol).Name;
+             return "__YieldEnumerator_" + ((IPropertySymbol)symbol).Name;
             }
 
         }

@@ -5,6 +5,7 @@
 
 #region Imports
 
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -149,7 +150,7 @@ namespace SharpNative.Compiler
 
                 }*/
 
-                writer.Write(WriteIdentifierName.TransformIdentifier(parameter.Identifier.ValueText));
+                writer.Write(WriteIdentifierName.TransformIdentifier(parameter.Identifier.Text));
                 if (parameter.Default == null)
                     continue;
                 writer.Write(" = ");
@@ -191,7 +192,7 @@ namespace SharpNative.Compiler
                 //We only want to render out one of the two partial methods.  If there's another, skip this one.
                 if (Context.Instance.Partials.SelectMany(o => o.Syntax.As<ClassDeclarationSyntax>().Members)
                     .OfType<MethodDeclarationSyntax>()
-                    .Except(method).Any(o => o.Identifier.ValueText == method.Identifier.ValueText))
+                    .Except(method).Any(o => o.Identifier.Text == method.Identifier.Text))
                     return;
             }
 
@@ -294,6 +295,11 @@ namespace SharpNative.Compiler
 
 
                         methodSignatureString = methodName + genericParameters;
+
+                        if (!String.IsNullOrEmpty(genericParameters))
+                        {
+                            className = className + "!" + genericParameters;
+                        }
                         var @params2 = GetParameterListAsString(method.ParameterList.Parameters, iface: methodSymbol.ContainingType);
                         var @params3 = GetParameterListAsString(method.ParameterList.Parameters, iface: null,
                             includeTypes: false,writebraces:false);
@@ -397,8 +403,23 @@ namespace SharpNative.Compiler
                             constraints += ((isFirst ? "" : "&&") + " !is(" + constraint.Name + " : NObject)");
                         else
                         {
+                            var constraintName = WriteIdentifierName.TransformIdentifier(constraint.Name.Identifier.Text);
+
+                            if (condition is TypeConstraintSyntax)
+                            {
+                                var type = TypeProcessor.GetTypeInfo((condition as TypeConstraintSyntax).Type).Type;
+                                if (type.TypeKind == TypeKind.Interface)
+                                {
+                                    constraintName = "__BoxesTo!(" + constraintName + ")";
+                                }
+
+                                constraints += ((isFirst ? "" : "&&") + " is(" + constraintName + " : " + TypeProcessor.ConvertType(type,true,true,true) +
+                                            ")");
+
+                            }
+                            else
 							//TODO: fix this up better
-							constraints += ((isFirst ? "" : "&&") + " is(" + constraint.Name + " : " + dlangCondition.Replace("<","!(").Replace(">",")") +
+							constraints += ((isFirst ? "" : "&&") + " is(" + constraintName + " : " + dlangCondition.Replace("<","!(").Replace(">",")") +
                                             ")");
                         }
 

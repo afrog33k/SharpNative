@@ -200,7 +200,7 @@ class List__G(T) : NObject ,IList__G!(T) ,System.Collections.Namespace.IList //,
     NObject opIndex(int index, System.Collections.Namespace.IList __j = null)
     {
 		{
-			return cast(NObject) BOX!(T)(this[index,cast(IList__G!(T))null]);
+			return  BOX!(T)(this[index,cast(IList__G!(T))null]);
         }
 
     }
@@ -415,7 +415,8 @@ class List__G(T) : NObject ,IList__G!(T) ,System.Collections.Namespace.IList //,
 			// Array.Copy will check for NULL.
 			Array.Copy(this._items, 0, array, arrayIndex, this._size);
 		}
-		catch(System.Namespace.ArrayTypeMismatchException __ex)
+		catch(Exception __ex)
+	//	catch(System.Namespace.ArrayTypeMismatchException __ex)
 		{
 		}
     }
@@ -1442,7 +1443,7 @@ class List__G(T) : NObject ,IList__G!(T) ,System.Collections.Namespace.IList //,
                 if(this.index==0||this.index==list._size+1)
                 {
                 }
-                return cast(NObject) BOX!(T)(this.Current);
+                return  BOX!(T)(this.Current);
 			}
 
 		}

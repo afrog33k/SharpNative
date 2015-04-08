@@ -155,6 +155,7 @@
     <Compile Include="WriteProperty.cs" />
     <Compile Include="WriteReturnStatement.cs" />
     <Compile Include="WriteSizeOfExpression.cs" />
+    <Compile Include="WriteStackArrayCreation.cs" />
     <Compile Include="WriteStandardIncludes.cs" />
     <Compile Include="WriteSwitchStatement.cs" />
     <Compile Include="WriteThisExpression.cs" />

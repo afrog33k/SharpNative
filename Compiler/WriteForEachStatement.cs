@@ -53,10 +53,10 @@ namespace SharpNative.Compiler
                // writer.WriteIndent();
                 writer.WriteLine("auto {0} = {1};", forArray, expressiono);
                 writer.WriteLine("for (int {0}=0;{0} < {2}.{3}; {0}++)", forIter, //Special case to support iterating "params" array
-                    WriteIdentifierName.TransformIdentifier(foreachStatement.Identifier.ValueText), forArray, isListT?"Count" :"length");
+                    WriteIdentifierName.TransformIdentifier(foreachStatement.Identifier.Text), forArray, isListT?"Count" :"length");
                
                 writer.OpenBrace();
-                writer.WriteLine("auto {0} = {1}[{2}];", WriteIdentifierName.TransformIdentifier(foreachStatement.Identifier.ValueText), forArray, forIter);
+                writer.WriteLine("auto {0} = {1}[{2}];", WriteIdentifierName.TransformIdentifier(foreachStatement.Identifier.Text), forArray, forIter);
                 Core.WriteStatementAsBlock(writer, foreachStatement.Statement, false);
                 writer.CloseBrace();
                
@@ -90,7 +90,7 @@ namespace SharpNative.Compiler
                 writer.OpenBrace();
 
                 writer.WriteLine(string.Format("{0}{1} = {2}.Current(cast(IEnumerator__G!({0}))null);", typeString,
-                    WriteIdentifierName.TransformIdentifier(foreachStatement.Identifier.ValueText), foreachIter));
+                    WriteIdentifierName.TransformIdentifier(foreachStatement.Identifier.Text), foreachIter));
 
                 Core.WriteStatementAsBlock(writer, foreachStatement.Statement, false);
 
@@ -118,7 +118,7 @@ namespace SharpNative.Compiler
                 writer.OpenBrace();
 
                 writer.WriteLine(string.Format("{0}{1} = UNBOX!({0})({2}.Current);", typeString,
-                    WriteIdentifierName.TransformIdentifier(foreachStatement.Identifier.ValueText), foreachIter));
+                    WriteIdentifierName.TransformIdentifier(foreachStatement.Identifier.Text), foreachIter));
 
                 Core.WriteStatementAsBlock(writer, foreachStatement.Statement, false);
 

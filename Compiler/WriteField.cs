@@ -25,7 +25,7 @@ namespace SharpNative.Compiler
               
                 //TODO: Add support for threadstatic
                 Go(writer, field, field.Modifiers,
-                    WriteIdentifierName.TransformIdentifier(declaration.Identifier.ValueText), field.Declaration.Type,
+                    WriteIdentifierName.TransformIdentifier(declaration.Identifier.Text), field.Declaration.Type,
                     declaration.Initializer,field.IsThreadStatic());
             }
         }
@@ -36,7 +36,7 @@ namespace SharpNative.Compiler
             {
                
                     Go(writer, field, field.Modifiers,
-                        WriteIdentifierName.TransformIdentifier(declaration.Identifier.ValueText),
+                        WriteIdentifierName.TransformIdentifier(declaration.Identifier.Text),
                         field.Declaration.Type, declaration.Initializer,field.IsThreadStatic());
                 
             }
@@ -47,8 +47,8 @@ namespace SharpNative.Compiler
             return field.AttributeLists.Any(
                 l =>
                     l.Attributes.Any(
-                        a => a.Name is QualifiedNameSyntax ? (a.Name.As<QualifiedNameSyntax>().Right.Identifier.ValueText == "ThreadStatic") :
-                        a.Name is IdentifierNameSyntax && a.Name.As<IdentifierNameSyntax>().Identifier.ValueText == "ThreadStatic"
+                        a => a.Name is QualifiedNameSyntax ? (a.Name.As<QualifiedNameSyntax>().Right.Identifier.Text == "ThreadStatic") :
+                        a.Name is IdentifierNameSyntax && a.Name.As<IdentifierNameSyntax>().Identifier.Text == "ThreadStatic"
                         ));
         }
 
@@ -57,8 +57,8 @@ namespace SharpNative.Compiler
             return field.AttributeLists.Any(
                 l =>
                     l.Attributes.Any(
-                        a => a.Name is QualifiedNameSyntax ? (a.Name.As<QualifiedNameSyntax>().Right.Identifier.ValueText == "ThreadStatic") :
-                        a.Name is IdentifierNameSyntax && a.Name.As<IdentifierNameSyntax>().Identifier.ValueText == "ThreadStatic"));
+                        a => a.Name is QualifiedNameSyntax ? (a.Name.As<QualifiedNameSyntax>().Right.Identifier.Text == "ThreadStatic") :
+                        a.Name is IdentifierNameSyntax && a.Name.As<IdentifierNameSyntax>().Identifier.Text == "ThreadStatic"));
         }
 
 
@@ -101,17 +101,34 @@ namespace SharpNative.Compiler
 
           
 
-            if (isConst)
+            if (isConst && typeinfo.Type.IsPrimitive())
             {
-                writer.Write("const ");
-//                writer.Write("const ");
+              
+                writer.Write("const "); //const has interesting semantics in Dlang 
             }
 
             var @event = field is EventFieldDeclarationSyntax;
+            ITypeSymbol iface;
+            ISymbol[] proxies;
+
+            bool isInterface =false;
+           // var ename = MemberUtilities.GetMethodName(field, ref isInterface, out iface, out proxies);
             if (@event)
+            {
                 typeString = ("__Event!(" + typeString + ")");
 
+                if (field.Parent is InterfaceDeclarationSyntax)
+                {
+                    
+                    //writer.Write(typeString);
+                    writer.WriteLine(typeString + " " + name + "(" + TypeProcessor.ConvertType(field.Parent) +" __ij)" + "@property;");
+                    return;
+                }
+            }
+
             writer.Write(typeString);
+
+
 //                if (isStatic)
 //                    writer.Write(typeString);
 

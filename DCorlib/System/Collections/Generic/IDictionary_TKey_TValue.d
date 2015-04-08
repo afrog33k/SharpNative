@@ -1,28 +1,31 @@
-module System.Collections.Generic.IDictionary_TKey_TValue;
+module System.Collections.Generic.IDictionary__G;
 
 
 import System.Namespace;
 import System.Collections.Generic.Namespace;
 
- interface IDictionary_TKey_TValue( TKey , TValue ) :  ICollection_T!(System.Collections.Generic.Namespace.KeyValuePair_TKey_TValue!(TKey, TValue))
+ interface IDictionary__G( TKey , TValue ) :  ICollection__G!(System.Collections.Generic.Namespace.KeyValuePair_TKey_TValue!(TKey, TValue))
 {
 
 
-public void IDictionary_TKey_TValue_Add(TKey key, TValue value) ;
+public void Add(TKey key, TValue value) ;
 
-public bool IDictionary_TKey_TValue_ContainsKey(TKey key) ;
+public bool ContainsKey(TKey key) ;
 
-public bool IDictionary_TKey_TValue_Remove(TKey key) ;
+public bool Remove(TKey key) ;
 
-public bool IDictionary_TKey_TValue_TryGetValue(TKey key,  out TValue value) ;
+public bool TryGetValue(TKey key,  out TValue value) ;
   
 
-public    abstract void opIndexAssign( TValue  value, TKey key )  ;
+public    abstract void opIndexAssign( TValue  value, TKey key);
+
+public    abstract TValue opIndex(TKey key);
+
   
 
-public     abstract ICollection_T!(TKey)  IDictionary_TKey_TValue_Keys() @property;
+public     abstract ICollection_T!(TKey)  Keys() @property;
   
 
-public     abstract ICollection_T!(TValue)  IDictionary_TKey_TValue_Values() @property;
+public     abstract ICollection_T!(TValue)  Values() @property;
 
 };

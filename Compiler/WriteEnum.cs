@@ -21,7 +21,7 @@ namespace SharpNative.Compiler
         //TODO should enum be light class of static members ? or just a plain enum ? (using plain enum for now)
         public static void Go(OutputWriter writer, IEnumerable<EnumMemberDeclarationSyntax> allChildren)
         {
-//            writer.IsInterface = true;
+            //            writer.IsInterface = true;
             writer.Write("struct ");
             writer.Write(WriteType.TypeName(Context.Instance.Type, false) + "// Enum");
 
@@ -31,7 +31,7 @@ namespace SharpNative.Compiler
             // writer.Write(":" + TypeProcessor.ConvertType(Context.Instance.Type.EnumUnderlyingType));
             writer.Write("\r\n");
 
-           
+
 
 
 
@@ -42,12 +42,22 @@ namespace SharpNative.Compiler
 
             writer.WriteLine("public enum __IsEnum = true; // Identifies struct as enum");
 
-            
+            string flagsvalue = "false";
+
+            if (Context.Instance.Type.GetAttributes().Any(k => k.AttributeClass != null && k.AttributeClass.Name == "FlagsAttribute"))
+            {
+                flagsvalue = "true";
+            }
+
+            writer.WriteLine("public enum __HasFlags = {0}; // Identifies struct as enum", flagsvalue);
+
+
+
 
             writer.WriteLine(string.Format("public this({0} value)", TypeProcessor.ConvertType(Context.Instance.Type.EnumUnderlyingType)));
             writer.OpenBrace();
             writer.WriteLine("__Value = value;");
-             writer.CloseBrace();
+            writer.CloseBrace();
 
 
             writer.WriteLine();
@@ -56,12 +66,15 @@ namespace SharpNative.Compiler
             writer.WriteLine("return __TypeOf!(typeof(this));");
             writer.CloseBrace();
 
+
             long lastEnumValue = 0;
             var children = allChildren.ToArray();
             var values =
                 children.Select(
-                    o => new {Syntax = o, Value = o.EqualsValue != null ? o.EqualsValue.Value : null})
+                    o => new { Syntax = o, Value = o.EqualsValue != null ? o.EqualsValue.Value : null })
                     .ToList();
+
+            var actualValues = new List<string>();
 
             for (int index = 0; index < values.Count; index++)
             {
@@ -69,7 +82,7 @@ namespace SharpNative.Compiler
                 var text = "";
 
                 text = "public enum " + WriteType.TypeName(Context.Instance.Type, false) + " "
-                       + WriteIdentifierName.TransformIdentifier(value.Syntax.Identifier.ValueText);
+                       + WriteIdentifierName.TransformIdentifier(value.Syntax.Identifier.Text);
                 var expressionSyntax = value.Value;
                 var expression = expressionSyntax;
 
@@ -92,25 +105,30 @@ namespace SharpNative.Compiler
                                temp;
                     }
 
+                    actualValues.Add(temp);
                     text += " = " + temp;
                     tempw.Dispose();
                     ;
                 }
                 else
                 {
-                    if (expressionSyntax!=null && expressionSyntax.ToFullString().Trim() != "")
+                    if (expressionSyntax != null && expressionSyntax.ToFullString().Trim() != "")
                         text += expressionSyntax;
                     else
                     {
                         if (index > 0)
                         {
+                            var temp =
+                                WriteIdentifierName.TransformIdentifier(values[index - 1].Syntax.Identifier.Text) + " + 1";
                             text += " = " +
-                                WriteIdentifierName.TransformIdentifier(values[index - 1].Syntax.Identifier.ValueText) +
-                                " + 1";
+                                temp;
+                            actualValues.Add(temp);
+
                         }
                         else
                         {
                             text += " = 0";
+                            actualValues.Add("0");
                         }
 
                     }
@@ -118,6 +136,30 @@ namespace SharpNative.Compiler
 
                 writer.WriteLine(text + ";");
             }
+
+            //TODO: Need Fix
+            var list = new List<string>();
+            for (int index = 0; index < values.Count; index++)
+            {
+                var item = actualValues[index];
+                for (int i = 0; i < values.Count ; i++)
+                {
+                    var value = values[i];
+                    if ((value.Value is LiteralExpressionSyntax)||value.Value == null)
+                    {
+                        item =
+                            item.Replace(
+                                TypeProcessor.ConvertType(Context.Instance.Type, true, false, false) + "." +
+                                value.Syntax.Identifier.Text, actualValues[i]);
+                        actualValues[i] = item;
+                    }
+                }
+                list.Add(item);
+            }
+
+            writer.WriteLine("public enum __values =[" + list.Aggregate((a, b) => a + "," + b) + "];");
+            writer.WriteLine("public enum __names =[" + values.Select(j => "\"" + WriteIdentifierName.TransformIdentifier(j.Syntax.Identifier.Text) + "\"").Aggregate((a, b) => a + "," + b) + "];");
+
 
             writer.WriteLine();
             var typeName = WriteType.TypeName(Context.Instance.Type, false);
@@ -129,7 +171,7 @@ namespace SharpNative.Compiler
 
             writer.WriteLine("{0} opBinary(string op)({0} rhs)", typeName);
             writer.OpenBrace();
-            writer.WriteLine("return mixin(\"{0}(__Value \"~op~\" rhs.__Value)\");",typeName);
+            writer.WriteLine("return mixin(\"{0}(__Value \"~op~\" rhs.__Value)\");", typeName);
             writer.CloseBrace();
 
             writer.WriteLine("bool opEquals(const {0} a)", typeName);
@@ -145,15 +187,17 @@ namespace SharpNative.Compiler
 
             writer.WriteLine("public string toString()");
             writer.OpenBrace();
-            foreach (var membername in values)
-            {
-                var name = WriteIdentifierName.TransformIdentifier(membername.Syntax.Identifier.ValueText);
-                writer.WriteLine("if (this == {0}.__Value)", name);
-                writer.OpenBrace();
-                writer.WriteLine("return \"{0}\";", name);
-                writer.CloseBrace();
-            }
-            writer.WriteLine("return std.conv.to!string(GetType().FullName.Text);");
+            /*  foreach (var membername in values)
+              {
+                  var name = WriteIdentifierName.TransformIdentifier(membername.Syntax.Identifier.Text);
+                  writer.WriteLine("if (this == {0}.__Value)", name);
+                  writer.OpenBrace();
+                  writer.WriteLine("return \"{0}\";", name);
+                  writer.CloseBrace();
+              }
+              writer.WriteLine("return std.conv.to!string(BOX(this.__Value).ToString().Text);");*/
+            writer.WriteLine("return __ConvertEnumToString(this);");
+
             writer.CloseBrace();
 
             //Not needed for enum ... all enum should have a ToString function ...
@@ -259,12 +303,12 @@ namespace SharpNative.Compiler
             //            writer.CloseBrace();
 
             writer.CloseBrace();
-//            writer.Write(";");
+            //            writer.Write(";");
         }
 
 
 
 
-     
+
     }
 }

@@ -1,6 +1,7 @@
 module System.__Boxing;
 
 import System.Namespace;
+import std.conv;
 
 template __BoxesTo(T)
 if(__isPointer!(T) && is(T==int*))
@@ -29,7 +30,52 @@ if(__isStruct!(T))
 template __BoxesTo(T)
 if(__isScalar!(T))
 {
-	alias __BoxesTo = Boxed!T;
+	//alias __BoxesTo = Boxed!T;
+	static if(is(T==float))
+	{
+		alias __BoxesTo = System.Single.Single;
+	}
+
+	static if(is(T==double))
+	{
+		alias __BoxesTo = System.Double.Double;
+	}
+
+
+	static if(is(T==byte))
+	{
+		alias __BoxesTo = System.SByte.SByte;
+	}
+
+	static if(is(T==ubyte))
+	{
+		alias __BoxesTo = System.Byte.Byte;
+	}
+
+	static if(is(T==int))
+	{
+		alias __BoxesTo = System.Int32.Int32;
+	}
+
+	static if(is(T==uint))
+	{
+		alias __BoxesTo = System.UInt32.UInt32;
+	}
+
+	static if(is(T==long))
+	{
+		alias __BoxesTo = System.Int64.Int64;
+	}
+
+	static if(is(T==ulong))
+	{
+		alias __BoxesTo = System.UInt64.UInt64;
+	}
+
+	static if(__isEnum!(T))
+	{
+		alias __BoxesTo = BoxedEnum!(T);
+	}
 }
 
 template __BoxesTo(T)
@@ -50,11 +96,13 @@ if(__isEnum!(T))
 	return new BoxedEnum!(T)(value);
 }
 
-static T BOX(T)(NObject value)
+static  T BOX(T)( NObject value)
 if(__isClass!(T))
 {
 	return cast(T)value;
 }
+
+
 
 
 static Boxed!(T) BOX(T)(T value)
@@ -215,14 +263,21 @@ NObject __BOXPrimitive(T)(T value)
 
 
 static T UNBOX(T,U)(U nobject) 
+if(__isClass!(T)) // This should never happen /// how did you box a class and why ?
 {
-	static if(is(T==class)) // This should never happen /// how did you box a class and why ?
-	{
 		return  cast(T) nobject;
-	}
+}
 
+static T UNBOX(T,U)(U nobject) 
+if(!__isClass!(T) && __isClass!(U))
+{
 	return (Cast!(Boxed!(T))(nobject)).__Value;
+}
 
+static T UNBOX(T,U)(U nobject) 
+if(!__isClass!(T) && !__isClass!(U))
+{
+	return cast(T)nobject;
 }
 
 //Reflection Support for fields and properties, fixes up structs 
@@ -270,5 +325,41 @@ public class BoxedEnum(T): Enum
 	T opCast()
 	{
 		return __Value;
+	}
+}
+
+class Boxed (T) : NObject
+{
+
+
+    this(T value = T.init)
+    {
+        this.__Value = value;
+    }
+
+	alias __Value this;
+
+public:
+    T __Value;
+
+    public override string toString()
+	{
+		static if(is(T==bool))
+		{
+			return __Value?"True":"False";
+		}
+
+		return to!string(__Value);
+	}
+
+	public override String ToString()
+	{
+		return new String(to!wstring(this.toString));
+	}
+
+	public override Type GetType()
+	{
+		return __TypeOf!(typeof(this));
+
 	}
 }

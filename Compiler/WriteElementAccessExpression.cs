@@ -42,7 +42,7 @@ namespace SharpNative.Compiler
                     {
                         //Lets  get the best match
                         var interfaceMethod = interfaceMethods.FirstOrDefault();
-                        additionalParam = "cast("+ TypeProcessor.ConvertType(interfaceMethod.ContainingType.ConstructedFrom)+")null";
+                        additionalParam = "cast("+ TypeProcessor.ConvertType(interfaceMethod.ContainingType)+")null";
                     }
                 }
             }

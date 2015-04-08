@@ -27,6 +27,10 @@ namespace SharpNative.Compiler
 
             var symbol = symbolInfo.Symbol ?? symbolInfo.CandidateSymbols.FirstOrDefault(); // Resolution error
 
+            if (symbol == null)
+            {
+                writer.WriteLine("/*" + invocationExpression.ToFullString() +"  //SharpNative Failed To Get Symbol */");
+            }
             var methodSymbol = symbol.OriginalDefinition.As<IMethodSymbol>().UnReduce();
 
             var memberReferenceExpressionOpt = invocationExpression.Expression as MemberAccessExpressionSyntax;
@@ -198,7 +202,7 @@ namespace SharpNative.Compiler
                             .Modifiers.Any(SyntaxKind.NewKeyword))
                     {
 //                        if (symbolInfo.Symbol.ContainingType != Context.Instance.Type)
-                        writer.Write(TypeProcessor.ConvertType(methodSymbol.ContainingType) + ".");
+                        writer.Write(WriteIdentifierName.TransformIdentifier(methodSymbol.ContainingType.Name,methodSymbol.ContainingType) + ".");
                     }
 
                     //TODO: fix this for abstract too or whatever other combination
@@ -348,8 +352,9 @@ namespace SharpNative.Compiler
                     }
                 }
 
+                var isValueType = argumentType.Type != null && argumentType.Type.IsValueType;
                 ProcessArgument(writer, arg.ArgumentOpt,
-                    isOverloaded && argumentType.Type.IsValueType &&
+                    isOverloaded && isValueType &&
                     (arg.ArgumentOpt.RefOrOutKeyword.RawKind == (decimal) SyntaxKind.None));
             }
 
@@ -358,13 +363,19 @@ namespace SharpNative.Compiler
 
             if (!foundParamsArray && methodSymbol.Parameters.Any() && methodSymbol.Parameters.Last().IsParams)
             {
-                if (typeSymbol != null)
-                {
-                    var s = TypeProcessor.ConvertType(typeSymbol);
+                // if (typeSymbol != null)
+                //{
+                if (!firstParameter)
+                    writer.Write(",");
+                var s = TypeProcessor.ConvertType(((IArrayTypeSymbol) methodSymbol.Parameters.Last().Type).ElementType);
                     writer.Write("__ARRAY!(" + s + ")([])");
-                }
-                else
+                //}
+               /* else
+                {
+                    if (!firstParameter)
+                        writer.Write(",");
                     writer.Write("null"); //params method called without any params argument.  Send null.
+                }*/
             }
 
             if (symbol.ContainingType.TypeKind == TypeKind.Interface) // Need it as specialized as possible
@@ -409,10 +420,10 @@ namespace SharpNative.Compiler
                 var memberaccessexpression = value.Expression as MemberAccessExpressionSyntax;
                 var nameexpression = value.Expression as NameSyntax;
                 var nullAssignment = value.ToFullString().Trim() == "null";
-                var shouldBox = initializerType.Type != null && ((initializerType.Type.IsValueType || initializerType.Type.TypeKind == TypeKind.TypeParameter) &&
+                var shouldBox = initializerType.Type != null && (initializerType.Type!=initializerType.ConvertedType) && ((initializerType.Type.IsValueType || initializerType.Type.TypeKind == TypeKind.TypeParameter) &&
                     (!initializerType.ConvertedType.IsValueType));
                 var shouldCast=  initializerType.Type != null && (initializerType.Type.TypeKind==TypeKind.Interface && initializerType.ConvertedType.SpecialType==SpecialType.System_Object);
-                var shouldUnBox = initializerType.Type != null && !initializerType.Type.IsValueType &&
+                var shouldUnBox = initializerType.Type != null && (initializerType.Type != initializerType.ConvertedType) && !initializerType.Type.IsValueType &&
                                   initializerType.ConvertedType.IsValueType;
                 var isname = value.Expression is NameSyntax;
                 var ismemberexpression = value.Expression is MemberAccessExpressionSyntax ||

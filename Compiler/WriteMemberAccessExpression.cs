@@ -19,7 +19,7 @@ namespace SharpNative.Compiler
     {
         public static void Go(OutputWriter writer, MemberAccessExpressionSyntax expression)
         {
-            var memberName = expression.Name.Identifier.ValueText;
+            var memberName = expression.Name.Identifier.Text;
             var type = TypeProcessor.GetTypeInfo(expression.Expression).ConvertedType;
             var typeStr = TypeProcessor.GenericTypeName(type);
 
@@ -131,7 +131,19 @@ namespace SharpNative.Compiler
             var isGet = false;
             writer.Write(memberName);
 
-            if (expression.Name is GenericNameSyntax)
+//            if (methodSymbol is IMethodSymbol) //Lets specialize it
+//            {
+//                //                //Type inference for delegates
+//                var mmethodSymbol = methodSymbol as IMethodSymbol;
+//
+//                var specialization =
+//                                        (mmethodSymbol.TypeArguments.Any() ? ("!(" +
+//                                        mmethodSymbol.TypeArguments.Select(k => TypeProcessor.ConvertType(k))
+//                                            .Aggregate((a, b) => a + "," + b) + ")") : "");
+//                writer.Write(specialization);
+//            }
+
+           /* if (expression.Name is GenericNameSyntax)
             {
                 var gen = expression.Name.As<GenericNameSyntax>();
 
@@ -149,7 +161,7 @@ namespace SharpNative.Compiler
                 }
 
                 writer.Write(")");
-            }
+            }*/
         }
 
         public static void WriteMember(OutputWriter writer, ExpressionSyntax expression)

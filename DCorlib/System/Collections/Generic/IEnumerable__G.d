@@ -8,7 +8,6 @@ import System.Collections.Generic.Namespace;
 interface IEnumerable__G(T) :  System.Collections.Namespace.IEnumerable
 {
 
-
 public IEnumerator__G!(T) GetEnumerator(IEnumerable__G!(T) k = null);
 
 };

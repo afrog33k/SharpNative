@@ -15,7 +15,7 @@ namespace SharpNative.Compiler
     {
         public static void Go(OutputWriter writer, GenericNameSyntax name)
         {
-            writer.Write(WriteIdentifierName.TransformIdentifier(name.Identifier.ValueText));
+            writer.Write(WriteIdentifierName.TransformIdentifier(name.Identifier.Text));
             writer.Write("!(");
 
             bool first = true;

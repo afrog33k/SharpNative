@@ -70,7 +70,7 @@ class StringHelper
 				{
 					++ptr;
 				}
-				format=CsNative.NullStringCheck(format)+CsNative.NullStringCheck(str.Substring(start, ptr-start));
+				format=(format)+(str.Substring(start, ptr-start));
 			}
 			else
 			{
@@ -186,7 +186,7 @@ class StringHelper
 
 
 
-class String : NObject//, IComparable, IComparable__G!(String)
+class String : NObject, IComparable, IComparable__G!(String)
 {
 	wstring text;
 	//	char[] text;
@@ -239,6 +239,20 @@ class String : NObject//, IComparable, IComparable__G!(String)
 	this(string source)
 	{
 		text = std.conv.to!(wstring)(source);
+	}
+
+	this(wchar* source)
+	{
+		auto sPtr = source;
+		while(*sPtr!='\0')
+			text ~= cast(wchar)*sPtr++;
+	}
+
+	this(wchar source, int reps)
+	{
+		text = [];
+		for(int c=0;c<reps;c++)
+			text ~= source;
 	}
 
 	public static bool IsNullOrEmpty(String value) 
@@ -359,7 +373,7 @@ class String : NObject//, IComparable, IComparable__G!(String)
 	public  int CompareTo(String object, IComparable__G!(String) j=null)
 	{
 
-		return object.Text.opCmp(this.Text);
+		return  this.Text.opCmp(object.Text);
 
 	}
 
@@ -411,7 +425,6 @@ class String : NObject//, IComparable, IComparable__G!(String)
 	}
 
 
-
 	String opBinary(string op)(NObject rhs)
 	{
 		//Console.WriteLine(op);
@@ -424,34 +437,37 @@ class String : NObject//, IComparable, IComparable__G!(String)
 		}
 	}
 
-	final T opCast(T)() if(is(T:wstring))
+
+	final T opCast(T:wstring)() 
 	{
 		return text;
 	}
 
-	final T opCast(T)() if(is(T:string))
+	final T opCast(T:string)()
 	{
 		import std.string;
 		return std.conv.to!(char[])(text);
 	}
 
-	final U opCast(U)() if(is(U:wchar*))
+	final U opCast(U:wchar*)()
     {
 
 		return cast(U) text;
     }
 
-	final U opCast(U)() if(is(U:char*))
+	final U opCast(U:char*)() 
     {
 		import std.string;
 		return cast(U) std.conv.to!(char[])(text).toStringz;
     }
 
-	final U opCast(U)()
-		if(!is(U:char*) && !is(U:wchar*) && !is(U:string) && !is(U:wstring))
-		{
-			return cast(U)this;
-		}
+
+	final U opCast(U:String)(const(String) astring)
+	{	
+		return _S(astring.Text);
+	}
+
+	
 
 	//Faster internal concat
 	public  String Concat(wstring other)

@@ -134,6 +134,7 @@ namespace SharpNative.Compiler
         private static readonly Stack<Context> Instances = new Stack<Context>();
         
         public int ForeachCount = 0;
+        public static Dictionary<ITypeSymbol,List<string>> TypeImports = new Dictionary<ITypeSymbol, List<string>>();
 
         internal static void Push()
         {

@@ -9,10 +9,10 @@ import System.Collections.Generic.Namespace;
 
   
 
-public     abstract int  Count(ICollection__G!(T) j = null) @property;
+public   int  Count(ICollection__G!(T) j = null) @property;
   
 
-public     abstract bool  IsReadOnly(ICollection__G!(T) j = null) @property;
+public   bool  IsReadOnly(ICollection__G!(T) j = null) @property;
 
 public void Add(T item,ICollection__G!(T) j = null);
 

@@ -114,38 +114,61 @@ public enum MethodImplAttributes
         MaxMethodImplVal   =   0xFFFF,   // Range check value
 }
 
-public enum FieldAttributes
+struct FieldAttributes// Enum
 {
-	// member access mask - Use this mask to retrieve accessibility information.
-		FieldAccessMask         =    0x0007,
-        PrivateScope            =    0x0000,    // Member not referenceable.
-        Private                 =    0x0001,    // Accessible only by the parent type.  
-        FamANDAssem             =    0x0002,    // Accessible by sub-types only in this Assembly.
-        Assembly                =    0x0003,    // Accessibly by anyone in the Assembly.
-        Family                  =    0x0004,    // Accessible only by type and sub-types.    
-        FamORAssem              =    0x0005,    // Accessibly by sub-types anywhere, plus anyone in assembly.
-        Public                  =    0x0006,    // Accessibly by anyone who has visibility to this scope.    
-        // end member access mask
+	public int __Value;
+	alias __Value this;
+	public enum __IsEnum = true; // Identifies struct as enum
+	public enum __HasFlags = true; // Identifies struct as enum
+	public this(int value)
+	{
+		__Value = value;
+	}
 
-        // field contract attributes.
-        Static                  =    0x0010,        // Defined on type, else per instance.
-        InitOnly                =    0x0020,     // Field may only be initialized, not written to after init.
-        Literal                 =    0x0040,        // Value is compile time constant.
-        NotSerialized           =    0x0080,        // Field does not have to be serialized when type is remoted.
+	public Type GetType()
+	{
+		return __TypeOf!(typeof(this));
+	}
+	public enum __values =[0x0007,0x0000,0x0001,0x0002,0x0003,0x0004,0x0005,0x0006,0x0010,0x0020,0x0040,0x0080,0x0200,0x2000,0x9500,0x0400,0x1000,0x8000,0x0100];
+	public enum __names =["FieldAccessMask","PrivateScope","Private","FamANDAssem","Assembly","Family","FamORAssem","Public","Static","InitOnly","Literal","NotSerialized","SpecialName","PinvokeImpl","ReservedMask","RTSpecialName","HasFieldMarshal","HasDefault","HasFieldRVA"];
+	public enum FieldAttributes FieldAccessMask = 0x0007;
+	public enum FieldAttributes PrivateScope = 0x0000;
+	public enum FieldAttributes Private = 0x0001;
+	public enum FieldAttributes FamANDAssem = 0x0002;
+	public enum FieldAttributes Assembly = 0x0003;
+	public enum FieldAttributes Family = 0x0004;
+	public enum FieldAttributes FamORAssem = 0x0005;
+	public enum FieldAttributes Public = 0x0006;
+	public enum FieldAttributes Static = 0x0010;
+	public enum FieldAttributes InitOnly = 0x0020;
+	public enum FieldAttributes Literal = 0x0040;
+	public enum FieldAttributes NotSerialized = 0x0080;
+	public enum FieldAttributes SpecialName = 0x0200;
+	public enum FieldAttributes PinvokeImpl = 0x2000;
+	public enum FieldAttributes ReservedMask = 0x9500;
+	public enum FieldAttributes RTSpecialName = 0x0400;
+	public enum FieldAttributes HasFieldMarshal = 0x1000;
+	public enum FieldAttributes HasDefault = 0x8000;
+	public enum FieldAttributes HasFieldRVA = 0x0100;
 
-        SpecialName             =    0x0200,     // field is special.  Name describes how.
 
-        // interop attributes
-        PinvokeImpl             =    0x2000,        // Implementation is forwarded through pinvoke.
-
-        // Reserved flags for runtime use only.
-        ReservedMask            =   0x9500,
-        RTSpecialName           =   0x0400,     // Runtime(metadata internal APIs) should check name encoding.
-        HasFieldMarshal         =   0x1000,     // Field has marshalling information.
-        HasDefault              =   0x8000,     // Field has default.
-        HasFieldRVA             =   0x0100,     // Field has RVA.
+	FieldAttributes opBinary(string op)(FieldAttributes rhs)
+	{
+		return mixin("FieldAttributes(__Value "~op~" rhs.__Value)");
+	}
+	bool opEquals(const FieldAttributes a)
+	{
+		return a.__Value == this.__Value;
+	}
+	bool opEquals(const int a)
+	{
+		return a == this.__Value;
+	}
+	public string toString()
+	{
+		return __ConvertEnumToString(this);
+	}
 }
-
 public enum MemberTypes
 {
 	// The following are the known classes which extend MemberInfo
@@ -498,6 +521,7 @@ public class FieldInfo__G(C,T) : FieldInfo
 	{
 		_getter = getter;
 		_setter = setter;
+		FieldType = __TypeOf!(T);
 	}
 
 	override void SetValue(NObject instance, NObject value)
@@ -1535,7 +1559,7 @@ public class Type_T(T):Type
 
 		//enum templateParams = TemplateArgsOf!(T);
 
-		if(csName!=null)
+		if(csName !is null)
 		{
 			FullName = _S(csName);
 			if(csName.lastIndexOf(".")!=-1)
@@ -1654,7 +1678,7 @@ public class Type_T(T):Type
 
 	override string toString()
 	{
-		return cast(string)FullName;
+		return std.conv.to!string(FullName.Text);
 	}
 
 	public override String ToString()

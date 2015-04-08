@@ -617,7 +617,7 @@ namespace SharpNative.Compiler
             var identifier = expression as IdentifierNameSyntax;
 
             if (identifier != null)
-                return WriteIdentifierName.TransformIdentifier(identifier.Identifier.ValueText);
+                return WriteIdentifierName.TransformIdentifier(identifier.Identifier.Text);
 
             var thisSyntax = expression as ThisExpressionSyntax;
             if (thisSyntax != null)
@@ -637,7 +637,7 @@ namespace SharpNative.Compiler
         public static string Name(this AnonymousObjectMemberDeclaratorSyntax member)
         {
             return member.NameEquals != null
-                ? member.NameEquals.Name.Identifier.ValueText
+                ? member.NameEquals.Name.Identifier.Text
                 : member.Expression.ToString();
         }
 

@@ -37,7 +37,7 @@ namespace SharpNative.Compiler
                     foreach (var variable in variables)
                     {
                         var vardec = (TypeProcessor.ConvertType(forStatement.Declaration.Type) + " ");
-                        vardec +=(WriteIdentifierName.TransformIdentifier(variable.Identifier.ValueText));
+                        vardec +=(WriteIdentifierName.TransformIdentifier(variable.Identifier.Text));
 
                         if (variable.Initializer != null)
                         {
@@ -73,7 +73,7 @@ namespace SharpNative.Compiler
                     {
                         //                    writer.WriteIndent();
                         tempWriter.Write(TypeProcessor.ConvertType(forStatement.Declaration.Type) + " ");
-                        tempWriter.Write(WriteIdentifierName.TransformIdentifier(variable.Identifier.ValueText));
+                        tempWriter.Write(WriteIdentifierName.TransformIdentifier(variable.Identifier.Text));
 
                         if (variable.Initializer != null)
                         {

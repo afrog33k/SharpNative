@@ -60,7 +60,7 @@ namespace SharpNative.Compiler
                     writer.Write(TypeProcessor.ConvertType(parameter.Type) + " ");
                 else
                     writer.Write(TypeProcessor.ConvertType(methodSymbol.Parameters[pi].Type) + " ");
-                writer.Write(WriteIdentifierName.TransformIdentifier(parameter.Identifier.ValueText));
+                writer.Write(WriteIdentifierName.TransformIdentifier(parameter.Identifier.Text));
             }
 
             writer.Write(")");

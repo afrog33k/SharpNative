@@ -95,7 +95,7 @@ namespace SharpNative.Compiler
 
             var rightExpressionType = TypeProcessor.GetTypeInfo(rightExpression);
 
-            var boxLeft = leftExpressionType.Type != null &&
+            var boxLeft = leftExpressionType.Type != null &&  (leftExpressionType.Type != leftExpressionType.ConvertedType) &&
                           ((leftExpressionType.Type.IsValueType || leftExpressionType.Type.TypeKind == TypeKind.TypeParameter) &&
                            (leftExpressionType.ConvertedType.IsReferenceType));
 

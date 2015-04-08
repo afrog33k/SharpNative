@@ -1,16 +1,23 @@
 module System.Nullable__G;
+import System.Namespace;
 
-public struct Nullable__G(T) //where T : struct
+public class Nullable__G(T) : NObject //where T : struct
 {
 	private bool hasValue_ =false; 
 	private T value_=T.init; 
 
+	alias value_ this;
 	/*static Nullable opCall(T value) {
 	Optional self;
 	self.value_ = value;
 	self.hasValue_ = true;
 	return self;
 	}*/
+
+	this()
+	{
+
+	}
 
 
 	void opAssign(T value)
@@ -92,12 +99,12 @@ public struct Nullable__G(T) //where T : struct
 	return value.Equals(other);
 	}*/
 
-	public  int GetHashCode() 
+	public override  int GetHashCode() 
 	{
 		return HasValue ? cast(int)value_.toHash : 0;
 	}
 
-	public  String ToString() 
+	public override  String ToString() 
 	{
 		return HasValue ? _S(value_.toString) : String.Empty;
 	}

@@ -41,7 +41,7 @@ namespace SharpNative.Compiler
                     writer.Write("__ex");
                 else
                 {
-                    var exName = WriteIdentifierName.TransformIdentifier(catchBlock.Declaration.Identifier.ValueText);
+                    var exName = WriteIdentifierName.TransformIdentifier(catchBlock.Declaration.Identifier.Text);
 
                     if (string.IsNullOrWhiteSpace(exName))
                         writer.Write("__ex");

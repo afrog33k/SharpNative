@@ -51,10 +51,10 @@ namespace SharpNative.Compiler
                 Context.Instance.TypeName = TypeRenames[fullname];
 
             // + "." + TypeState.Instance.TypeName;
-            if (Driver.Verbose)
-                Console.WriteLine("Writing out type: " + fullname);
-            if (fullname ==
-                "System.Namespace.Nullable")
+          // if (Driver.Verbose)
+            //    Console.WriteLine("Writing out type: " + fullname);
+            if (fullname.StartsWith(
+                "System.Collections.Generic.Dictionary"))
             {
             }
 
@@ -70,27 +70,8 @@ namespace SharpNative.Compiler
                     myUsingDirective, SystemUsingDirective
                 }).ToArray();
 
-            //            foreach (var usingDirectiveSyntax in namespaces)
-            //            {
-            //               // if (usingDirectiveSyntax.Alias != null)
-            //                {
-            //                    var symbol = TypeProcessor.GetSymbolInfo(usingDirectiveSyntax.Name).Symbol;
-            //
-            //                    var type = symbol;
-            //
-            //                    UsingDirectiveSyntax syntax = usingDirectiveSyntax;
-            //                   // if (first.First().Syntax.DescendantNodes().Select(i=> TypeProcessor.GetSymbolInfo(i).Symbol).Where(k=>k != null).Any(i=> i.ContainingNamespace==symbol))
-            //                    {
-            //
-            //                        //TypeProcessor.GetSymbolInfo(allTypeAliases[0].Left).Symbol.Name;
-            //
-            //                        TypeProcessor.AddAlias(type, !String.IsNullOrEmpty(usingDirectiveSyntax.Alias.Name.ToFullString().Trim())?usingDirectiveSyntax.Alias.Name.ToFullString() : (type as INamespaceSymbol).FullName(true,false));
-            //                    }
-            //
-            //
-            //
-            //                }
-            //            }
+
+         
 
             TypeProcessor.AddAlias(Context.Instance.Type.ContainingNamespace as INamespaceSymbol, Context.Instance.Type.ContainingNamespace.GetModuleName());
 
@@ -136,10 +117,12 @@ namespace SharpNative.Compiler
 
                 var bases = new List<ITypeSymbol>();
                 var baselist = typeSymbols.Select(k => k.Syntax.As<BaseTypeDeclarationSyntax>()).Select(o => o.BaseList).Where(k => k != null).ToArray();
+
                 if (baselist.Any())
                 {
                     bases = baselist.SelectMany(k => k.Types)
-                        .Select(o => TypeProcessor.GetTypeInfo(o.Type).ConvertedType)
+                        .Select(o => TypeProcessor.GetTypeInfo(o.Type).ConvertedType ?? TypeProcessor.GetTypeInfo(o.Type).Type)
+                        .Where(k=>k!=null)
                         .Distinct()
                         .ToList();
                 }
@@ -148,11 +131,13 @@ namespace SharpNative.Compiler
 
                 if (Context.Instance.Type != Context.Object)
                 {
-                    if (!bases.Any((j => j.TypeKind != TypeKind.Interface)) &&
-                        !(typeSymbols.First().Symbol.TypeKind == TypeKind.Interface || typeSymbols.First().Symbol.TypeKind == TypeKind.Struct))
+                    if (bases != null && (!bases.Any((j => j.TypeKind != TypeKind.Interface)) &&
+                                          !(typeSymbols.First().Symbol.TypeKind == TypeKind.Interface || typeSymbols.First().Symbol.TypeKind == TypeKind.Struct)))
                         //TODO: fix structs using mixins / alias this
                         bases.Add(Context.Object);
                 }
+                if(bases==null)
+                    bases =  new List<ITypeSymbol>();
 
                 foreach (var type in bases)
                 {
@@ -287,7 +272,7 @@ namespace SharpNative.Compiler
                             throw new Exception("don't know how to write type: " + Context.Instance.Type.TypeKind);
                         List<ITypeSymbol> parentTypeParameters;
                         if (Context.Instance.Type.ContainingType != null)
-                            parentTypeParameters = Context.Instance.Type.ContainingType.TypeArguments.ToList();
+                            parentTypeParameters = GetParentTypeParameters(Context.Instance.Type);
                         else
                             parentTypeParameters = new List<ITypeSymbol>();
 
@@ -425,6 +410,19 @@ namespace SharpNative.Compiler
                     parentModuleWriter.Write(writer.ToString());
                 }
             }
+        }
+
+        private static List<ITypeSymbol> GetParentTypeParameters(INamedTypeSymbol type)
+        {
+            var parames = new List<ITypeSymbol>();
+            type = type.ContainingType;
+
+            while (type != null)
+            {
+                parames.AddRange(type.TypeArguments);
+                type = type.ContainingType;
+            }
+            return parames;
         }
 
         private static string GetTypeConstraints(TypeDeclarationSyntax method)
@@ -850,8 +848,13 @@ namespace SharpNative.Compiler
 
                 foreach (var member in ifacemembers)
                 {
+                    var findImplementationForInterfaceMember = Context.Instance.Type.FindImplementationForInterfaceMember(member);
+                    if (findImplementationForInterfaceMember == null)
+                    {
+                        continue;
+                    }
                     var ifacemethod =
-                        Context.Instance.Type.FindImplementationForInterfaceMember(member)
+                        findImplementationForInterfaceMember
                             .DeclaringSyntaxReferences.First()
                             .GetSyntax();
 

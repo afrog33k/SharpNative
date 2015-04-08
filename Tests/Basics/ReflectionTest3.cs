@@ -40,7 +40,7 @@ class PriceClass {
          object _bpriceStruct = new PriceStruct(); //Box first
     type = typeof(PriceStruct);
     info = type.GetProperty("Value");
-    info.SetValue(_bpriceStruct, 32, null);
+    info.SetValue(_bpriceStruct, 65, null);
     Console.WriteLine(((PriceStruct)_bpriceStruct).Value); //now unbox and get value
 
        // Debugger.Break();

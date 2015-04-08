@@ -287,6 +287,11 @@ namespace SharpNative.Compiler
             if (String.IsNullOrEmpty(ret))
                 return ret;
 
+            if (HasMoreThanOneDefinition(typeSymbol.Name))
+            {
+                useAliases = false;
+            }
+
             if (useAliases)
             {
 //                if (ret.StartsWith(Context.Instance.Namespace + "."))
@@ -322,6 +327,11 @@ namespace SharpNative.Compiler
                 ret = GetAlias(typeSymbol);
             }
             return ret;
+        }
+
+        private static bool HasMoreThanOneDefinition(string name)
+        {
+           return  Context.Namespaces.Any(k => k.Value.Any(l => l.Name == name));
         }
 
         public static void AddAlias(ISymbol typeInfo, string alias)
@@ -405,6 +415,7 @@ namespace SharpNative.Compiler
             if (typeSymbol.TypeKind == TypeKind.TypeParameter)
                 return  WriteIdentifierName.TransformIdentifier(typeSymbol.Name,typeSymbol);
 
+           
             if (named != null && (named.ContainingNamespace.ToString() == "System" && named.Name == "Exception"))
                 return "System.Namespace.NException";
 
@@ -414,43 +425,37 @@ namespace SharpNative.Compiler
                 //Nullable types
                 if (named.TypeArguments.Any())
                 {
-                    var convertedType = TryConvertType(named.TypeArguments.FirstOrDefault(), false);
+                    
+                    string convertedType="";
 
-                    /*switch (convertedType)
+                    if (named.TypeArguments.FirstOrDefault() is IErrorTypeSymbol)
                     {
-                        case "Int":
-                            return "int";
-                        case "Boolean":
-                            return "bool";
-                        case "Byte":
-                            return "ubyte";
-                        case "Short":
-                            return "short";
-                        case "Float":
-                            return "float";
-                        case "Double":
-                            return "double";
-                        case "Char":
-                            return "wchar"; // C#'s chars are 16-bit unicode
-                        case "Long":
-                            return "long";
-                        default:
-                            return convertedType;
-                    }*/
-                    return "Nullable_T!(" + convertedType + ")";
+                        //unbound generic 
+                        convertedType = "__UNBOUND";
+                    }
+                    else
+                    {
+                        convertedType = TryConvertType(named.TypeArguments.FirstOrDefault(), false);
+                    }
+
+                   
+                    return "Nullable__G!(" + convertedType + ")";
                 }
             }
 
             var typeStr = GenericTypeName(typeSymbol);
 
-            if (named != null && named.IsGenericType && !named.IsUnboundGenericType && TypeArguments(named).Any())
+            if (named != null && named.IsGenericType)
             {
-//                return TryConvertType(named.ConstructUnboundGenericType()) + "!(" +
-//                    named.TypeArguments.Select(o => GetGenericParameterType(named.TypeParameters[named.TypeArguments.IndexOf(o)], o)).Aggregate((a,b)=> a + ", " + b)
-//                    //   string.Join(", ", TypeArguments(named)) 
-//                           + ")";
+                if(!named.IsUnboundGenericType && TypeArguments(named).Any())
+                
                 return GetFullGenericName(named);
+                else
+                {
+                    return GetFullGenericName(named.OriginalDefinition);
+                }
             }
+
 
             switch (typeStr)
             {
@@ -530,11 +535,11 @@ namespace SharpNative.Compiler
         {
             if (named.IsGenericType)
             {
-                return WriteType.TypeName(named,false) + "!(" +
+                return WriteType.TypeName(named,false)  + (named.TypeArguments.Any() ? "!(" +
                 named.TypeArguments.Select(
                     o => GetGenericParameterType(named.TypeParameters[named.TypeArguments.IndexOf(o)], o))
                            .Aggregate((a, b) => a + ", " + b)
-                + ")";
+                + ")" :"");
             }
             else
             {
@@ -544,12 +549,12 @@ namespace SharpNative.Compiler
 
         public static string GetGenericParameterType(ITypeParameterSymbol o, ITypeSymbol named)
         {
-//            if (named as ITypeParameterSymbol!=null)
-//            {
-//                
-//            }
-            //TODO: seems to cause more trouble than its worth ... moving to generating two methods one for structs and another for classes
-            return ConvertType(named,false);// + (named.TypeKind==TypeKind.Struct&& o.ConstraintTypes.Any(k=>k.TypeKind==TypeKind.Interface)  ?".__Boxed_":"");
+            if (named is IErrorTypeSymbol)
+            {
+                return "__UNBOUND";
+            }
+
+            return ConvertType(named,false);
         }
 
         private static IEnumerable<ITypeSymbol> TypeArguments(INamedTypeSymbol named)

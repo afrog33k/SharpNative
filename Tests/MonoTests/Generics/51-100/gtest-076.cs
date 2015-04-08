@@ -29,7 +29,8 @@ class X
 		// is returned correctly.  This was broken until recently
 		// and I just fixed it on amd64.
 		if (foo.Data != 0x800)
-			return 1;
+			Console.Write(1);
+		Console.Write(12);
 		return 0;
 	}
 }

@@ -26,32 +26,32 @@ namespace SharpNative.Compiler
                 var isRef = false; //UsedAsRef(variable, symbol);
 
                 writer.WriteIndent();
-// writer.Write("var ");
+                // writer.Write("var ");
 
-//                if (isRef) //Not needed c++ can passby ref
-//                {
-//
-//                    var typeStr = TypeProcessor.ConvertType(declaration.Declaration.Type);
-//
-//                    var localSymbol = symbol as ILocalSymbol;
-//                    var ptr = localSymbol != null && !localSymbol.Type.IsValueType?"*" : "";
-//                                        writer.Write("gc::gc_ptr < " + typeStr+ ptr + " >");
-//                    writer.Write("" + typeStr + ptr + "");
-//
-//                    writer.Write(" ");
-//                    writer.Write(WriteIdentifierName.TransformIdentifier(variable.Identifier.ValueText));
-//                    
-//                    Program.RefOutSymbols.TryAdd(symbol, null);
-//
-//                    writer.Write(" = std::make_shared < ");
-//                    writer.Write(typeStr + ptr);
-//                    writer.Write(" >(");
-//
-//                    WriteInitializer(writer, declaration, variable);
-//
-//                    writer.Write(")");
-//                }
-//                else
+                //                if (isRef) //Not needed c++ can passby ref
+                //                {
+                //
+                //                    var typeStr = TypeProcessor.ConvertType(declaration.Declaration.Type);
+                //
+                //                    var localSymbol = symbol as ILocalSymbol;
+                //                    var ptr = localSymbol != null && !localSymbol.Type.IsValueType?"*" : "";
+                //                                        writer.Write("gc::gc_ptr < " + typeStr+ ptr + " >");
+                //                    writer.Write("" + typeStr + ptr + "");
+                //
+                //                    writer.Write(" ");
+                //                    writer.Write(WriteIdentifierName.TransformIdentifier(variable.Identifier.Text));
+                //                    
+                //                    Program.RefOutSymbols.TryAdd(symbol, null);
+                //
+                //                    writer.Write(" = std::make_shared < ");
+                //                    writer.Write(typeStr + ptr);
+                //                    writer.Write(" >(");
+                //
+                //                    WriteInitializer(writer, declaration, variable);
+                //
+                //                    writer.Write(")");
+                //                }
+                //                else
                 {
                     var lsymbol = symbol as ILocalSymbol;
 
@@ -67,7 +67,7 @@ namespace SharpNative.Compiler
                         writer.Write(" ");
 
                     writer.Write(" ");
-                    writer.Write(WriteIdentifierName.TransformIdentifier(variable.Identifier.ValueText));
+                    writer.Write(WriteIdentifierName.TransformIdentifier(variable.Identifier.Text));
                     writer.Write(" = ");
 
                     WriteInitializer(writer, declaration, variable);

@@ -11,6 +11,7 @@ public class __ReflectionInfo
 	{
 		import System.Reflection.Namespace;
 		//Should move these to reflection info though
+		__TypeOf!(Nullable__G!(__UNBOUND))("System.Nullable`1[T]");
 		__TypeOf!(NObject)("System.Object")
 			.__Method("ToString", new MethodInfo__G!(NObject,String function())(&NObject.ToString))
 			.__Method("Equals", new MethodInfo__G!(NObject,bool function(NObject obj))(&NObject.Equals))

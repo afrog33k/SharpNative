@@ -29,7 +29,7 @@ namespace SharpNative.Compiler
 
 			if (isProperty)
 			{
-				var symbolName = expression.ToString ().Trim ().RemoveFromStartOfString (expression.OperatorToken.ValueText);
+				var symbolName =  Core.WriteString(expression.Operand).ToString ().Trim ();
 				switch (expression.OperatorToken.RawKind)
 				{
 				case (int) SyntaxKind.MinusMinusToken:
@@ -46,9 +46,12 @@ namespace SharpNative.Compiler
 						
 					break;
 				default:
-					Core.Write (writer, expression.Operand);
-					writer.Write (expression.OperatorToken.ValueText);
-					break;
+                        writer.Write(expression.OperatorToken.Text);
+
+                        Core.Write(writer, expression.Operand);
+
+
+                        break;
 				}
 			}
 			else
@@ -169,7 +172,9 @@ namespace SharpNative.Compiler
                         break;
                     default:
                         writer.Write(expression.OperatorToken.Text);
+
                         Core.Write(writer, expression.Operand);
+
                        // throw new Exception("No support for " + expression.OperatorToken.RawKind + " at " +
                         //Utility.Descriptor(expression));
                         break;
@@ -189,7 +194,7 @@ namespace SharpNative.Compiler
 
 			if (isProperty)
 			{
-				var symbolName = expression.ToString().Trim().RemoveFromEndOfString(expression.OperatorToken.ValueText);
+				var symbolName = Core.WriteString(expression.Operand);
 				switch (expression.OperatorToken.RawKind)
 				{
 				case (int) SyntaxKind.MinusMinusToken:
@@ -208,7 +213,7 @@ namespace SharpNative.Compiler
 					break;
 				default:
 					Core.Write (writer, expression.Operand);
-					writer.Write (expression.OperatorToken.ValueText);
+					writer.Write (expression.OperatorToken.Text);
 					break;
 				}
 			}

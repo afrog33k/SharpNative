@@ -12,6 +12,15 @@ class StringBuilder : NObject
 		private int capacity;
 		private wstring data ="";
 	
+	public void Insert(int index, wstring value)
+	{
+
+	}
+
+	public void Insert(int index, string value)
+	{
+
+	}
 	
 	public this() 
 	{
@@ -30,11 +39,7 @@ class StringBuilder : NObject
 		if(capacity<2)
 			capacity =2;
 	
-		this.data = "";//cast(string)new char[this.capacity](0);
-		//for(int i=0;i < this.capacity;i++)
-		//{
-		//	data[i] = '\0';
-		//}
+		this.data =[];// new wchar[capacity];
 	}
 
 	public this(String value)

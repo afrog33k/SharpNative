@@ -55,9 +55,9 @@ class Program
     // get all public static methods of MyClass type
 MethodInfo[] methodInfos = typeof(Methods).GetMethods();
 // sort methods by name
-/*Array.Sort(methodInfos,
+Array.Sort(methodInfos,
         delegate(MethodInfo methodInfo1, MethodInfo methodInfo2)
-        { return methodInfo1.Name.CompareTo(methodInfo2.Name); });*/
+        { return methodInfo1.Name.CompareTo(methodInfo2.Name); });
 
 // write method names
 foreach (MethodInfo methodInfo in methodInfos)
@@ -65,7 +65,7 @@ foreach (MethodInfo methodInfo in methodInfos)
   Console.WriteLine(methodInfo.Name);
   if(methodInfo.Name =="GetType")
     {
-        Console.WriteLine(methodInfo.Invoke(new Methods(),null));
+  //      Console.WriteLine(methodInfo.Invoke(new Methods(),null));
     }
 }
     }

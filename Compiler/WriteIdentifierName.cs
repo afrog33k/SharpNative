@@ -16,6 +16,108 @@ namespace SharpNative.Compiler
 {
     internal static class WriteIdentifierName
     {
+        public static readonly string[] DKeywords = new []
+        {
+            "__parameters",
+            "_argptr",
+            "_arguments",
+            "abstract",
+            "alias",
+            "align",
+            "asm",
+            "assert",
+            "auto",
+            "body",
+           // "bool",
+           // "break",
+           // "byte",
+           // "case",
+            "cast",
+            //"catch",
+            "cdouble",
+            "cent",
+            "cfloat",
+            //"char",
+            //"class",
+            //"const",
+            //"continue",
+            "creal",
+            "dchar",
+            "debug",
+            "default",
+            //"delegate",
+            "delete",
+            "deprecated",
+            //"do",
+            //"double",
+            //"else",
+            //"enum",
+            "export",
+            "extern",
+            //"false",
+            "final",
+            //"finally",
+            //"float",
+            //"for",
+            //"foreach",
+            "function",
+            //"goto",
+            "idouble",
+            //"if",
+            "ifloat",
+            "import",
+            //"in",
+            "inout",
+            //"int",
+            "interface",
+            "invariant",
+            "ireal",
+            //"is",
+            "lazy",
+            //"long",
+            "mixin",
+            "module",
+            //"new",
+            //"null",
+            //"out",
+            //"override",
+            "package",
+            "pragma",
+            //"private",
+            //"protected",
+            //"public",
+            "real",
+            //"return",
+            "scope",
+            //"short",
+            "static",
+            //"struct",
+            "super",
+            //"switch",
+            "synchronized",
+            "template",
+            //"this",
+            //"throw",
+            //"true",
+            //"try",
+            "typedef",
+            "typeid",
+            //"typeof",
+            "ubyte",
+            "ucent",
+            "uint",
+            "ulong",
+            "union",
+            "unittest",
+            "ushort",
+            "version",
+            //"void",
+            //"volatile",
+            "wchar",
+            //"while",
+            "with"
+        };
+
         public static void Go(OutputWriter writer, IdentifierNameSyntax identifier, bool byRef = false)
         {
             var symbolInfo = TypeProcessor.GetSymbolInfo(identifier);
@@ -84,8 +186,9 @@ namespace SharpNative.Compiler
 
         public static string TransformIdentifier(string ident, ITypeSymbol type =null)
         {
-            ident = ident.Trim();//Cant have spaces in identifiers
+            ident = ident.Trim().Replace("@","___");//Cant have spaces in identifiers
             var name = ident;
+
             //limited support for badly named identifiers
             if (ident.StartsWith("__cs"))
             {
@@ -110,10 +213,15 @@ namespace SharpNative.Compiler
 
             }
 
+            if (DKeywords.Contains(name))
+            {
+                name = "__cs" + ident;
+            }
+
 
             switch (name)
             {
-                case "version":
+              /*  case "version":
                 case "body":
                 case "auto":
                 case "typeof":
@@ -122,20 +230,12 @@ namespace SharpNative.Compiler
                 case "lazy":
                 case "scope":
                 case "shared":
-                case "Error":
+                case "Error":*/
                 case "toString":
                 case "opEquals":
                 case "opCmp":
                 case "opCall":
                 case "toHash":
-                case "final":
-                case "synchronized":
-                case "assert":
-                case "enforce":
-                case "typeid":
-                case "alias":
-                case "inout":
-                case "_gshared":
                 case "__TypeOf":
                 case "__Delegate":
                 case "__Event":
@@ -143,12 +243,13 @@ namespace SharpNative.Compiler
                 case "UNBOX":
                     name= "__cs" + ident;
                     break;
+                case "TypeInfo":
                 case "Object": // Dlang does not accept defining Object / Exception in any module except object.di
                 case "Exception": // Dlang does not accept defining Object / Exception in any module except object.di
                     name = "__CS" + ident;
                     break;
                 default:
-                    name = ident;
+                  
                     break;
             }
 

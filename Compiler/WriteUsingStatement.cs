@@ -42,12 +42,12 @@ namespace SharpNative.Compiler
             {
                 var typeInfo = TypeProcessor.GetTypeInfo(usingStatement.Declaration.Type);
                 if (!typeInfo.Type.IsValueType)
-                    writer.WriteLine("if(" + variable.Identifier.ValueText + " !is null)");
+                    writer.WriteLine("if(" + variable.Identifier.Text + " !is null)");
                 else if (typeInfo.Type.Name == "Nullable")
-                    writer.WriteLine("if(" + variable.Identifier.ValueText + ".HasValue)");
+                    writer.WriteLine("if(" + variable.Identifier.Text + ".HasValue)");
 
 
-                writer.WriteLine(variable.Identifier.ValueText + ".Dispose(cast(IDisposable)null);");
+                writer.WriteLine(variable.Identifier.Text + ".Dispose(cast(IDisposable)null);");
             }
             if (resource != null)
             {

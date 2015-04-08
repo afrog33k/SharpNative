@@ -104,7 +104,7 @@ public class Type:NObject
 		return __methods[index];
 	}
 
-	FieldInfo GetField(String name)
+	FieldInfo GetField(String name, BindingFlags flags=BindingFlags.Public)
 	{
 		auto index = -1;
 
@@ -151,9 +151,10 @@ public class Type:NObject
 		return this;
 	}
 
-	Type __Field(string name, FieldInfo info)
+	Type __Field(string name, FieldInfo info,  FieldAttributes attributes = FieldAttributes.Public)
 	{
 		info.Name = _S(name);
+		info.Attributes = attributes;
 		__fields ~= info;
 		return this;
 	}

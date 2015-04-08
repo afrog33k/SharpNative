@@ -83,12 +83,13 @@ namespace SharpNative.Compiler
                     var rightExpressionType = TypeProcessor.GetTypeInfo(statement.Expression);
 
                     var boxRight = rightExpressionType.ConvertedType != null &&
-                                   (rightExpressionType.Type != null &&
+                                   (rightExpressionType.Type != null && (rightExpressionType.Type!=rightExpressionType.ConvertedType) &&
                                     ((rightExpressionType.Type.IsValueType ||
                                       rightExpressionType.Type.TypeKind == TypeKind.TypeParameter) &&
                                      (rightExpressionType.ConvertedType.IsReferenceType)));
                     boxRight = boxRight && (rightExpressionType.Type != returnTypeSymbol);
 
+                    if(!boxRight && returnTypeSymbol!=Context.Object)
 					if (!Equals(returnTypeSymbol, rightExpressionType.Type) && !rightExpressionType.Type.IsSubclassOf(returnTypeSymbol))
                     {
                         writer.Write(" cast(" + TypeProcessor.ConvertType(returnTypeSymbol) + ")");
