@@ -104,7 +104,7 @@ namespace SharpNative.Compiler
         }
 
 
-        public static string GetParameterListAsString(SeparatedSyntaxList<ParameterSyntax> parameters,  bool includeTypes = true, ITypeSymbol iface=null, bool writebraces = true)
+        public static string GetParameterListAsString(SeparatedSyntaxList<ParameterSyntax> parameters,  bool includeTypes = true, ITypeSymbol iface=null, bool writebraces = true, ITypeSymbol genericClass = null)
         {
            
             var writer = new TempWriter(); // Temp Writer
@@ -156,6 +156,18 @@ namespace SharpNative.Compiler
                 writer.Write(" = ");
                 Core.Write(writer, parameter.Default.Value);
             }
+
+            if (genericClass!=null)
+            {
+
+                writer.Write(TypeProcessor.ConvertType(genericClass) + " __obj");
+
+                if (firstParam)
+                    firstParam = false;
+                else
+                    writer.Write(", ");
+            }
+            else
             if (iface != null)
             {
                 if (firstParam)
@@ -172,7 +184,7 @@ namespace SharpNative.Compiler
 
 
 
-        public static void WriteIt(OutputWriter writer, MethodDeclarationSyntax method, bool isProxy = true)
+        public static void WriteIt(OutputWriter writer, MethodDeclarationSyntax method, bool isProxy = true, IEnumerable<ITypeSymbol> virtualGenericClasses=null)
         {
             var methodSymbol = (IMethodSymbol) TypeProcessor.GetDeclaredSymbol(method);
             var isYield = YieldChecker.HasYield(method);//method.DescendantNodes().OfType<YieldStatementSyntax>().Any();
@@ -207,7 +219,14 @@ namespace SharpNative.Compiler
             ITypeSymbol iface;
             ISymbol[] proxies;
             var methodName = MemberUtilities.GetMethodName(method, ref isInterface, out iface, out proxies); //
-            if (methodName == "Main" /*&& method.Modifiers.Any(SyntaxKind.PublicKeyword)*/&&
+            var originalMethodName = methodName;
+            var containingType = iface == null ? methodSymbol.ContainingType : iface;
+            if (virtualGenericClasses != null)
+            {
+                methodName = TypeProcessor.ConvertType(containingType, false, false, false).Replace(".","_") + "_"+methodName;
+                accessString = "public static final ";
+            }
+            else if (methodName == "Main" /*&& method.Modifiers.Any(SyntaxKind.PublicKeyword)*/&&
                 method.Modifiers.Any(SyntaxKind.StaticKeyword))
             {
                 accessString = ("public ");
@@ -256,8 +275,13 @@ namespace SharpNative.Compiler
             }
             methodSignatureString += genericParameters;
             var @params = GetParameterListAsString(method.ParameterList.Parameters,
-                iface: proxies == null ? iface : null);
+                iface: proxies == null ? iface : null, genericClass: virtualGenericClasses != null ? containingType : null);
 
+
+//            if (virtualGenericClasses != null)
+//            {
+//                @params = TypeProcessor.ConvertType() +  ", " + @params;
+//            }
             string constraints = GetMethodConstraints(method);
 
             if (isInterface || method.Modifiers.Any(SyntaxKind.AbstractKeyword))
@@ -275,10 +299,38 @@ namespace SharpNative.Compiler
             {
                 @params = GetParameterListAsString(method.ParameterList.Parameters, includeTypes: false);
 
-                if (method.ReturnType.ToString() == "void")
-                    writer.WriteLine("__Value." + methodName + @params + ";");
+                if (virtualGenericClasses !=null)
+                {
+                    /*
+                      public final static void Program_IBase_GenericVirtual_Dispatch(T)(Program.IBase aobj)
+      {
+        Object obj = cast(Object) aobj;
+        if((typeid(obj)==typeid(Program.B)))
+            (cast(Program.B)obj).GenericVirtual!(T)();
+        if((typeid(obj)==typeid(Program.A)))
+            (cast(Program.A)obj).GenericVirtual!(T)();
+
+      }    
+                    */
+                    writer.WriteLine("NObject ___obj = cast(NObject)__obj;");
+                    foreach (var virtualGenericClass in virtualGenericClasses)
+                    {
+                        var className = TypeProcessor.ConvertType(virtualGenericClass);
+                        writer.WriteLine("if(typeid(___obj)==typeid({0}))", className);
+
+                        if (method.ReturnType.ToString() == "void")
+                            writer.WriteLine("(cast({0})___obj)." +   originalMethodName + "!" + genericParameters + @params + ";", className);
+                        else
+                            writer.WriteLine("return (cast({0})___obj)."  + methodSignatureString + "!" + genericParameters + ";", className);
+                    }
+                }
                 else
-                    writer.WriteLine("return __Value." + methodName + @params + ";");
+                {
+                    if (method.ReturnType.ToString() == "void")
+                        writer.WriteLine("__Value." + methodName + @params + ";");
+                    else
+                        writer.WriteLine("return __Value." + methodName + @params + ";");
+                }
             }
             else
             {

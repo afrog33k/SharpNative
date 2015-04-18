@@ -122,6 +122,7 @@ namespace SharpNative.Compiler
                         //                        {
                         //                            writer.WriteLine("import {0};", @name.Key.GetModuleName(false));
                         //                        }
+                        var genericMethods = new List<IMethodSymbol>();
                         writer.WriteLine("public class __ReflectionInfo");
                         writer.OpenBrace();
                         writer.WriteLine("static this()");
@@ -130,7 +131,9 @@ namespace SharpNative.Compiler
                         {
                             if(type.TypeKind==TypeKind.Error)
                                 continue;
-                            
+
+                            var allgenericVirtualMethods = type.GetMembers().OfType<IMethodSymbol>().Where(k=>k.IsGenericMethod && k.IsVirtual);
+                            genericMethods.AddRange(allgenericVirtualMethods);
                             if (((INamedTypeSymbol) type).IsGenericType)
                             {
 
@@ -169,6 +172,18 @@ namespace SharpNative.Compiler
                         }
                         writer.CloseBrace();
                         writer.CloseBrace();
+
+                        foreach (var genericMethod in genericMethods)
+                        {
+                            var allClasses = alltypes.Where(type => genericMethod.ContainingType.IsAssignableFrom(type)).ToList(); // Or use a HashSet, for better Contains perf.
+                            IEnumerable<ITypeSymbol> firstImplementations = allClasses
+                                  .Except(allClasses.Where(t => allClasses.Contains(t.BaseType)));
+                        
+                       // writer.WriteLine("public final static " + TypeProcessor.ConvertType(genericMethod.ReturnType) + WriteIdentifierName.TransformIdentifier(genericMethod.Name) +  );
+                            if((firstImplementations.Contains( genericMethod.ContainingType )))
+                                   WriteMethod.WriteIt(writer,(MethodDeclarationSyntax) genericMethod.DeclaringSyntaxReferences[0].GetSyntax(),true, allClasses);
+
+                        }
 
                     }
                 }

@@ -7,6 +7,7 @@
 
 using System;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -43,17 +44,78 @@ namespace SharpNative.Compiler
             string typeParameters = null;
             ExpressionSyntax subExpressionOpt;
 
-          
-
             if (expressionSymbol.Symbol is IEventSymbol)
             {
                 methodName = "Invoke";
-                   
+
             }
             else if (methodSymbol.MethodKind == MethodKind.DelegateInvoke)
                 methodName = null;
             else
                 methodName = OverloadResolver.MethodName(methodSymbol);
+
+            if (methodSymbol.ContainingType.TypeKind == TypeKind.Interface ||
+                     Equals(methodSymbol.ContainingType.FindImplementationForInterfaceMember(methodSymbol),
+                         methodSymbol))
+            {
+                /*    methodName =
+                    Regex.Replace(TypeProcessor.ConvertType(methodSymbol.ContainingType.OriginalDefinition)
+                            .RemoveFromStartOfString(methodSymbol.ContainingNamespace + ".Namespace.") + "_" +
+                        methodName,
+                        @" ?!\(.*?\)", string.Empty);*/
+                if (methodSymbol.ContainingType.ContainingType != null)
+                    methodName = methodName.RemoveFromStartOfString(methodSymbol.ContainingType.ContainingType.Name + ".");
+            }
+
+            var interfaceMethods =
+                methodSymbol.ContainingType.AllInterfaces.SelectMany(
+                    u =>
+                        u.GetMembers(methodName)).ToArray();
+
+            ISymbol interfaceMethod =
+                interfaceMethods.FirstOrDefault(
+                    o => methodSymbol.ContainingType.FindImplementationForInterfaceMember(o) == methodSymbol);
+
+            //                    if (interfaceMethod == null)
+            //                    {
+            //                        //TODO: fix this for virtual method test 7, seems roslyn cannot deal with virtual 
+            //                        // overrides of interface methods ... so i'll provide a kludge
+            //                        if (!method.Modifiers.Any(SyntaxKind.NewKeyword))
+            //                            interfaceMethod = interfaceMethods.FirstOrDefault(k => CompareMethods(k as IMethodSymbol, methodSymbol));
+            //                    }
+
+            if (interfaceMethod != null)
+            // && CompareMethods(interfaceMethod ,methodSymbol)) {
+            {
+                //This is an interface method //TO
+                if (methodSymbol.ContainingType.SpecialType == SpecialType.System_Array)
+                    writer.Write("");
+                else
+                {
+                    /* var typenameI =
+                        Regex.Replace(
+                            TypeProcessor.ConvertType(interfaceMethod.ContainingType.ConstructedFrom, true),
+                            @" ?!\(.*?\)", string.Empty);
+                        //TODO: we should be able to get the original interface name, or just remove all generics from this
+                    if (typenameI.Contains('.'))
+                        typenameI = typenameI.SubstringAfterLast('.');
+                    writer.Write(typenameI + "_");*/
+                }
+            }
+
+            var containingType = interfaceMethod == null ? methodSymbol.ContainingType : interfaceMethod.ContainingType;
+
+            bool isVirtualGeneric = methodSymbol.IsGenericMethod &&
+                                    (methodSymbol.IsVirtual ||
+                                     methodSymbol.ContainingType.TypeKind == TypeKind.Interface)
+                                    && !containingType.IsAssignableFrom(Context.Instance.Type);// !(invocationExpression.Expression is BaseExpressionSyntax);
+
+          
+
+           
+
+            if (isVirtualGeneric)
+                methodName = TypeProcessor.ConvertType(containingType,false,false,false).Replace(".", "_") + "_" + methodName;
 
             if (methodSymbol.MethodKind == MethodKind.DelegateInvoke)
                 subExpressionOpt = invocationExpression.Expression;
@@ -108,6 +170,7 @@ namespace SharpNative.Compiler
 
             //Extension methods in Dlang are straightforward, although this could lead to clashes without qualification
 
+            string instanceName =null;
             if (extensionNamespace != null || directInvocationOnBasics)
             {
                 if (extensionNamespace == null)
@@ -117,14 +180,22 @@ namespace SharpNative.Compiler
                     //memberType.ContainingNamespace.FullName() +"."+ memberType.Name;
                 }
 
-                writer.Write(extensionNamespace);
-
-                if (methodName != null)
+                if (!isVirtualGeneric)
                 {
-                    methodName = WriteIdentifierName.TransformIdentifier(methodName);
-                    //                    if (symbolInfo.Symbol.ContainingType != Context.Instance.Type)
-                    writer.Write(".");
-                    writer.Write(methodName);
+                    writer.Write(extensionNamespace);
+
+                    if (methodName != null)
+                    {
+                        methodName = WriteIdentifierName.TransformIdentifier(methodName);
+                        //                    if (symbolInfo.Symbol.ContainingType != Context.Instance.Type)
+                        writer.Write(".");
+                        writer.Write(methodName);
+                    }
+                }
+                else
+                {
+                        writer.Write(methodName);
+
                 }
 
                 WriteTypeParameters(writer, typeParameters, invocationExpression);
@@ -149,16 +220,23 @@ namespace SharpNative.Compiler
 
                 if (subExpressionOpt != null)
                 {
-                    WriteMemberAccessExpression.WriteMember(writer, subExpressionOpt);
+                    if (!isVirtualGeneric)
+                    {
+                       WriteMemberAccessExpression.WriteMember(writer, subExpressionOpt);
 
-                    //                    if (!(subExpressionOpt is BaseExpressionSyntax))
-                    //                    {
-                    //                        if (methodName != null && methodSymbol.IsStatic)
-                    //                            writer.Write(".");
-                    //                        else
-                    //                      {   
-                    if (methodSymbol.MethodKind != MethodKind.DelegateInvoke)
-                        writer.Write(".");
+                        //                    if (!(subExpressionOpt is BaseExpressionSyntax))
+                        //                    {
+                        //                        if (methodName != null && methodSymbol.IsStatic)
+                        //                            writer.Write(".");
+                        //                        else
+                        //                      {   
+                        if (methodSymbol.MethodKind != MethodKind.DelegateInvoke)
+                            writer.Write(".");
+                    }
+                    else
+                    {
+                        instanceName = WriteMemberAccessExpression.WriteMemberToString(subExpressionOpt);
+                    }
                     //                        }
                     //                    }
                     //                  writer.Write(".");
@@ -205,104 +283,10 @@ namespace SharpNative.Compiler
                         writer.Write(WriteIdentifierName.TransformIdentifier(methodSymbol.ContainingType.Name,methodSymbol.ContainingType) + ".");
                     }
 
-                    //TODO: fix this for abstract too or whatever other combination
-                    //TODO: create a better fix fot this
-                    //                  ISymbol interfaceMethod =
-                    //                      methodSymbol.ContainingType.AllInterfaces.SelectMany (
-                    //                          u =>
-                    //                      u.GetMembers (methodName)
-                    //                      .Where (
-                    //                              o =>
-                    //                          methodSymbol.ContainingType.FindImplementationForInterfaceMember (o) ==
-                    //                              methodSymbol)).FirstOrDefault ();
+                  
 
-                    /*      if (methodSymbol.ContainingType.TypeKind == TypeKind.Interface ||
-                Equals(methodSymbol.ContainingType.FindImplementationForInterfaceMember(methodSymbol), methodSymbol))
+                  
 
-                              if ((interfaceMethod != null /*&& interfaceMethod == methodSymbol || methodSymbol.ContainingType.TypeKind == TypeKind.Interface)
-                          {
-                              //This is an interface method //TO
-
-                              var typenameM = Regex.Replace (TypeProcessor.ConvertType (methodSymbol.ContainingType), @" ?!\(.*?\)", string.Empty);
-                              if (typenameM.Contains ('.'))
-                                  typenameM = typenameM.SubstringAfterLast ('.');
-                              if (methodSymbol.ContainingType.SpecialType == SpecialType.System_Array)
-                                  writer.Write ("");
-                              else if (interfaceMethod != null)
-                              {
-                                  var typenameI = Regex.Replace (TypeProcessor.ConvertType (interfaceMethod.ContainingType), @" ?!\(.*?\)", string.Empty);
-                                  if (typenameI.Contains ('.'))
-                                      typenameI = typenameI.SubstringAfterLast ('.');                       
-                                  writer.Write (typenameI + "_");
-                              }
-                              else // this is the interface itself
-                                      writer.Write (typenameM + "_");
-
-                          }*/
-
-                    if (methodSymbol.ContainingType.TypeKind == TypeKind.Interface ||
-                        Equals(methodSymbol.ContainingType.FindImplementationForInterfaceMember(methodSymbol),
-                            methodSymbol))
-                    {
-                        /*    methodName =
-                            Regex.Replace(TypeProcessor.ConvertType(methodSymbol.ContainingType.OriginalDefinition)
-                                    .RemoveFromStartOfString(methodSymbol.ContainingNamespace + ".Namespace.") + "_" +
-                                methodName,
-                                @" ?!\(.*?\)", string.Empty);*/
-                        if (methodSymbol.ContainingType.ContainingType != null)
-                            methodName = methodName.RemoveFromStartOfString(methodSymbol.ContainingType.ContainingType.Name + ".");
-                    }
-
-                    var interfaceMethods =
-                        methodSymbol.ContainingType.AllInterfaces.SelectMany(
-                            u =>
-                                u.GetMembers(methodName)).ToArray();
-
-                    ISymbol interfaceMethod =
-                        interfaceMethods.FirstOrDefault(
-                            o => methodSymbol.ContainingType.FindImplementationForInterfaceMember(o) == methodSymbol);
-
-                    //                    if (interfaceMethod == null)
-                    //                    {
-                    //                        //TODO: fix this for virtual method test 7, seems roslyn cannot deal with virtual 
-                    //                        // overrides of interface methods ... so i'll provide a kludge
-                    //                        if (!method.Modifiers.Any(SyntaxKind.NewKeyword))
-                    //                            interfaceMethod = interfaceMethods.FirstOrDefault(k => CompareMethods(k as IMethodSymbol, methodSymbol));
-                    //                    }
-
-                    if (interfaceMethod != null)
-                        // && CompareMethods(interfaceMethod ,methodSymbol)) {
-                    {
-//This is an interface method //TO
-                        if (methodSymbol.ContainingType.SpecialType == SpecialType.System_Array)
-                            writer.Write("");
-                        else
-                        {
-                            /* var typenameI =
-                                Regex.Replace(
-                                    TypeProcessor.ConvertType(interfaceMethod.ContainingType.ConstructedFrom, true),
-                                    @" ?!\(.*?\)", string.Empty);
-                                //TODO: we should be able to get the original interface name, or just remove all generics from this
-                            if (typenameI.Contains('.'))
-                                typenameI = typenameI.SubstringAfterLast('.');
-                            writer.Write(typenameI + "_");*/
-                        }
-                    }
-
-                    //                  var acc = methodSymbol.DeclaredAccessibility;
-
-                    //                  if (methodSymbol.MethodKind == MethodKind.ExplicitInterfaceImplementation)
-                    //                  {
-                    //                      var implementations = methodSymbol.ExplicitInterfaceImplementations[0];
-                    //                      if (implementations != null)
-                    //                      {
-                    //                          //  explicitHeaderNAme = implementations.Name;
-                    //                          methodName = TypeProcessor.ConvertType(implementations.ReceiverType) + "_" +implementations.Name; //Explicit fix ?
-                    //
-                    //                          //          writer.Write(methodSymbol.ContainingType + "." + methodName);
-                    //                          //Looks like internal classes are not handled properly here ...
-                    //                      }
-                    //                  }
                     methodName = WriteIdentifierName.TransformIdentifier(methodName);
 
                     writer.Write(methodName);
@@ -320,12 +304,12 @@ namespace SharpNative.Compiler
 
             bool isOverloaded = methodSymbol.ContainingType.GetMembers(methodSymbol.Name).OfType<IMethodSymbol>().Any(j => j.TypeParameters == methodSymbol.TypeParameters && ParameterMatchesWithRefOutIn(methodSymbol, j));
 
-            WriteArguments(writer, invocationExpression, arguments, firstParameter, inParams, methodSymbol, foundParamsArray, typeSymbol, isOverloaded, symbol);
+            WriteArguments(writer, invocationExpression, arguments, firstParameter, inParams, methodSymbol, foundParamsArray, typeSymbol, isOverloaded, symbol,instanceName);
         }
 
         private static void WriteArguments(OutputWriter writer, InvocationExpressionSyntax invocationExpression,
             SeparatedSyntaxList<ArgumentSyntax> arguments, bool firstParameter, bool inParams, IMethodSymbol methodSymbol, bool foundParamsArray,
-            ITypeSymbol typeSymbol, bool isOverloaded, ISymbol symbol)
+            ITypeSymbol typeSymbol, bool isOverloaded, ISymbol symbol, string instanceName=null)
         {
             foreach (var arg in arguments.Select(o => new TransformedArgument(o)))
             {
@@ -378,6 +362,14 @@ namespace SharpNative.Compiler
                 }*/
             }
 
+            if (instanceName != null)
+            {
+                if (!firstParameter)
+                    writer.Write(",");
+                writer.Write(instanceName);
+                firstParameter = false;
+            }
+            else
             if (symbol.ContainingType.TypeKind == TypeKind.Interface) // Need it as specialized as possible
             {
                 if (!firstParameter)

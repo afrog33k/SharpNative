@@ -12,7 +12,7 @@ namespace SharpNative.Compiler
     public static class MemberUtilities
     {
 
-      
+
         public static string GetAccessModifiers(MemberDeclarationSyntax member, bool isInterface)
         {
             bool isStatic;
@@ -20,19 +20,21 @@ namespace SharpNative.Compiler
             var modifiers = member.GetModifiers();
             bool isoverride = ShouldUseOverrideKeyword(member, isInterface);
 
+
+
             if (modifiers.Any(SyntaxKind.PublicKeyword) || modifiers.Any(SyntaxKind.InternalKeyword) ||
                 modifiers.Any(SyntaxKind.ProtectedKeyword) || modifiers.Any(SyntaxKind.AbstractKeyword) ||
                 isInterface)
                 acccessmodifiers += ("public ");
 
             if (!modifiers.Any(SyntaxKind.VirtualKeyword) && !isInterface && !isoverride)
-                 acccessmodifiers += ("final ");
+                acccessmodifiers += ("final ");
 
-                ///  if (modifiers.Any(SyntaxKind.PrivateKeyword)) // Reflection cannot work with this, cant get address or set value
-                //     acccessmodifiers += ("private ");
+            ///  if (modifiers.Any(SyntaxKind.PrivateKeyword)) // Reflection cannot work with this, cant get address or set value
+            //     acccessmodifiers += ("private ");
 
 
-                if (modifiers.Any(SyntaxKind.StaticKeyword))
+            if (modifiers.Any(SyntaxKind.StaticKeyword))
             {
                 acccessmodifiers += "static ";
             }
@@ -40,9 +42,9 @@ namespace SharpNative.Compiler
             if (member.GetModifiers().Any(SyntaxKind.AbstractKeyword))
                 acccessmodifiers += "abstract ";
 
-           
 
-            
+
+
             if (isoverride)
                 acccessmodifiers += ("override ");
 
@@ -53,7 +55,11 @@ namespace SharpNative.Compiler
         {
             ISymbol symbol = TypeProcessor.GetDeclaredSymbol(member);
 
-
+            if (symbol is IMethodSymbol)
+            {
+                if ((symbol as IMethodSymbol).IsGenericMethod)
+                    return false;
+            }
 
             if (symbol.ContainingType.TypeKind == TypeKind.Struct ||
                 symbol.ContainingType.TypeKind == TypeKind.Interface)
@@ -83,7 +89,7 @@ namespace SharpNative.Compiler
         {
             interfaceImplemented = null;
             proxies = null;
-           
+
             var name = WriteIdentifierName.TransformIdentifier(methodSymbol.Name);
 
             if (methodSymbol.ContainingType.TypeKind == TypeKind.Interface)
@@ -187,13 +193,13 @@ namespace SharpNative.Compiler
                 }
             }
 
-          /*  if (
-                //member.GetModifiers().Any(SyntaxKind.NewKeyword) && 
-                methodSymbol.OriginalDefinition.ContainingType.TypeKind != TypeKind.Interface) //Take care of new
-                name += "_";*/
+            /*  if (
+                  //member.GetModifiers().Any(SyntaxKind.NewKeyword) && 
+                  methodSymbol.OriginalDefinition.ContainingType.TypeKind != TypeKind.Interface) //Take care of new
+                  name += "_";*/
             if (methodSymbol.IsNew())
             {
-               // name += "_";
+                // name += "_";
                 interfaceImplemented = methodSymbol.OriginalDefinition.ContainingType;
             }
 
@@ -287,11 +293,11 @@ namespace SharpNative.Compiler
             {
                 //TODO: fix this for virtual method test 7, seems roslyn cannot deal with virtual 
                 // overrides of interface methods ... so i'll provide a kludge
-//                if (!member.GetModifiers().Any(SyntaxKind.NewKeyword) && methodSymbol is IMethodSymbol) // This is not neccessary for properties
-//                {
-//                    interfaceMethod =
-//                        enumerable.FirstOrDefault(k => CompareMethods(k as IMethodSymbol, (IMethodSymbol) methodSymbol));
-//                }
+                //                if (!member.GetModifiers().Any(SyntaxKind.NewKeyword) && methodSymbol is IMethodSymbol) // This is not neccessary for properties
+                //                {
+                //                    interfaceMethod =
+                //                        enumerable.FirstOrDefault(k => CompareMethods(k as IMethodSymbol, (IMethodSymbol) methodSymbol));
+                //                }
             }
 
             if (interfaceMethod != null)
@@ -323,8 +329,8 @@ namespace SharpNative.Compiler
 
             GetExplicitInterface(ref interfaceImplemented, methodSymbol);
 
-//            if (interfaceMethods.Count() >= 1 && interfaceMethod!=null)
-//                proxies = interfaceMethods.ToArray();
+            //            if (interfaceMethods.Count() >= 1 && interfaceMethod!=null)
+            //                proxies = interfaceMethods.ToArray();
 
             return name;
         }
@@ -357,14 +363,14 @@ namespace SharpNative.Compiler
             return interfaceMethod.Name == methodSymbol.Name// && interfaceMethod.ReturnType == methodSymbol.ReturnType 
                 &&
             CompareParameters(interfaceMethod.Parameters, methodSymbol.Parameters) &&
-            CompareArguments(interfaceMethod.TypeArguments , methodSymbol.TypeArguments);
+            CompareArguments(interfaceMethod.TypeArguments, methodSymbol.TypeArguments);
         }
 
         public static bool CompareMethodsWithReturnType(IMethodSymbol interfaceMethod, IMethodSymbol methodSymbol)
         {
             if (interfaceMethod == null || methodSymbol == null)
                 return false;
-            return interfaceMethod.Name == methodSymbol.Name && interfaceMethod.ReturnType == methodSymbol.ReturnType 
+            return interfaceMethod.Name == methodSymbol.Name && interfaceMethod.ReturnType == methodSymbol.ReturnType
                 &&
             CompareParameters(interfaceMethod.Parameters, methodSymbol.Parameters) &&
             CompareArguments(interfaceMethod.TypeArguments, methodSymbol.TypeArguments);
@@ -411,7 +417,7 @@ namespace SharpNative.Compiler
 
             for (int index = 0; index < a.Length; index++)
             {
-                if(a[index].Type != b[index].Type)
+                if (a[index].Type != b[index].Type)
                     return false;
             }
             return true;
@@ -431,21 +437,21 @@ namespace SharpNative.Compiler
         {
             writer.Write("&");
             var symbol = TypeProcessor.GetSymbolInfo(expression).Symbol;
-//         
-//            else
+            //         
+            //            else
             {
-            Core.Write(writer, expression);
+                Core.Write(writer, expression);
                 if (symbol is IMethodSymbol && !(expression is GenericNameSyntax))
-            {
-                //Type inference for delegates
-                var methodSymbol =  symbol as IMethodSymbol;
-             //   var methodName = TypeProcessor.ConvertType(methodSymbol.ContainingType) +"."+ WriteIdentifierName.TransformIdentifier(methodSymbol.Name);
-                var specializedMethod = //methodName +
-                                        (methodSymbol.TypeArguments.Any() ?( "!("+
-                                        methodSymbol.TypeArguments.Select(k => TypeProcessor.ConvertType(k))
-                                            .Aggregate((a, b) => a + "," + b) +")"): "");
-                writer.Write(specializedMethod);
-            }
+                {
+                    //Type inference for delegates
+                    var methodSymbol = symbol as IMethodSymbol;
+                    //   var methodName = TypeProcessor.ConvertType(methodSymbol.ContainingType) +"."+ WriteIdentifierName.TransformIdentifier(methodSymbol.Name);
+                    var specializedMethod = //methodName +
+                                        (methodSymbol.TypeArguments.Any() ? ("!(" +
+                                            methodSymbol.TypeArguments.Select(k => TypeProcessor.ConvertType(k))
+                                                .Aggregate((a, b) => a + "," + b) + ")") : "");
+                    writer.Write(specializedMethod);
+                }
 
             }
         }

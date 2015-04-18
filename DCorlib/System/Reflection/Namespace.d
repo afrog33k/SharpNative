@@ -1532,6 +1532,10 @@ public class Type_T(T):Type
 				fullName = (fullName[0..fullName.lastIndexOf(dotname)]);
 			}
 
+			if(name.lastIndexOf(".")!=-1)
+			{
+				name = name[name.lastIndexOf(".")..$];
+			}
 
 
 			FullName = _S(fullName);

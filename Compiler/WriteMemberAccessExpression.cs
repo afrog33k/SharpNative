@@ -164,6 +164,7 @@ namespace SharpNative.Compiler
             }*/
         }
 
+
         public static void WriteMember(OutputWriter writer, ExpressionSyntax expression)
         {
             var symbol = TypeProcessor.GetSymbolInfo(expression).Symbol;
@@ -177,6 +178,25 @@ namespace SharpNative.Compiler
             }
             else
                 Core.Write(writer, expression);
+        }
+
+        public static string WriteMemberToString(ExpressionSyntax expression)
+        {
+            var result = "";
+            var symbol = TypeProcessor.GetSymbolInfo(expression).Symbol;
+            if (symbol is INamedTypeSymbol)
+            {
+                var str = TypeProcessor.ConvertType(symbol.As<INamedTypeSymbol>());
+                if (str == "Array_T")
+                    // Array is the only special case, otherwise generics have to be specialized to access static members
+                    str = "Array";
+                result +=(str);
+            }
+            else
+
+                result+=Core.WriteString(expression);
+
+            return result;
         }
     }
 }

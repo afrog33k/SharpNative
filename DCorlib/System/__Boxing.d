@@ -248,8 +248,6 @@ NObject __BOXPrimitive(T)(T value)
 		return new System.UInt64.UInt64(value);
 	}
 
-
-
 	//Enums are now just structs with lots of magic
 
 	static if(is(T==struct) && __traits(compiles,T.__IsEnum==true))
