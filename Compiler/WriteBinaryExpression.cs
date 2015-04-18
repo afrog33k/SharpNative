@@ -209,46 +209,67 @@ namespace SharpNative.Compiler
             {
                 if (rightnull)
                 {
-                    Core.Write(writer, leftExpression);
 
                     switch (operatorToken.CSharpKind())
                     {
                         case SyntaxKind.EqualsEqualsToken:
-                            writer.Write(" is ");
+                            writer.Write("");
                             break;
                         case SyntaxKind.NotEqualsExpression:
                         case SyntaxKind.ExclamationEqualsToken:
-                            writer.Write(" !is ");
+                            writer.Write("!");
                             break;
                         default:
                             writer.Write(operatorToken.ToString());
                             break;
                     }
 
-                    writer.Write("null");
+
+                    writer.Write("__IsNull(");
+                    Core.Write(writer, leftExpression);
+                    writer.Write(")");
                     return;
                 }
 
                 if (leftnull)
                 {
-                    writer.Write("null");
-
+                    //                    writer.Write("null");
+                    //
+                    //                    switch (operatorToken.CSharpKind())
+                    //                    {
+                    //                        case SyntaxKind.EqualsEqualsToken:
+                    //                            writer.Write(" is ");
+                    //                            break;
+                    //                        case SyntaxKind.NotEqualsExpression:
+                    //                        case SyntaxKind.ExclamationEqualsToken:
+                    //                            writer.Write(" !is ");
+                    //                            break;
+                    //                        default:
+                    //                            writer.Write(operatorToken.ToString());
+                    //                            break;
+                    //                    }
+                    //
+                    //                    Core.Write(writer, rightExpression);
+                    //
+                    //                    return;
                     switch (operatorToken.CSharpKind())
                     {
                         case SyntaxKind.EqualsEqualsToken:
-                            writer.Write(" is ");
+                            writer.Write("");
                             break;
                         case SyntaxKind.NotEqualsExpression:
                         case SyntaxKind.ExclamationEqualsToken:
-                            writer.Write(" !is ");
+                            writer.Write("!");
                             break;
                         default:
                             writer.Write(operatorToken.ToString());
                             break;
                     }
 
-                    Core.Write(writer, leftExpression);
 
+                    writer.Write("__IsNull(");
+                    Core.Write(writer, rightExpression);
+                    writer.Write(")");
                     return;
                 }
             }

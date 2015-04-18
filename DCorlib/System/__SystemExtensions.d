@@ -99,6 +99,18 @@ public static String _S(String text)
 	return text;
 }
 
+public static __IsNull(T)(T value)
+if(__isScalar!(T))
+{
+		return false;
+}
+
+public static __IsNull(T)(T value)
+if(!__isScalar!(T))
+{
+	return value is null;
+}
+
 
 struct __UNBOUND // object used to keep unbound generic types, for sharing and reflection
 {

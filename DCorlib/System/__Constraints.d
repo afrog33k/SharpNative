@@ -35,7 +35,7 @@ template __isStruct(T)
 
 template __isCSStruct(T)
 {
-	enum __isCSStruct =  __isStruct!(T);
+	enum __isCSStruct =  __isStruct!(T) || __isScalar!(T);
 }
 
 template __isClass(T)
