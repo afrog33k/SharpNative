@@ -1,27 +1,144 @@
-SharpNative
-===========
+What is SharpNative ?
+===================
 
-A C# to Dlang Transpiler
-Let C# Run Free and Fast
+SharpNative is a tool that generates **Native Code** (D, Soon C++11, Java and Swift) from **C#**.
 
-Why D?:
-Initially this project was written with a C++11 backend, but due to slow compilation, adding and testing features 
-was getting too long in the tooth. With D, it took less than 3 days to port over the code :) and DMD is blazing fast
+The idea is to maximize the cross-platform capabilities of C# without being tied to any vendor
+or platform. The Emphasis here is on Performance and Readability of the generated D Code. Comments are preserved as well.
 
-Performance:
-On average tests run about 2x .Net (without optimization)
+---
+Example of Generated Code
 
-Requirements:
--	Microsoft .Net 4.5.3
--	Windows 7 or Later (Compiler works on OSX too, the visual editor is not ready, yet)
+C#:
 
-Usage:
-- For now some things are hardcoded in the compiler. (DMD should be in "C:\\D\\dmd2\\windows\\bin\\")
-	You can change that though by editing DMDWindowsOptions in  NativeCompilationUtils.cs
-	options will be added to specify paths and link against different frameworks.
+ ```c++
+using System;
 
-Feature List (Incomplete):
-	
+class Primes
+{
+ 	public static void Main()
+    {
+        var len = 1000000; // This is a comment
+        var primes = AddPrimes(len);
+        Console.Write(primes);
+    }
+
+    private static int AddPrimes(int len)
+    {
+        var primes = 0;
+        for (var i = 2; i < len; i++)
+        {
+            if (i%2 == 0)
+                continue;
+            var isPrime = true;
+            for (var j = 2; j*j <= i; j++)
+            {
+                if (i%j == 0)
+                {
+                    isPrime = false;
+                    break;
+                }
+            }
+            if (isPrime)
+                primes++;
+        }
+        return primes;
+    }
+    
+}
+```
+D:
+
+```c++
+module CsRoot.Primes;
+import System.Namespace;
+import CsRoot.Namespace;
+
+class Primes : NObject
+{
+
+    public static void Main()
+    {
+      int len = 1000000;
+      // This is a comment
+      int primes = AddPrimes(len);
+      Console.Write(primes);
+    }
+
+    final static int AddPrimes(int len)
+    {
+      int primes = 0;
+      
+      for (int i = 2;i<len;i++)
+      {
+        if(i%2==0)
+        {
+          continue;
+        }
+        bool isPrime = true;
+        
+        for (int j = 2;j*j<=i;j++)
+        {
+          if(i%j==0)
+          {
+            isPrime=false;
+            break;
+          }
+        }
+        if(isPrime)
+        {
+          primes++;
+        }
+      }
+      return primes;
+    }
+
+  public override String ToString()
+  {
+    return GetType().FullName;
+  }
+
+  public override Type GetType()
+  {
+    return __TypeOf!(typeof(this));
+  }
+}
+```
+
+---
+
+###**Supported Output Languages**
+The Compiler in its current state only supports D as the output language. (This is due to DMD being an extremely fast compiler, so testing features is fun)
+
+---
+
+###**Performance** -- *These are very unscientific*
+
+The following are tests taken from CrossNet (one of the first C# to Native compiler efforts)
+**Machine:**
+-- Macbook Pro Retina (Mid 2012)
+-- 2.6Ghz Intel Core i7
+-- 16GB  1600 MHz DDR3
+Some benchmarks on my Parallels Windows 8 VM: (3GB Ram, 3 Cores) using DMD  with options  `-inline -release -m64 -O`
+and .Net in release mode
+
+|Type Of Test | C# Time (ms) |     D Time (ms)   |  Speed Ratio (C#/D) |
+|-------------|:----------:|------:|
+|NSieveTest| 18859  |  5450 | 3.46x |
+|MatrixTest(MultiDimensional)| 12359  |    22606   |   0.56x |
+|MatrixTest(Jagged)| 10156  | 2580 |    3.98x |
+|GC Test| 10657   | 57288 |    0.19x |
+|Unsafe Test| 32375    | 4752 |    6.81x |
+|HeapSort Test| 8671     | 3906 |    2.21x |
+|Average |      |  |    **2.87x** |
+Due to the produced binaries being native and better optimizations in the DMD, the generated binaries are generally much faster than their C# counterparts. Except when Garbage Collection is concerned, the D GC is much slower than that of .Net (Maybe we can port it to D). Also the current multidimensional array implementation seems lacking in performance.
+
+----------
+
+###**Documentation** 
+Unfortunately this is all the documentation the transpiler has at the moment.
+----------
+**Feature List (Incomplete):**
 -	What works: Moved to Dlang … c++ was a headache
 -	Basic PInvoke
 -	Arrays including initializers
@@ -52,14 +169,39 @@ Feature List (Incomplete):
 -	C# multi dimensional arrays work correctly (even with multi dim syntax :) )… mostly … look at multi test from CrossNet
 -	Delegates work including multicast (Native delegates through P/Invoke work too)
 -	Events work as expected … though a bit slower than C#(mono)
+-	Object initializers work as a chain of lambda expressions
+-	Generic Virtual Methods
+-	Basic Reflection of Methods, Fields and Properties, IndexerProperties are not yet supported as are Generic Methods ... for now.
+-	Iterators and Yield using code from WootzJS, a fiber implementation exists but it crashes on DMD 2.066 Windows 64-bit
+----------
 
-What Doesn’t Work: (Also Incomplete)
--	Object initializers in lambdas/loops/fields do very weird things (tm), we need to wrap them in functions (lambda captures)
+###**Requirements -- Testing** 
+-- Microsoft .Net 4.0 / Mono 3.6 and above.
+-- Windows 7 or Later ( The CLI Interface works on Linux and OSX)
+-- A Working D Installation  (LDC,DMD or GDC) 
+
+###**Requirements -- Development** 
+All requirements mentioned above and:
+-- Visual Studio 2013 or above
+-- Visual D 
+
+###**Usage**
+If you are using the GUI interface(windows) note that DMD should be installed in `"C:\\D\\dmd2\\windows\\bin\\"` 
+For the CLI interface the driver can be invoked in the following manner:
+
+    mono ./SharpNative.exe /compiler:pathtodcompiler /dcorlib:/**pathtodcorlib** /source:"pathtosourcefile" /outputtype:exe /dstdlib:pathtophobos /compileroptions:"compileroptions"
+
+**where**:
+-- **pathtodcompiler** is the path to a d compiler e.g. `/usr/local/bin/ldc` on mac osx
+-- **pathtodcorlib** is the path to the included basic corlib e.g. `/Projects/SharpNative/DCorlib`
+-- **pathtosourcefile** is the path to the test source file in C#
+--**pathtophobos** is the location of phobos in your installation e.g. `/usr/local/Cellar/ldc/0.15.0/include/d`
+--**compileroptions** are the compiler options to pass to dmd/ldc/gdc e.g. `-inline -release -m64 -O5 -oq`
+
+
+**What Doesn’t Work: (Also Incomplete)**
 -	Right now compiler does not do any optimizations like final, in, out @pure etc …
--	Unboxing to Wrong Type doesn't throw exceptions
--	Yield - Though an implementation using fibers exists
 -	Async/Await - Working on an implementation
--	Query Expression Syntax for LINQ and general Expressions
+-	Query Expression Syntax for LINQ and Expression Trees
 -	Structs FieldLayout implementation is currently wrong ... to mimic C# a new design is needed.
--	Lots of other minor issues not yet documented.
 
