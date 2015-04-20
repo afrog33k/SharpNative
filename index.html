@@ -1,25 +1,34 @@
-<!DOCTYPE html>
-<html lang="en-us">
+<!doctype html>
+<html>
   <head>
-    <meta charset="UTF-8">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
     <title>SharpNative by afrogeek</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
-    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
-    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
-    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
   </head>
   <body>
-    <section class="page-header">
-      <h1 class="project-name">SharpNative</h1>
-      <h2 class="project-tagline">A C# to Native Code (C++, D etc...) Transpiler based on Microsoft Roslyn</h2>
-      <a href="https://github.com/afrogeek/SharpNative" class="btn">View on GitHub</a>
-      <a href="https://github.com/afrogeek/SharpNative/zipball/master" class="btn">Download .zip</a>
-      <a href="https://github.com/afrogeek/SharpNative/tarball/master" class="btn">Download .tar.gz</a>
-    </section>
+    <div class="wrapper">
+      <header>
+        <h1>SharpNative</h1>
+        <p>A C# to Native Code (C++, D etc...) Transpiler based on Microsoft Roslyn</p>
 
-    <section class="main-content">
-      <h1>
+        <p class="view"><a href="https://github.com/afrogeek/SharpNative">View the Project on GitHub <small>afrogeek/SharpNative</small></a></p>
+
+
+        <ul>
+          <li><a href="https://github.com/afrogeek/SharpNative/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/afrogeek/SharpNative/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/afrogeek/SharpNative">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h1>
 <a id="what-is-sharpnative-" class="anchor" href="#what-is-sharpnative-" aria-hidden="true"><span class="octicon octicon-link"></span></a>What is SharpNative ?</h1>
 
 <p>SharpNative is a tool that generates <strong>Native Code</strong> (D, Soon C++11, Java and Swift) from <strong>C#</strong> leveraging Microsoft Roslyn to generate almost hand-written code the the target languages.</p>
@@ -154,36 +163,36 @@ and .Net in release mode</p>
 
 <p>D:</p>
 
-<div class="highlight highlight-c++"><pre>module CsRoot.Primes;
-import System.Namespace;
-import CsRoot.Namespace;
+<div class="highlight highlight-d"><pre><span class="pl-k">module</span> <span class="pl-en">CsRoot.Primes</span>;
+<span class="pl-k">import</span> <span class="pl-k">System</span>.<span class="pl-k">Namespace</span>;
+<span class="pl-k">import</span> <span class="pl-k">CsRoot</span>.<span class="pl-k">Namespace</span>;
 
-<span class="pl-k">class</span> <span class="pl-en">Primes</span> : NObject
+<span class="pl-k">class</span> <span class="pl-en">Primes</span> : <span class="pl-e">NObject</span>
 {
 
-    public <span class="pl-k">static</span> <span class="pl-k">void</span> <span class="pl-en">Main</span>()
+    <span class="pl-k">public static </span><span class="pl-k">void</span> <span class="pl-en">Main</span>()
     {
       <span class="pl-k">int</span> len = <span class="pl-c1">1000000</span>;
       <span class="pl-c">// This is a comment</span>
-      <span class="pl-k">int</span> primes = <span class="pl-c1">AddPrimes</span>(len);
-      Console.<span class="pl-c1">Write</span>(primes);
+      <span class="pl-k">int</span> primes = <span class="pl-k">AddPrimes</span>(len);
+      <span class="pl-c1">Console</span>.<span class="pl-k">Write</span>(primes);
     }
 
-    final <span class="pl-k">static</span> <span class="pl-k">int</span> <span class="pl-en">AddPrimes</span>(<span class="pl-k">int</span> len)
+    <span class="pl-k">final static </span><span class="pl-k">int</span> <span class="pl-en">AddPrimes</span>(<span class="pl-k">int</span> len)
     {
       <span class="pl-k">int</span> primes = <span class="pl-c1">0</span>;
 
-      <span class="pl-k">for</span> (<span class="pl-k">int</span> i = <span class="pl-c1">2</span>;i&lt;len;i++)
+      <span class="pl-k">for</span> (<span class="pl-k">int</span> i = <span class="pl-c1">2</span>;i<span class="pl-k">&lt;</span>len;i<span class="pl-k">++</span>)
       {
-        <span class="pl-k">if</span>(i%<span class="pl-c1">2</span>==<span class="pl-c1">0</span>)
+        <span class="pl-k">if</span>(i<span class="pl-k">%</span><span class="pl-c1">2</span><span class="pl-k">==</span><span class="pl-c1">0</span>)
         {
           <span class="pl-k">continue</span>;
         }
         <span class="pl-k">bool</span> isPrime = <span class="pl-c1">true</span>;
 
-        <span class="pl-k">for</span> (<span class="pl-k">int</span> j = <span class="pl-c1">2</span>;j*j&lt;=i;j++)
+        <span class="pl-k">for</span> (<span class="pl-k">int</span> j = <span class="pl-c1">2</span>;j<span class="pl-k">*</span>j<span class="pl-k">&lt;=</span>i;j<span class="pl-k">++</span>)
         {
-          <span class="pl-k">if</span>(i%j==<span class="pl-c1">0</span>)
+          <span class="pl-k">if</span>(i<span class="pl-k">%</span>j<span class="pl-k">==</span><span class="pl-c1">0</span>)
           {
             isPrime=<span class="pl-c1">false</span>;
             <span class="pl-k">break</span>;
@@ -191,22 +200,22 @@ import CsRoot.Namespace;
         }
         <span class="pl-k">if</span>(isPrime)
         {
-          primes++;
+          primes<span class="pl-k">++</span>;
         }
       }
       <span class="pl-k">return</span> primes;
     }
 
-  public override String <span class="pl-en">ToString</span>()
+  <span class="pl-k">public</span> <span class="pl-k">override</span> <span class="pl-k">String</span> <span class="pl-k">ToString</span>()
   {
-    <span class="pl-k">return</span> <span class="pl-c1">GetType</span>().<span class="pl-smi">FullName</span>;
+    <span class="pl-k">return</span> <span class="pl-k">GetType</span>().<span class="pl-k">FullName</span>;
   }
 
-  public override Type <span class="pl-en">GetType</span>()
+  <span class="pl-k">public</span> <span class="pl-k">override</span> <span class="pl-k">Type</span> <span class="pl-k">GetType</span>()
   {
-    <span class="pl-k">return</span> __TypeOf!(<span class="pl-c1">typeof</span>(<span class="pl-v">this</span>));
+    <span class="pl-k">return</span> __TypeOf<span class="pl-k">!</span>(<span class="pl-k">typeof</span>(<span class="pl-v">this</span>));
   }
-}<span class="pl-ii"></span></pre></div>
+}</pre></div>
 
 <hr>
 
@@ -309,16 +318,13 @@ For the CLI interface the driver can be invoked in the following manner:</p>
 <li>  Query Expression Syntax for LINQ and Expression Trees</li>
 <li>  Structs FieldLayout implementation is currently wrong ... to mimic C# a new design is needed.</li>
 </ul>
-
-      <footer class="site-footer">
-        <span class="site-footer-owner"><a href="https://github.com/afrogeek/SharpNative">SharpNative</a> is maintained by <a href="https://github.com/afrogeek">afrogeek</a>.</span>
-
-        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/afrogeek">afrogeek</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
       </footer>
-
-    </section>
-
-  
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
   </body>
 </html>
-
