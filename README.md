@@ -12,7 +12,7 @@ The Compiler in its current state only supports D as the output language. (This 
 
 ---
 
-###**Performance** -- *These are very unscientific*
+###**Performance** -- *Results are very unscientific*
 
 The following are tests taken from CrossNet (one of the first C# to Native compiler efforts)
 
@@ -33,10 +33,23 @@ and .Net in release mode
 |NSieveTest| 18859  |  5450 | 3.46x |
 |MatrixTest(MultiDimensional)| 12359  |    22606   |   0.56x |
 |MatrixTest(Jagged)| 10156  | 2580 |    3.98x |
-|GC Test| 10657   | 57288 |    0.19x |
-|Unsafe Test| 32375    | 4752 |    6.81x |
-|HeapSort Test| 8671     | 3906 |    2.21x |
-|Average |      |  |    **2.87x** |
+|GCTest| 10657   | 57288 |    0.19x |
+|UnsafeTest| 32375    | 4752 |    6.81x |
+|HeapSortTest| 8671     | 3906 |    2.21x |
+|BinaryTreesTest| 12359     | 22635 |    0.55x |
+|CastsTest (using auto)| 6282      | 1784 |    3.52x |
+|CastsTest (using object)| 125      | 3211 |    0.04x |
+|EventsTest| 5985      | 6121 |    0.98x |
+|FannkuchTest| 1218       | 529 |    2.3x |
+|ForeachOnArrayTest| 34359       | 29358 |    1.17x |
+|InterfaceTest| 8297        | 4044 |    2.05x |
+|ListTest| 22422         | 5761 |    3.89x |
+|NestedLoopsTest| 33593          | 6466 |    5.19x |
+|PartialSumsTest| 4531          | 5518 |    0.82x |
+|RecursiveTest| 11406           | 3014 |    3.78x |
+|StringConcatenationTest| 63           | 147 |    0.43x |
+|VirtualTest| 8078            | 2784 |    2.9x |
+|**Average** |      |  |    **2.34x** |
 
 Due to the produced binaries being native and better optimizations in the DMD, the generated binaries are generally much faster than their C# counterparts. Except when Garbage Collection is concerned, the D GC is much slower than that of .Net (Maybe we can port it to D). Also the current multidimensional array implementation seems lacking in performance.
 
