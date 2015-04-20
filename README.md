@@ -185,25 +185,35 @@ Unfortunately this is all the documentation the transpiler has at the moment.
 
 ###**Requirements -- Testing** 
 -- Microsoft .Net 4.0 / Mono 3.6 and above.
+
 -- Windows 7 or Later ( The CLI Interface works on Linux and OSX)
+
 -- A Working D Installation  (LDC,DMD or GDC) 
 
 ###**Requirements -- Development** 
 All requirements mentioned above and:
+
 -- Visual Studio 2013 or above
+
 -- Visual D 
 
 ###**Usage**
 If you are using the GUI interface(windows) note that DMD should be installed in `"C:\\D\\dmd2\\windows\\bin\\"` 
 For the CLI interface the driver can be invoked in the following manner:
 
+
     mono ./SharpNative.exe /compiler:pathtodcompiler /dcorlib:/**pathtodcorlib** /source:"pathtosourcefile" /outputtype:exe /dstdlib:pathtophobos /compileroptions:"compileroptions"
 
 **where**:
+
 -- **pathtodcompiler** is the path to a d compiler e.g. `/usr/local/bin/ldc` on mac osx
+
 -- **pathtodcorlib** is the path to the included basic corlib e.g. `/Projects/SharpNative/DCorlib`
+
 -- **pathtosourcefile** is the path to the test source file in C#
+
 --**pathtophobos** is the location of phobos in your installation e.g. `/usr/local/Cellar/ldc/0.15.0/include/d`
+
 --**compileroptions** are the compiler options to pass to dmd/ldc/gdc e.g. `-inline -release -m64 -O5 -oq`
 
 
