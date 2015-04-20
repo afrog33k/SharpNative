@@ -83,7 +83,7 @@ class Primes
 ```
 D:
 
-```c++
+```d
 module CsRoot.Primes;
 import System.Namespace;
 import CsRoot.Namespace;
