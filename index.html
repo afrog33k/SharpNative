@@ -22,10 +22,94 @@
       <h1>
 <a id="what-is-sharpnative-" class="anchor" href="#what-is-sharpnative-" aria-hidden="true"><span class="octicon octicon-link"></span></a>What is SharpNative ?</h1>
 
-<p>SharpNative is a tool that generates <strong>Native Code</strong> (D, Soon C++11, Java and Swift) from <strong>C#</strong>.</p>
+<p>SharpNative is a tool that generates <strong>Native Code</strong> (D, Soon C++11, Java and Swift) from <strong>C#</strong> leveraging Microsoft Roslyn to generate almost hand-written code the the target languages.</p>
 
-<p>The idea is to maximize the cross-platform capabilities of C# without being tied to any vendor
-or platform. The Emphasis here is on Performance and Readability of the generated D Code. Comments are preserved as well.</p>
+<p>The idea is to maximize the cross-platform capabilities of C# without being tied to any vendor or platform. The Emphasis here is on Performance and Readability of the generated D Code. Comments are preserved as well.</p>
+
+<hr>
+
+<h3>
+<a id="supported-output-languages" class="anchor" href="#supported-output-languages" aria-hidden="true"><span class="octicon octicon-link"></span></a><strong>Supported Output Languages</strong>
+</h3>
+
+<p>The Compiler in its current state only supports D as the output language. (This is due to DMD being an extremely fast compiler, so testing features is fun)</p>
+
+<hr>
+
+<h3>
+<a id="performance----these-are-very-unscientific" class="anchor" href="#performance----these-are-very-unscientific" aria-hidden="true"><span class="octicon octicon-link"></span></a>
+<strong>Performance</strong> -- <em>These are very unscientific</em>
+</h3>
+
+<p>The following are tests taken from CrossNet (one of the first C# to Native compiler efforts)</p>
+
+<p><strong>Machine:</strong></p>
+
+<p>-- Macbook Pro Retina (Mid 2012)</p>
+
+<p>-- 2.6Ghz Intel Core i7</p>
+
+<p>-- 16GB  1600 MHz DDR3</p>
+
+<p>Some benchmarks on my Parallels Windows 8 VM: (3GB Ram, 3 Cores) using DMD  with options  <code>-inline -release -m64 -O</code>
+and .Net in release mode</p>
+
+<table>
+<thead>
+<tr>
+<th>Type Of Test</th>
+<th align="center">C# Time (ms)</th>
+<th align="left">D Time (ms)</th>
+<th align="right">Speed Ratio (C#/D)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>NSieveTest</td>
+<td align="center">18859</td>
+<td align="left">5450</td>
+<td align="right">3.46x</td>
+</tr>
+<tr>
+<td>MatrixTest(MultiDimensional)</td>
+<td align="center">12359</td>
+<td align="left">22606</td>
+<td align="right">0.56x</td>
+</tr>
+<tr>
+<td>MatrixTest(Jagged)</td>
+<td align="center">10156</td>
+<td align="left">2580</td>
+<td align="right">3.98x</td>
+</tr>
+<tr>
+<td>GC Test</td>
+<td align="center">10657</td>
+<td align="left">57288</td>
+<td align="right">0.19x</td>
+</tr>
+<tr>
+<td>Unsafe Test</td>
+<td align="center">32375</td>
+<td align="left">4752</td>
+<td align="right">6.81x</td>
+</tr>
+<tr>
+<td>HeapSort Test</td>
+<td align="center">8671</td>
+<td align="left">3906</td>
+<td align="right">2.21x</td>
+</tr>
+<tr>
+<td>Average</td>
+<td align="center"></td>
+<td align="left"></td>
+<td align="right"><strong>2.87x</strong></td>
+</tr>
+</tbody>
+</table>
+
+<p>Due to the produced binaries being native and better optimizations in the DMD, the generated binaries are generally much faster than their C# counterparts. Except when Garbage Collection is concerned, the D GC is much slower than that of .Net (Maybe we can port it to D). Also the current multidimensional array implementation seems lacking in performance.</p>
 
 <hr>
 
@@ -33,26 +117,26 @@ or platform. The Emphasis here is on Performance and Readability of the generate
 
 <p>C#:</p>
 
-<div class="highlight highlight-c#"><pre><span class="pl-k">using</span> System;
+<div class="highlight highlight-c++"><pre><span class="pl-k">using</span> System;
 
 <span class="pl-k">class</span> <span class="pl-en">Primes</span>
 {
-    <span class="pl-k">public</span> <span class="pl-k">static</span> <span class="pl-k">void</span> <span class="pl-en">Main</span>()
+    public <span class="pl-k">static</span> <span class="pl-k">void</span> <span class="pl-en">Main</span>()
     {
-        <span class="pl-k">var</span> len = <span class="pl-c1">1000000</span>; <span class="pl-c">// This is a comment</span>
-        <span class="pl-k">var</span> primes = AddPrimes(len);
-        Console.Write(primes);
+        var len = <span class="pl-c1">1000000</span>; <span class="pl-c">// This is a comment</span>
+        var primes = <span class="pl-c1">AddPrimes</span>(len);
+        Console.<span class="pl-c1">Write</span>(primes);
     }
 
-    <span class="pl-k">private</span> <span class="pl-k">static</span> <span class="pl-k">int</span> <span class="pl-en">AddPrimes</span>(<span class="pl-k">int</span> <span class="pl-smi">len</span>)
+    private <span class="pl-k">static</span> <span class="pl-k">int</span> <span class="pl-en">AddPrimes</span>(<span class="pl-k">int</span> len)
     {
-        <span class="pl-k">var</span> primes = <span class="pl-c1">0</span>;
-        <span class="pl-k">for</span> (<span class="pl-k">var</span> i = <span class="pl-c1">2</span>; i &lt; len; i++)
+        var primes = <span class="pl-c1">0</span>;
+        <span class="pl-k">for</span> (var i = <span class="pl-c1">2</span>; i &lt; len; i++)
         {
             <span class="pl-k">if</span> (i%<span class="pl-c1">2</span> == <span class="pl-c1">0</span>)
                 <span class="pl-k">continue</span>;
-            <span class="pl-k">var</span> isPrime = <span class="pl-c1">true</span>;
-            <span class="pl-k">for</span> (<span class="pl-k">var</span> j = <span class="pl-c1">2</span>; j*j &lt;= i; j++)
+            var isPrime = <span class="pl-c1">true</span>;
+            <span class="pl-k">for</span> (var j = <span class="pl-c1">2</span>; j*j &lt;= i; j++)
             {
                 <span class="pl-k">if</span> (i%j == <span class="pl-c1">0</span>)
                 {
@@ -66,7 +150,7 @@ or platform. The Emphasis here is on Performance and Readability of the generate
         <span class="pl-k">return</span> primes;
     }
 
-}</pre></div>
+}<span class="pl-ii"></span></pre></div>
 
 <p>D:</p>
 
@@ -127,86 +211,21 @@ import CsRoot.Namespace;
 <hr>
 
 <h3>
-<a id="supported-output-languages" class="anchor" href="#supported-output-languages" aria-hidden="true"><span class="octicon octicon-link"></span></a><strong>Supported Output Languages</strong>
-</h3>
-
-<p>The Compiler in its current state only supports D as the output language. (This is due to DMD being an extremely fast compiler, so testing features is fun)</p>
-
-<hr>
-
-<h3>
-<a id="performance----these-are-very-unscientific" class="anchor" href="#performance----these-are-very-unscientific" aria-hidden="true"><span class="octicon octicon-link"></span></a>
-<strong>Performance</strong> -- <em>These are very unscientific</em>
-</h3>
-
-<p>The following are tests taken from CrossNet (one of the first C# to Native compiler efforts)
-<strong>Machine:</strong>
--- Macbook Pro Retina (Mid 2012)
--- 2.6Ghz Intel Core i7
--- 16GB  1600 MHz DDR3
-Some benchmarks on my Parallels Windows 8 VM: (3GB Ram, 3 Cores) using DMD  with options  <code>-inline -release -m64 -O</code>
-and .Net in release mode</p>
-
-<p>|Type Of Test | C# Time (ms) |     D Time (ms)   |  Speed Ratio (C#/D) |
-|-------------|:----------:|------:|
-|NSieveTest| 18859  |  5450 | 3.46x |
-|MatrixTest(MultiDimensional)| 12359  |    22606   |   0.56x |
-|MatrixTest(Jagged)| 10156  | 2580 |    3.98x |
-|GC Test| 10657   | 57288 |    0.19x |
-|Unsafe Test| 32375    | 4752 |    6.81x |
-|HeapSort Test| 8671     | 3906 |    2.21x |
-|Average |      |  |    <strong>2.87x</strong> |
-Due to the produced binaries being native and better optimizations in the DMD, the generated binaries are generally much faster than their C# counterparts. Except when Garbage Collection is concerned, the D GC is much slower than that of .Net (Maybe we can port it to D). Also the current multidimensional array implementation seems lacking in performance.</p>
-
-<hr>
-
-<h3>
 <a id="documentation" class="anchor" href="#documentation" aria-hidden="true"><span class="octicon octicon-link"></span></a><strong>Documentation</strong>
 </h3>
 
 <p>Unfortunately this is all the documentation the transpiler has at the moment.</p>
 
-<h3>
-<a id="requirements----testing" class="anchor" href="#requirements----testing" aria-hidden="true"><span class="octicon octicon-link"></span></a><strong>Requirements -- Testing</strong>
-</h3>
+<hr>
 
-<p>-- Microsoft .Net 4.0 / Mono 3.6 and above.
--- Windows 7 or Later ( The CLI Interface works on Linux and OSX)
--- A Working D Installation  (LDC,DMD or GDC) </p>
-
-<h3>
-<a id="requirements----development" class="anchor" href="#requirements----development" aria-hidden="true"><span class="octicon octicon-link"></span></a><strong>Requirements -- Development</strong>
-</h3>
-
-<p>All requirements mentioned above and:
--- Visual Studio 2013 or above
--- Visual D </p>
-
-<h3>
-<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span class="octicon octicon-link"></span></a><strong>Usage</strong>
-</h3>
-
-<p>If you are using the GUI interface(windows) note that DMD should be installed in <code>"C:\\D\\dmd2\\windows\\bin\\"</code> 
-For the CLI interface the driver can be invoked in the following manner:</p>
-
-<pre><code>mono ./SharpNative.exe /compiler:pathtodcompiler /dcorlib:/**pathtodcorlib** /source:"pathtosourcefile" /outputtype:exe /dstdlib:pathtophobos /compileroptions:"compileroptions"
-</code></pre>
-
-<p><strong>where</strong>:
--- <strong>pathtodcompiler</strong> is the path to a d compiler e.g. <code>/usr/local/bin/ldc</code> on mac osx
--- <strong>pathtodcorlib</strong> is the path to the included basic corlib e.g. <code>/Projects/SharpNative/DCorlib</code>
--- <strong>pathtosourcefile</strong> is the path to the test source file in C#
---<strong>pathtophobos</strong> is the location of phobos in your installation e.g. <code>/usr/local/Cellar/ldc/0.15.0/include/d</code>
---<strong>compileroptions</strong> are the compiler options to pass to dmd/ldc/gdc e.g. <code>-inline -release -m64 -O5 -oq</code></p>
-
-<p>Feature List (Incomplete):</p>
+<p><strong>Feature List (Incomplete):</strong></p>
 
 <ul>
-<li>  What works: Moved to Dlang … c++ was a headache</li>
-<li>  Basic PInvoke</li>
+<li>  What works: </li>
+<li>  Basic PInvoke including marshalling</li>
 <li>  Arrays including initializers</li>
 <li>  Fields/ Properties/Methods with correct hiding semantics</li>
-<li>  Properties are better implemented</li>
+<li>  Properties</li>
 <li>  String</li>
 <li>  Int/Double/Bool</li>
 <li>  Classes and Polymorphism … we follow C# model</li>
@@ -225,26 +244,70 @@ For the CLI interface the driver can be invoked in the following manner:</p>
 <li>  Boxed structs and interface casting for them</li>
 <li>  Inner Classes in the form of OuterClass_InnerClass</li>
 <li>  Static Constructors</li>
-<li>  Explicit Interfaces … current fix is not so pretty though … i.e. IEnumerator.MoveNext becomes IEnumerator.IEnumerator_MoveNext (this allows implementing methods with same name, differently)</li>
+<li>  Explicit Interfaces</li>
 <li>  Implicit and Explicit Cast Operators</li>
 <li>  String switch … dlang supports this natively :)</li>
 <li>  String.Format .. though implementation is very basic</li>
-<li>  C# multi dimensional arrays work correctly (even with multi dim syntax :) )… mostly … look at multi test from CrossNet</li>
+<li>  C# multi dimensional arrays work correctly (even with multi dim syntax :) )</li>
 <li>  Delegates work including multicast (Native delegates through P/Invoke work too)</li>
 <li>  Events work as expected … though a bit slower than C#(mono)</li>
+<li>  Object initializers work as a chain of lambda expressions</li>
+<li>  Generic Virtual Methods</li>
+<li>  Basic Reflection of Methods, Fields and Properties, IndexerProperties are not yet supported as are Generic Methods ... for now.</li>
+<li>  Iterators and Yield using code from WootzJS, a fiber implementation exists but it crashes on DMD 2.066 Windows 64-bit</li>
 </ul>
 
-<p>What Doesn’t Work: (Also Incomplete)</p>
+<hr>
+
+<h3>
+<a id="requirements----testing" class="anchor" href="#requirements----testing" aria-hidden="true"><span class="octicon octicon-link"></span></a><strong>Requirements -- Testing</strong>
+</h3>
+
+<p>-- Microsoft .Net 4.0 / Mono 3.6 and above.</p>
+
+<p>-- Windows 7 or Later ( The CLI Interface works on Linux and OSX)</p>
+
+<p>-- A Working D Installation  (LDC,DMD or GDC) </p>
+
+<h3>
+<a id="requirements----development" class="anchor" href="#requirements----development" aria-hidden="true"><span class="octicon octicon-link"></span></a><strong>Requirements -- Development</strong>
+</h3>
+
+<p>All requirements mentioned above and:</p>
+
+<p>-- Visual Studio 2013 or above</p>
+
+<p>-- Visual D </p>
+
+<h3>
+<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span class="octicon octicon-link"></span></a><strong>Usage</strong>
+</h3>
+
+<p>If you are using the GUI interface(windows) note that DMD should be installed in <code>"C:\\D\\dmd2\\windows\\bin\\"</code> 
+For the CLI interface the driver can be invoked in the following manner:</p>
+
+<pre><code>mono ./SharpNative.exe /compiler:pathtodcompiler /dcorlib:/**pathtodcorlib** /source:"pathtosourcefile" /outputtype:exe /dstdlib:pathtophobos /compileroptions:"compileroptions"
+</code></pre>
+
+<p><strong>where</strong>:</p>
+
+<p>-- <strong>pathtodcompiler</strong> is the path to a d compiler e.g. <code>/usr/local/bin/ldc</code> on mac osx</p>
+
+<p>-- <strong>pathtodcorlib</strong> is the path to the included basic corlib e.g. <code>/Projects/SharpNative/DCorlib</code></p>
+
+<p>-- <strong>pathtosourcefile</strong> is the path to the test source file in C#</p>
+
+<p>--<strong>pathtophobos</strong> is the location of phobos in your installation e.g. <code>/usr/local/Cellar/ldc/0.15.0/include/d</code></p>
+
+<p>--<strong>compileroptions</strong> are the compiler options to pass to dmd/ldc/gdc e.g. <code>-inline -release -m64 -O5 -oq</code></p>
+
+<p><strong>What Doesn’t Work: (Also Incomplete)</strong></p>
 
 <ul>
-<li>  Object initializers in lambdas/loops/fields do very weird things (tm), we need to wrap them in functions (lambda captures)</li>
 <li>  Right now compiler does not do any optimizations like final, in, out <a href="https://github.com/pure" class="user-mention">@pure</a> etc …</li>
-<li>  Unboxing to Wrong Type doesn't throw exceptions</li>
-<li>  Yield - Though an implementation using fibers exists</li>
 <li>  Async/Await - Working on an implementation</li>
-<li>  Query Expression Syntax for LINQ and general Expressions</li>
+<li>  Query Expression Syntax for LINQ and Expression Trees</li>
 <li>  Structs FieldLayout implementation is currently wrong ... to mimic C# a new design is needed.</li>
-<li>  Lots of other minor issues not yet documented.</li>
 </ul>
 
       <footer class="site-footer">
