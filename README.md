@@ -1,12 +1,46 @@
 What is SharpNative ?
 ===================
 
-SharpNative is a tool that generates **Native Code** (D, Soon C++11, Java and Swift) from **C#**.
+SharpNative is a tool that generates **Native Code** (D, Soon C++11, Java and Swift) from **C#** leveraging Microsoft Roslyn to generate almost hand-written code the the target languages.
 
-The idea is to maximize the cross-platform capabilities of C# without being tied to any vendor
-or platform. The Emphasis here is on Performance and Readability of the generated D Code. Comments are preserved as well.
+The idea is to maximize the cross-platform capabilities of C# without being tied to any vendor or platform. The Emphasis here is on Performance and Readability of the generated D Code. Comments are preserved as well.
 
 ---
+
+###**Supported Output Languages**
+The Compiler in its current state only supports D as the output language. (This is due to DMD being an extremely fast compiler, so testing features is fun)
+
+---
+
+###**Performance** -- *These are very unscientific*
+
+The following are tests taken from CrossNet (one of the first C# to Native compiler efforts)
+
+**Machine:**
+
+-- Macbook Pro Retina (Mid 2012)
+
+-- 2.6Ghz Intel Core i7
+
+-- 16GB  1600 MHz DDR3
+
+Some benchmarks on my Parallels Windows 8 VM: (3GB Ram, 3 Cores) using DMD  with options  `-inline -release -m64 -O`
+and .Net in release mode
+
+
+|Type Of Test | C# Time (ms) |     D Time (ms)   |  Speed Ratio (C#/D) |
+|-------------|:----------:|:---|------:|
+|NSieveTest| 18859  |  5450 | 3.46x |
+|MatrixTest(MultiDimensional)| 12359  |    22606   |   0.56x |
+|MatrixTest(Jagged)| 10156  | 2580 |    3.98x |
+|GC Test| 10657   | 57288 |    0.19x |
+|Unsafe Test| 32375    | 4752 |    6.81x |
+|HeapSort Test| 8671     | 3906 |    2.21x |
+|Average |      |  |    **2.87x** |
+
+Due to the produced binaries being native and better optimizations in the DMD, the generated binaries are generally much faster than their C# counterparts. Except when Garbage Collection is concerned, the D GC is much slower than that of .Net (Maybe we can port it to D). Also the current multidimensional array implementation seems lacking in performance.
+
+----------
 Example of Generated Code
 
 C#:
@@ -104,41 +138,11 @@ class Primes : NObject
   }
 }
 ```
-
 ---
-
-###**Supported Output Languages**
-The Compiler in its current state only supports D as the output language. (This is due to DMD being an extremely fast compiler, so testing features is fun)
-
----
-
-###**Performance** -- *These are very unscientific*
-
-The following are tests taken from CrossNet (one of the first C# to Native compiler efforts)
-**Machine:**
--- Macbook Pro Retina (Mid 2012)
--- 2.6Ghz Intel Core i7
--- 16GB  1600 MHz DDR3
-Some benchmarks on my Parallels Windows 8 VM: (3GB Ram, 3 Cores) using DMD  with options  `-inline -release -m64 -O`
-and .Net in release mode
-
-
-|Type Of Test | C# Time (ms) |     D Time (ms)   |  Speed Ratio (C#/D) |
-|-------------|:----------:|:---|------:|
-|NSieveTest| 18859  |  5450 | 3.46x |
-|MatrixTest(MultiDimensional)| 12359  |    22606   |   0.56x |
-|MatrixTest(Jagged)| 10156  | 2580 |    3.98x |
-|GC Test| 10657   | 57288 |    0.19x |
-|Unsafe Test| 32375    | 4752 |    6.81x |
-|HeapSort Test| 8671     | 3906 |    2.21x |
-|Average |      |  |    **2.87x** |
-
-Due to the produced binaries being native and better optimizations in the DMD, the generated binaries are generally much faster than their C# counterparts. Except when Garbage Collection is concerned, the D GC is much slower than that of .Net (Maybe we can port it to D). Also the current multidimensional array implementation seems lacking in performance.
-
-----------
 
 ###**Documentation** 
 Unfortunately this is all the documentation the transpiler has at the moment.
+
 ----------
 **Feature List (Incomplete):**
 -	What works: 
