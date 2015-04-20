@@ -122,8 +122,9 @@ The following are tests taken from CrossNet (one of the first C# to Native compi
 Some benchmarks on my Parallels Windows 8 VM: (3GB Ram, 3 Cores) using DMD  with options  `-inline -release -m64 -O`
 and .Net in release mode
 
+
 |Type Of Test | C# Time (ms) |     D Time (ms)   |  Speed Ratio (C#/D) |
-|-------------|:----------:|------:|
+|-------------|:----------:|:---|------:|
 |NSieveTest| 18859  |  5450 | 3.46x |
 |MatrixTest(MultiDimensional)| 12359  |    22606   |   0.56x |
 |MatrixTest(Jagged)| 10156  | 2580 |    3.98x |
@@ -131,6 +132,7 @@ and .Net in release mode
 |Unsafe Test| 32375    | 4752 |    6.81x |
 |HeapSort Test| 8671     | 3906 |    2.21x |
 |Average |      |  |    **2.87x** |
+
 Due to the produced binaries being native and better optimizations in the DMD, the generated binaries are generally much faster than their C# counterparts. Except when Garbage Collection is concerned, the D GC is much slower than that of .Net (Maybe we can port it to D). Also the current multidimensional array implementation seems lacking in performance.
 
 ----------
@@ -139,11 +141,11 @@ Due to the produced binaries being native and better optimizations in the DMD, t
 Unfortunately this is all the documentation the transpiler has at the moment.
 ----------
 **Feature List (Incomplete):**
--	What works: Moved to Dlang … c++ was a headache
--	Basic PInvoke
+-	What works: 
+-	Basic PInvoke including marshalling
 -	Arrays including initializers
 -	Fields/ Properties/Methods with correct hiding semantics
--	Properties are better implemented
+-	Properties
 -	String
 -	Int/Double/Bool
 -	Classes and Polymorphism … we follow C# model
@@ -162,17 +164,19 @@ Unfortunately this is all the documentation the transpiler has at the moment.
 -	Boxed structs and interface casting for them
 -	Inner Classes in the form of OuterClass_InnerClass
 -	Static Constructors
--	Explicit Interfaces … current fix is not so pretty though … i.e. IEnumerator.MoveNext becomes IEnumerator.IEnumerator_MoveNext (this allows implementing methods with same name, differently)
+-	Explicit Interfaces
 -	Implicit and Explicit Cast Operators
 -	String switch … dlang supports this natively :)
 -	String.Format .. though implementation is very basic
--	C# multi dimensional arrays work correctly (even with multi dim syntax :) )… mostly … look at multi test from CrossNet
+-	C# multi dimensional arrays work correctly (even with multi dim syntax :) )
 -	Delegates work including multicast (Native delegates through P/Invoke work too)
 -	Events work as expected … though a bit slower than C#(mono)
 -	Object initializers work as a chain of lambda expressions
 -	Generic Virtual Methods
 -	Basic Reflection of Methods, Fields and Properties, IndexerProperties are not yet supported as are Generic Methods ... for now.
 -	Iterators and Yield using code from WootzJS, a fiber implementation exists but it crashes on DMD 2.066 Windows 64-bit
+
+
 ----------
 
 ###**Requirements -- Testing** 
