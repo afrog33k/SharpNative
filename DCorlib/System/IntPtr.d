@@ -1,6 +1,8 @@
 module System.IntPtr;
 
-class IntPtr//:Boxed!(int*)
+import System.Namespace;
+
+class IntPtr:Boxed!(int*)
 {
 	int* m_value;
 	public __gshared const  IntPtr Zero = new IntPtr(0);

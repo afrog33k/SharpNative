@@ -36,11 +36,31 @@ if(__isScalar!(T))
 		alias __BoxesTo = System.Single.Single;
 	}
 
+	static if(is(T==wchar))
+	{
+		alias __BoxesTo = System.Char.Char;
+	}
+
+	static if(is(T==bool))
+	{
+		alias __BoxesTo = System.Boolean.Boolean;
+	}
+
 	static if(is(T==double))
 	{
 		alias __BoxesTo = System.Double.Double;
 	}
+//ubyte, ushort, uint, ulong, wchar
 
+	static if(is(T==short))
+	{
+		alias __BoxesTo = System.Int16.Int16;
+	}
+
+	static if(is(T==ushort))
+	{
+		alias __BoxesTo = System.UInt16.UInt16;
+	}
 
 	static if(is(T==byte))
 	{
@@ -102,11 +122,21 @@ if(__isClass!(T))
 	return cast(T)value;
 }
 
+static  T BOX(T)( T value)
+if(__isClass!(T) && !is(T==NObject))
+{
+	return value;
+}
 
+static  NObject BOX(T)( T value)
+if(__isInterface!(T))
+{
+	return cast(NObject)value;
+}
 
 
 static Boxed!(T) BOX(T)(T value)
-if(!__isClass!(T) && !__isStruct!(T) &&!__isEnum!(T))
+if(__isScalar!(T)) //&& !__isStruct!(T) &&!__isEnum!(T))
 {
 
 	auto boxedPrimitive = __BOXPrimitive(value);
@@ -273,9 +303,9 @@ if(!__isClass!(T) && __isClass!(U))
 }
 
 static T UNBOX(T,U)(U nobject) 
-if(!__isClass!(T) && !__isClass!(U))
+if(__isStruct!(T) && __isInterface!(U))
 {
-	return cast(T)nobject;
+	return cast(T)cast(Boxed!T)nobject;
 }
 
 //Reflection Support for fields and properties, fixes up structs 

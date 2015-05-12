@@ -101,7 +101,7 @@ namespace SharpNative.Compiler
             var initializer = variable.Initializer;
             if (initializer != null)
             {
-                if (initializer.Value.CSharpKind() == SyntaxKind.CollectionInitializerExpression)
+                if (initializer.Value.Kind() == SyntaxKind.CollectionInitializerExpression)
                     return;
 
                 var value = initializer.Value;

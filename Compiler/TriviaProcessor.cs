@@ -25,13 +25,13 @@ namespace SharpNative.Compiler
             SyntaxTriviaList triviaList = node.GetTrailingTrivia();
             foreach (var trivia in triviaList)
             {
-                if (trivia.CSharpKind() == SyntaxKind.SingleLineCommentTrivia ||
-                    trivia.CSharpKind() == SyntaxKind.MultiLineCommentTrivia ||
-                    trivia.CSharpKind() == SyntaxKind.SingleLineDocumentationCommentTrivia ||
-                    trivia.CSharpKind() == SyntaxKind.MultiLineDocumentationCommentTrivia ||
-                    trivia.CSharpKind() == SyntaxKind.WhitespaceTrivia)
+                if (trivia.Kind() == SyntaxKind.SingleLineCommentTrivia ||
+                    trivia.Kind() == SyntaxKind.MultiLineCommentTrivia ||
+                    trivia.Kind() == SyntaxKind.SingleLineDocumentationCommentTrivia ||
+                    trivia.Kind() == SyntaxKind.MultiLineDocumentationCommentTrivia ||
+                    trivia.Kind() == SyntaxKind.WhitespaceTrivia)
                 {
-                    if (trivia.CSharpKind() == SyntaxKind.WhitespaceTrivia)
+                    if (trivia.Kind() == SyntaxKind.WhitespaceTrivia)
                     {
                         if (trivia.ToFullString().EndsWith("\n"))
                         {
@@ -50,13 +50,13 @@ namespace SharpNative.Compiler
             var triviaList = node.GetLeadingTrivia();
             foreach (var trivia in triviaList)
             {
-                if (trivia.CSharpKind() == SyntaxKind.SingleLineCommentTrivia ||
-                    trivia.CSharpKind() == SyntaxKind.MultiLineCommentTrivia ||
-                    trivia.CSharpKind() == SyntaxKind.SingleLineDocumentationCommentTrivia ||
-                    trivia.CSharpKind() == SyntaxKind.MultiLineDocumentationCommentTrivia ||
-                    trivia.CSharpKind() == SyntaxKind.WhitespaceTrivia)
+                if (trivia.Kind() == SyntaxKind.SingleLineCommentTrivia ||
+                    trivia.Kind() == SyntaxKind.MultiLineCommentTrivia ||
+                    trivia.Kind() == SyntaxKind.SingleLineDocumentationCommentTrivia ||
+                    trivia.Kind() == SyntaxKind.MultiLineDocumentationCommentTrivia ||
+                    trivia.Kind() == SyntaxKind.WhitespaceTrivia)
                 {
-                    if (trivia.CSharpKind() == SyntaxKind.WhitespaceTrivia)
+                    if (trivia.Kind() == SyntaxKind.WhitespaceTrivia)
                     {
                         if (trivia.ToFullString().EndsWith("\n"))
                         {

@@ -237,12 +237,12 @@
             breaking any pp constructs.
             </summary>
         </member>
-        <member name="F:Microsoft.CodeAnalysis.CSharp.Extensions.SyntaxNodeExtensions.FindSkippedTokenForward">
+        <member name="F:Microsoft.CodeAnalysis.CSharp.Extensions.SyntaxNodeExtensions.s_findSkippedTokenForward">
             <summary>
             Look inside a trivia list for a skipped token that contains the given position.
             </summary>
         </member>
-        <member name="F:Microsoft.CodeAnalysis.CSharp.Extensions.SyntaxNodeExtensions.FindSkippedTokenBackward">
+        <member name="F:Microsoft.CodeAnalysis.CSharp.Extensions.SyntaxNodeExtensions.s_findSkippedTokenBackward">
             <summary>
             Look inside a trivia list for a skipped token that contains the given position.
             </summary>
@@ -288,7 +288,7 @@
             <param name="genericIdentifier">The "name" of the generic identifier, last token before
             the "&amp;"</param>
             <returns>The last token in the name</returns>
-            <remarks>This is related to the code in <see cref="M:SyntaxTreeExtensions.IsInPartiallyWrittenGeneric"/></remarks>
+            <remarks>This is related to the code in <see cref="M:Microsoft.CodeAnalysis.CSharp.Extensions.SyntaxTreeExtensions.IsInPartiallyWrittenGeneric(Microsoft.CodeAnalysis.SyntaxTree,System.Int32,System.Threading.CancellationToken)"/></remarks>
         </member>
         <member name="M:Microsoft.CodeAnalysis.CSharp.Extensions.SyntaxTreeExtensions.FindTokenOnRightOfPosition(Microsoft.CodeAnalysis.SyntaxTree,System.Int32,System.Threading.CancellationToken,System.Boolean,System.Boolean,System.Boolean)">
             <summary>

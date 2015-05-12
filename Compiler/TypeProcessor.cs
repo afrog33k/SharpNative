@@ -231,6 +231,9 @@ namespace SharpNative.Compiler
         private static readonly ConcurrentDictionary<ITypeSymbol, string> _cachedTypes =
             new ConcurrentDictionary<ITypeSymbol, string>();
 
+//Special case to avoid conflicts
+        private static string[] DoNotLocalize = new []{"System.Reflection.Namespace.MemberInfo"};
+
         public static string ConvertType(ITypeSymbol typeSymbol, bool localize = true, bool usebasicname = true, bool useAliases=true)
         {
             AddUsedType(typeSymbol);
@@ -246,7 +249,7 @@ namespace SharpNative.Compiler
                 ret = typeSymbol.ContainingNamespace.FullName(true, useAliases) + "." + typeSymbol.Name;
             }
 
-            if (localize)
+            if (localize && !DoNotLocalize.Contains(ret))
             {
                 ret = LocalizeName(ret,typeSymbol,useAliases);
             }
@@ -367,7 +370,9 @@ namespace SharpNative.Compiler
                 _cachedTypes.TryAdd(typeInfo, cachedValue);
             }
 
-            if (localize)
+        
+
+            if (localize && !DoNotLocalize.Contains(cachedValue))
             {
                 cachedValue = LocalizeName(cachedValue, typeInfo, true);
             }
@@ -402,7 +407,7 @@ namespace SharpNative.Compiler
                 return "Array_T!(" + typeString + ")";
             }
 
-            if (typeSymbol.TypeKind == TypeKind.PointerType)
+            if (typeSymbol.TypeKind == TypeKind.Pointer)
             {
                 var pointer = typeSymbol as IPointerTypeSymbol;
                 return ConvertType(pointer.PointedAtType) + "*";
@@ -415,9 +420,15 @@ namespace SharpNative.Compiler
             if (typeSymbol.TypeKind == TypeKind.TypeParameter)
                 return  WriteIdentifierName.TransformIdentifier(typeSymbol.Name,typeSymbol);
 
+            //Special cases
            
             if (named != null && (named.ContainingNamespace.ToString() == "System" && named.Name == "Exception"))
                 return "System.Namespace.NException";
+
+            
+         
+
+            
 
             //TODO: Add explicit support for Nullable
             if (named != null && (named.Name == "Nullable" && named.ContainingNamespace.ToString() == "System"))
@@ -520,7 +531,7 @@ namespace SharpNative.Compiler
 
         private static string GetFullGenericName(INamedTypeSymbol named)
         {
-            var name = GetGenericTypeNameWithParameters(named); 
+            var name =  GetGenericTypeNameWithParameters(named); 
             var type = named.ContainingType;
             while (type != null)
             {
@@ -528,14 +539,14 @@ namespace SharpNative.Compiler
                 type = type.ContainingType;
             }
 
-            return name;
+            return named.ContainingNamespace.FullNameWithDot() + name;
         }
 
         private static string GetGenericTypeNameWithParameters(INamedTypeSymbol named)
         {
             if (named.IsGenericType)
             {
-                return WriteType.TypeName(named,false)  + (named.TypeArguments.Any() ? "!(" +
+                return  WriteType.TypeName(named,false)  + (named.TypeArguments.Any() ? "!(" +
                 named.TypeArguments.Select(
                     o => GetGenericParameterType(named.TypeParameters[named.TypeArguments.IndexOf(o)], o))
                            .Aggregate((a, b) => a + ", " + b)
@@ -543,7 +554,7 @@ namespace SharpNative.Compiler
             }
             else
             {
-                return WriteType.TypeName(named);
+                return  WriteType.TypeName(named);
             }
         }
 

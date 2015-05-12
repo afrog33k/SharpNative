@@ -10,6 +10,8 @@ import std.stdio;
 import core.vararg;
 alias typeof(null) null_t;
 
+ alias __Delegate!(bool delegate(System.Reflection.Namespace.MemberInfo m, NObject filterCriteria)) MemberFilter;
+
 
 class AmbiguousMatchException : SystemException {
 
@@ -675,6 +677,7 @@ public class MethodBase : MemberInfo
 //public abstract RuntimeMethodHandle MethodHandle() @property;
 
 	public abstract MethodAttributes Attributes () @property;
+	public MethodAttributes __rtAttributes;
 
 	public abstract NObject Invoke(NObject obj, BindingFlags invokeAttr, Binder binder, NObject[] parameters, CultureInfo culture);
 
@@ -981,7 +984,7 @@ override		bool IsDefined(Type attributeType, bool inherit){
 		return false;
 		}
 override			MethodAttributes Attributes() @property{
-			return MethodAttributes.init;
+			return __rtAttributes;
 			}
 override				NObject Invoke(NObject obj, BindingFlags invokeAttr, Binder binder, NObject[] parameters, CultureInfo culture)
 				{
@@ -1009,6 +1012,11 @@ override					MethodInfo GetBaseDefinition(){
 	
 	override NObject Invoke(NObject obj, Array_T!(NObject) _arguments)
 	{
+		//Support for virtual methods ... need to improve this
+		if(obj !is null && (typeid(obj)!=typeid(T[0])))
+		{
+			return __GetCachedType(typeid(obj)).GetMethod(Name).Invoke(obj,_arguments);
+		}
 		if(obj)
 		{
 			/*static if(__traits(isStaticFunction, T[1]))

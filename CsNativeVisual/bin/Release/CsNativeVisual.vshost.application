@@ -4,17 +4,17 @@
   <description asmv2:publisher="CsNativeVisual" asmv2:product="CsNativeVisual" xmlns="urn:schemas-microsoft-com:asm.v1" />
   <deployment install="true" />
   <compatibleFrameworks xmlns="urn:schemas-microsoft-com:clickonce.v2">
-    <framework targetVersion="4.5.1" profile="Full" supportedRuntime="4.0.30319" />
+    <framework targetVersion="4.5.3" profile="Full" supportedRuntime="4.0.30319" />
   </compatibleFrameworks>
   <dependency>
-    <dependentAssembly dependencyType="install" codebase="CsNativeVisual.exe.manifest" size="28605">
+    <dependentAssembly dependencyType="install" codebase="CsNativeVisual.exe.manifest" size="29698">
       <assemblyIdentity name="CsNativeVisual.exe" version="1.0.0.0" publicKeyToken="0000000000000000" language="neutral" processorArchitecture="msil" type="win32" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>fLjeZgyss6fnS4ExHPKfFpGf519C6NH/OpPSklgWXeg=</dsig:DigestValue>
+        <dsig:DigestValue>2a7hvMYutPyf3D4UxOcZIK/4ZeiX/QQWKfdIMS3+6hI=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>

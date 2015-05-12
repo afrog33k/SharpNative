@@ -7,14 +7,14 @@
     <framework targetVersion="4.5.3" profile="Full" supportedRuntime="4.0.30319" />
   </compatibleFrameworks>
   <dependency>
-    <dependentAssembly dependencyType="install" codebase="CsNativeVisual.exe.manifest" size="28610">
+    <dependentAssembly dependencyType="install" codebase="CsNativeVisual.exe.manifest" size="36210">
       <assemblyIdentity name="CsNativeVisual.exe" version="1.0.0.0" publicKeyToken="0000000000000000" language="neutral" processorArchitecture="msil" type="win32" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>38/IW9nEiJ0i9ytEisQOzZyjtIrNRu4E+xhXipD3ttA=</dsig:DigestValue>
+        <dsig:DigestValue>mb7QwY8J7bWRGZg0BMK+gdJx2YQzpNW3VNPCCHck/S4=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>

@@ -168,7 +168,7 @@ namespace SharpNative.Compiler
             string isOverride;
            
             var fieldName = WriteAutoFieldName(writer, name, modifiers, isInterface, hasGetter, getterHasBody,
-                    hasSetter, setterHasBody, typeString, out isOverride, (property is IndexerDeclarationSyntax));
+                    hasSetter, setterHasBody, typeString, out isOverride, (property is IndexerDeclarationSyntax),propertySymbol);
 
 
             BracketedParameterListSyntax @params = null;
@@ -355,10 +355,11 @@ namespace SharpNative.Compiler
         }
 
         private static string WriteAutoFieldName(OutputWriter writer, string name, SyntaxTokenList modifiers, bool isInterface,
-            bool hasGetter, bool getterHasBody, bool hasSetter, bool setterHasBody, string typeString, out string isOverride, bool isIndexer=false)
+            bool hasGetter, bool getterHasBody, bool hasSetter, bool setterHasBody, string typeString, out string isOverride, bool isIndexer=false,IPropertySymbol propertySymbol=null)
         {
-//Auto Property
-            var fieldName = "__prop_" + name;
+            //Auto Property
+            var fieldName =
+               GetFieldName(propertySymbol);//"__prop_" + name;
 
             isOverride = (modifiers.Any(SyntaxKind.NewKeyword) ||
                           modifiers.Any(SyntaxKind.OverrideKeyword)) && !isInterface
@@ -367,17 +368,29 @@ namespace SharpNative.Compiler
 
             var isStatic = modifiers.Any(SyntaxKind.StaticKeyword);
 
-            if (!isInterface &&!isIndexer) // Auto property
+            if (!isInterface && !isIndexer) // Auto property
             {
                 if ((hasGetter && !getterHasBody) &&
                     (hasSetter && !setterHasBody) && (!modifiers.Any(SyntaxKind.AbstractKeyword)))
                 {
-                   
-                    writer.WriteLine("private " + (isStatic?"static " :"") + typeString + " " + fieldName + ";");
+
+                    writer.WriteLine("private " + (isStatic ? "static " : "") + typeString + " " + fieldName + ";");
 
                 }
             }
             return fieldName;
+        }
+
+        private static string GetFieldName(IPropertySymbol propertySymbol)
+        {
+            var fieldSymbol = propertySymbol.ContainingType.GetMembers()
+                                            .OfType<IFieldSymbol>()
+                                            .FirstOrDefault(k => k.AssociatedSymbol == propertySymbol);
+            if (fieldSymbol != null)
+            {
+                return WriteIdentifierName.TransformIdentifier(fieldSymbol.Name);//.Replace("<", "_").Replace(">", "_");
+            }
+            return propertySymbol.Name + "_k__BackingField"; // "__prop_" + propertySymbol.Name;
         }
     }
 }

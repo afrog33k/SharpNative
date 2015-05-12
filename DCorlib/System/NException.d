@@ -29,6 +29,13 @@ public class NException : Exception
     	super(cast(string)cast(wstring)message);
 
 	}
+	@safe pure nothrow this(string message,
+							string file =__FILE__,
+							size_t line = __LINE__,
+							Throwable next = null)
+	{
+		super(message, file, line, next);
+	}
 
 	public this() @safe
 	{

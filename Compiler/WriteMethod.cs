@@ -159,13 +159,13 @@ namespace SharpNative.Compiler
 
             if (genericClass!=null)
             {
-
-                writer.Write(TypeProcessor.ConvertType(genericClass) + " __obj");
-
-                if (firstParam)
+        if (firstParam)
                     firstParam = false;
                 else
                     writer.Write(", ");
+                writer.Write(TypeProcessor.ConvertType(genericClass) + " __obj");
+
+              
             }
             else
             if (iface != null)
@@ -284,7 +284,7 @@ namespace SharpNative.Compiler
 //            }
             string constraints = GetMethodConstraints(method);
 
-            if (isInterface || method.Modifiers.Any(SyntaxKind.AbstractKeyword))
+            if ((isInterface || method.Modifiers.Any(SyntaxKind.AbstractKeyword)) && virtualGenericClasses==null)
             {
                 writer.WriteLine(accessString + returnTypeString + methodSignatureString + @params + constraints + ";");
 
@@ -316,13 +316,15 @@ namespace SharpNative.Compiler
                     foreach (var virtualGenericClass in virtualGenericClasses)
                     {
                         var className = TypeProcessor.ConvertType(virtualGenericClass);
-                        writer.WriteLine("if(typeid(___obj)==typeid({0}))", className);
+                        writer.WriteLine("if(typeid(___obj)==typeid({0})){{", className);
 
                         if (method.ReturnType.ToString() == "void")
-                            writer.WriteLine("(cast({0})___obj)." +   originalMethodName + "!" + genericParameters + @params + ";", className);
+                            writer.WriteLine("(cast({0})___obj)." +   originalMethodName + "!" + genericParameters + @params + ";\nreturn;}}", className);
                         else
-                            writer.WriteLine("return (cast({0})___obj)."  + methodSignatureString + "!" + genericParameters + ";", className);
+                            writer.WriteLine("return (cast({0})___obj)."  + originalMethodName + "!" + genericParameters + @params + ";}}", className);
                     }
+
+                    writer.WriteLine("throw new Exception(\"Attempt To JIT Compile Method: {0}\");", originalMethodName); //TODO: Improve this error message
                 }
                 else
                 {

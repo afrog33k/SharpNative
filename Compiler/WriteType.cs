@@ -372,11 +372,28 @@ namespace SharpNative.Compiler
 
                 if (Context.Instance.Type.TypeKind == TypeKind.Struct)
                 {
+                    var typename = TypeProcessor.ConvertType(Context.Instance.Type, true, true, true);
                     writer.WriteLine();
                     writer.WriteLine("public __Boxed_ __Get_Boxed()");
                     writer.OpenBrace();
                     writer.WriteLine("return new __Boxed_(this);");
                     writer.CloseBrace();
+                    writer.WriteLine("alias __Get_Boxed this;");
+                    writer.WriteLine();
+
+
+                    writer.WriteLine("public bool opEquals({0} other)",typename);
+                    writer.OpenBrace();
+                    var fieldSymbols = Context.Instance.Type.GetMembers().OfType<IFieldSymbol>();
+                    if(fieldSymbols.Any())
+                    writer.WriteLine("return " + fieldSymbols.Select(k=> "this." +  WriteIdentifierName.TransformIdentifier(k.Name) + "== other." + WriteIdentifierName.TransformIdentifier(k.Name)).Aggregate((a,b)=> a + "&&" + b) + ";");
+                    else
+                    {
+                        writer.WriteLine("return true;");
+                    }
+                    writer.CloseBrace();
+
+        writer.WriteLine();
                     writer.WriteLine("alias __Get_Boxed this;");
                 }
 
@@ -406,7 +423,7 @@ namespace SharpNative.Compiler
 
                 if (parentModuleWriter != null)
                 {
-                    writer.Finalize();
+                    writer.Finish();
                     parentModuleWriter.Write(writer.ToString());
                 }
             }
@@ -898,6 +915,17 @@ namespace SharpNative.Compiler
                     writer.WriteLine("return __Value.ToString();");
                     writer.CloseBrace();
                 }
+
+                writer.WriteLine();
+                writer.WriteLine("public override bool Equals(NObject other)");
+                writer.OpenBrace();
+                writer.WriteLine("if (cast(Boxed!({0})) other)", typeName);
+                writer.OpenBrace();
+                writer.WriteLine("auto otherValue = (cast(Boxed!({0})) other).__Value;", typeName);
+                writer.WriteLine("return otherValue == __Value;");
+                writer.CloseBrace();
+                writer.WriteLine("return false;");
+                writer.CloseBrace();
 
                 writer.WriteLine();
                 writer.WriteLine("this(ref " + typeName + " value)");

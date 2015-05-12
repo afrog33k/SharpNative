@@ -1,4 +1,5 @@
-﻿//https://msdn.microsoft.com/en-us/library/cx9s2sy4.aspx
+//https://msdn.microsoft.com/en-us/library/cx9s2sy4.aspx
+using System;
 class Test
 {
     static unsafe void Main()

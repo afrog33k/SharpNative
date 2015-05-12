@@ -50,7 +50,7 @@ namespace SharpNative.Compiler
 
             }
             else if (methodSymbol.MethodKind == MethodKind.DelegateInvoke)
-                methodName = null;
+                methodName = "";
             else
                 methodName = OverloadResolver.MethodName(methodSymbol);
 
@@ -307,7 +307,7 @@ namespace SharpNative.Compiler
             WriteArguments(writer, invocationExpression, arguments, firstParameter, inParams, methodSymbol, foundParamsArray, typeSymbol, isOverloaded, symbol,instanceName);
         }
 
-        private static void WriteArguments(OutputWriter writer, InvocationExpressionSyntax invocationExpression,
+        public static void WriteArguments(OutputWriter writer, ExpressionSyntax invocationExpression,
             SeparatedSyntaxList<ArgumentSyntax> arguments, bool firstParameter, bool inParams, IMethodSymbol methodSymbol, bool foundParamsArray,
             ITypeSymbol typeSymbol, bool isOverloaded, ISymbol symbol, string instanceName=null)
         {
@@ -345,7 +345,7 @@ namespace SharpNative.Compiler
             if (inParams)
                 writer.Write("])");
 
-            if (!foundParamsArray && methodSymbol.Parameters.Any() && methodSymbol.Parameters.Last().IsParams)
+            if (methodSymbol != null && (!foundParamsArray && methodSymbol.Parameters.Any() && methodSymbol.Parameters.Last().IsParams))
             {
                 // if (typeSymbol != null)
                 //{
@@ -370,7 +370,7 @@ namespace SharpNative.Compiler
                 firstParameter = false;
             }
             else
-            if (symbol.ContainingType.TypeKind == TypeKind.Interface) // Need it as specialized as possible
+            if (symbol != null && symbol.ContainingType.TypeKind == TypeKind.Interface) // Need it as specialized as possible
             {
                 if (!firstParameter)
                     writer.Write(",");
@@ -405,7 +405,7 @@ namespace SharpNative.Compiler
                 {
                 }
 
-                if (CSharpExtensions.CSharpKind(variable) == SyntaxKind.CollectionInitializerExpression)
+                if (variable.Kind() == SyntaxKind.CollectionInitializerExpression)
                     return;
                 var value = variable;
                 var initializerType = TypeProcessor.GetTypeInfo(value.Expression);
@@ -584,21 +584,38 @@ namespace SharpNative.Compiler
                 writer.Write(typeParameters);
         }
 
-        private static bool IsParamsArgument(InvocationExpressionSyntax invocationExpression, ArgumentSyntax argumentOpt,
+        private static bool IsParamsArgument(ExpressionSyntax invocationExpression, ArgumentSyntax argumentOpt,
             IMethodSymbol methodSymbol)
         {
-            if (argumentOpt == null)
+            if (argumentOpt == null || invocationExpression == null)
                 return false;
 
-            if (invocationExpression.ArgumentList.Arguments.Any(o => o.NameColon != null))
-                return false; //params cannot be used with named arguments
+            if (invocationExpression is InvocationExpressionSyntax)
+            {
+                if ((invocationExpression as InvocationExpressionSyntax).ArgumentList.Arguments.Any(o => o.NameColon != null))
+                    return false; //params cannot be used with named arguments
 
-            int i = invocationExpression.ArgumentList.Arguments.IndexOf(argumentOpt);
-            if(i>=methodSymbol.Parameters.Length)
-                return false;
-            return methodSymbol.Parameters.ElementAt(i).IsParams;
+                int i = (invocationExpression as InvocationExpressionSyntax).ArgumentList.Arguments.IndexOf(argumentOpt);
+                if (i >= methodSymbol.Parameters.Length)
+                    return false;
+                return methodSymbol.Parameters.ElementAt(i).IsParams;
+
+            }
+            else if (invocationExpression is ObjectCreationExpressionSyntax)
+            {
+                if ((invocationExpression as ObjectCreationExpressionSyntax).ArgumentList.Arguments.Any(o => o.NameColon != null))
+                    return false; //params cannot be used with named arguments
+
+                int i = (invocationExpression as ObjectCreationExpressionSyntax).ArgumentList.Arguments.IndexOf(argumentOpt);
+                if (methodSymbol != null && i >= methodSymbol.Parameters.Length)
+                    return false;
+                return methodSymbol != null && methodSymbol.Parameters.ElementAt(i).IsParams;
+
+            }
+            return false;
         }
 
+       
        
 
        

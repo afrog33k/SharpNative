@@ -46,7 +46,7 @@
         </member>
         <member name="M:Microsoft.CodeAnalysis.CSharp.CommandLineDiagnosticFormatter.RelativizeNormalizedPath(System.String)">
             <summary>
-            Get the path name starting from the <see cref="F:Microsoft.CodeAnalysis.CSharp.CommandLineDiagnosticFormatter.baseDirectory"/>
+            Get the path name starting from the <see cref="F:Microsoft.CodeAnalysis.CSharp.CommandLineDiagnosticFormatter._baseDirectory"/>
             </summary>
         </member>
         <member name="M:Microsoft.CodeAnalysis.CSharp.CSharpCommandLineParser.AddDiagnostic(System.Collections.Generic.IList{Microsoft.CodeAnalysis.Diagnostic},System.Collections.Generic.Dictionary{System.String,Microsoft.CodeAnalysis.ReportDiagnostic},Microsoft.CodeAnalysis.CSharp.ErrorCode,System.Object[])">

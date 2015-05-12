@@ -39,6 +39,10 @@ import System.Namespace;
 struct Decimal 
 {
 
+	public static class __Boxed_: Boxed!Decimal
+	{
+	}
+
 	public const static Decimal MinValue = 0;//-79228162514264337593543950335;
 	public const static Decimal MaxValue =  1;//79228162514264337593543950335;
 	

@@ -10,6 +10,8 @@ import System.Collections.Generic.Namespace;
  class EqualityComparer__G( T ) :  NObject ,  System.Collections.Namespace.IEqualityComparer ,  IEqualityComparer__G!(T)
 {
 
+	alias Equals = NObject.Equals;
+
   static EqualityComparer__G!(T) _default;
 
 public  abstract int GetHashCode(T obj,IEqualityComparer__G!(T) __j=null) ;

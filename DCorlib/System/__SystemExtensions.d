@@ -7,21 +7,30 @@ public static string __ConvertEnumToString(T)(T enumVal)
 {
 	auto __values = T.__values.dup;
 	auto __names = T.__names.dup;
-	auto value = enumVal.__Value;
+	long value = enumVal.__Value;
 	bool firstTime = true;
 	string retval = "";
 	int index=cast(int)__values.length-1;
 
-	if(T.__HasFlags)
+	 if(T.__HasFlags)
 	{
+		//std.stdio.writeln(value);
 		for(;index>=0; index--)
 	{
 		if ((index == 0) && (__values[index] == 0))
 			break;
+		
+		//std.stdio.writeln(value);
 
 		if (value!=0 && (value & __values[index]) == __values[index])
 		{
+		//	std.stdio.writeln(value);
+			//std.stdio.writeln(__values[index]);
+
 			value -= __values[index];
+			//std.stdio.writeln(value);
+
+			
 			if (!firstTime)
 				retval =  ", " ~ retval;
 
@@ -30,6 +39,7 @@ public static string __ConvertEnumToString(T)(T enumVal)
 		}
 
 	}
+		return retval;
 	}
 	else
 	{
@@ -83,17 +93,20 @@ template __unConstType(U:const(T),T)
 
 
 //TODO: Improve this to reuse strings
-public static String _S(wstring text)
+
+
+public static String _S(const(wstring) text)
 {
-	return new String((text));
+	auto str = new String(text);
+	return str;
 }
 
 
-public static String _S(string text) 
+public static String _S(const(string) text) 
 {
-	return new String((text));
+	auto str = new String(text);
+	return str;
 }
-
 public static String _S(String text)
 {
 	return text;
@@ -444,7 +457,18 @@ class __Delegate(T): Delegate
 		dFunc = __ToDelegate(func);
 		funcs = null;
 	}
-	
+
+	this(typeof(T.funcptr) *func) // Allows direct storage of functions too
+	{
+		dFunc = __ToDelegate(*func);
+		funcs = null;
+	}
+
+	this(T *func)
+	{
+		dFunc = *func;
+		funcs = null;
+	}
 	
 	this(T func)
 	{
@@ -457,6 +481,12 @@ class __Delegate(T): Delegate
 	{
 		dFunc = other.dFunc;
 		funcs = other.funcs;
+	}
+
+	this(__Delegate!(T) *other)
+	{
+		dFunc = (other).dFunc;
+		funcs = (other).funcs;
 	}
 
 	T Function()
@@ -643,18 +673,35 @@ class __Event(T):NObject //if(is(T==delegate))
 
 }
 
-
-public static bool Equals(T)(T object, NObject other)
+public static bool Equals(T,U)(T a, U b)
+if(__isScalar!(T) && __isScalar!(U))
 {
-	return object == UNBOX!(T)(other);
+	//std.stdio.writeln("--- Basic Equals");
+
+	return a == b;
 }
+
+public static bool Equals(T)(T a, NObject b)
+if(__isScalar!(T))
+{
+	//std.stdio.writeln("Basic Equals");
+
+	return a == UNBOX!(T)(b);
+}
+
+/*public static bool Equals(T)(T object, NObject other)
+{
+	std.stdio.writeln("Basic Equals");
+	return object == UNBOX!(T)(other);
+}*/
 
 //boxed.Value.opEquals(this.Value)
 //Allows equals comparison between most basic types
-public static bool Equals(T)(T object, T other)
+/*public static bool Equals(T)(T object, T other)
 {
+
 	return object == other;
-}
+}*/
 
 
 public static string toString(T)(T value) if(!is(T==struct) && !is(T==double) && !is(T==float) && !is(T==int)) 
@@ -813,6 +860,15 @@ if(!is(U:NObject)&&!is(U==interface))
 }
 
 static Type[TypeInfo] CachedTypes;
+
+public static Type __GetCachedType(TypeInfo __info)
+{
+	if(__info in CachedTypes)
+	{
+		return CachedTypes[__info];
+	}
+	return null;
+}
 
 import System.Reflection.Namespace;
 public static Type_T!(T.__Boxed_) __TypeOf(T)(string csName=null)

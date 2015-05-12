@@ -41,16 +41,47 @@ public class Type:NObject
 		if(BaseType !is null)
 		{
 			auto baseMethods = BaseType.GetMethods();
-			return new Array_T!(MethodInfo)(__CC!(MethodInfo[])(__methods ~ baseMethods.Items));
+
+			MethodInfo[] matchingmethods = [];
+			for(int i=0;i<baseMethods.Items.length;i++)
+			{
+				auto method = baseMethods.Items[i];
+				if(!(method.Attributes & MethodAttributes.Virtual))
+					matchingmethods ~= method;
+			}
+
+			return new Array_T!(MethodInfo)(__CC!(MethodInfo[])(__methods ~ matchingmethods));
 		}
 		
 		return new Array_T!(MethodInfo)(__CC!(MethodInfo[])(__methods));
 	}
 
+	MethodAttributes __convertBindingFlags(BindingFlags bindingFlags)
+	{
+		MethodAttributes attr;
+
+		if(bindingFlags & BindingFlags.Public)
+			attr &= MethodAttributes.Public;
+
+		if(bindingFlags & BindingFlags.Static)
+			attr &= MethodAttributes.Static;
+
+		return attr;
+	}
+
 	//BindingFlags bindingAttr
 	public Array_T!(MethodInfo) GetMethods(BindingFlags bindingAttr)
 	{
-		return GetMethods();
+		auto methods =  GetMethods().Items;
+		MethodInfo[] matchingmethods = [];
+		auto attribs = __convertBindingFlags(bindingAttr);
+		for(int i=0;i<methods.length;i++)
+		{
+			auto method = methods[i];
+			if(method.Attributes & attribs)
+				matchingmethods ~= method;
+		}
+		return new Array_T!(MethodInfo)(__CC!(MethodInfo[])(matchingmethods));
 	}
 
 	public Array_T!(FieldInfo) GetFields(String name=String.Empty)
@@ -144,9 +175,10 @@ public class Type:NObject
 		return __properties[index];
 	}
 
-	Type __Method(string name, MethodInfo info)
+	Type __Method(string name, MethodInfo info, MethodAttributes attributes = MethodAttributes.Public)
 	{
 		info.Name = _S(name);
+		info.__rtAttributes = attributes;
 		__methods ~= info;
 		return this;
 	}

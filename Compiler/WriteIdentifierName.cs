@@ -186,6 +186,7 @@ namespace SharpNative.Compiler
 
         public static string TransformIdentifier(string ident, ITypeSymbol type =null)
         {
+            ident = ident.Replace("<","").Replace(">","_");
             ident = ident.Trim().Replace("@","___");//Cant have spaces in identifiers
             var name = ident;
 

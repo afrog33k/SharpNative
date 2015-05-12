@@ -9,7 +9,7 @@ template __isArray(T)
 
 template __isInteger(T)
 {
-	enum __isInteger =  (is(T==int) || is(T==double) || is(T==float) || is(T==uint) || is(T==long) || is(T==ulong) || is(T==byte) || is(T==ubyte));
+	enum __isInteger =  (is(T==int) || is(T==double) || is(T==float) || is(T==uint) || is(T==long) || is(T==ulong) || is(T==byte) || is(T==ubyte) || is(T==short) || is(T==ushort));
 }
 
 template __isCharacter(T)

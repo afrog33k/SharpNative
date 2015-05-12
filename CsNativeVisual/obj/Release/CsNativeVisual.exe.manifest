@@ -77,26 +77,14 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="CsNative.exe" size="336384">
-      <assemblyIdentity name="CsNative" version="1.0.0.0" language="neutral" processorArchitecture="amd64" />
-      <hash>
-        <dsig:Transforms>
-          <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
-        </dsig:Transforms>
-        <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>lJXTfBqPoj84kNxgQ/x+HhbRLjjY71+wohMSFyrsKy4=</dsig:DigestValue>
-      </hash>
-    </dependentAssembly>
-  </dependency>
-  <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="CsNativeVisual.exe" size="49664">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="CsNativeVisual.exe" size="50176">
       <assemblyIdentity name="CsNativeVisual" version="1.0.0.0" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>ZMuNvP0HqGLbXy03GSoB/8pjG21NIP9igcBPYzGwMPk=</dsig:DigestValue>
+        <dsig:DigestValue>IMxUuc7uSpiki1SkaGpe476VB+cPHMuxoOZEGG5csTw=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
@@ -257,6 +245,18 @@
     </dependentAssembly>
   </dependency>
   <dependency>
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="Ookii.Dialogs.Wpf.dll" size="107696">
+      <assemblyIdentity name="Ookii.Dialogs.Wpf" version="1.0.0.0" publicKeyToken="0C15020868FD6249" language="neutral" processorArchitecture="msil" />
+      <hash>
+        <dsig:Transforms>
+          <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
+        </dsig:Transforms>
+        <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
+        <dsig:DigestValue>BLjLVf9IGk9PmmC8PF4G7XjBKoZ3whFiHtz52EZ72CM=</dsig:DigestValue>
+      </hash>
+    </dependentAssembly>
+  </dependency>
+  <dependency>
     <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="RoslynDom.dll" size="73728">
       <assemblyIdentity name="RoslynDom" version="1.0.0.0" language="neutral" processorArchitecture="msil" />
       <hash>
@@ -301,6 +301,18 @@
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
         <dsig:DigestValue>8nWiZ5QHG+iBnMn2k9gqxAFGS94sgUm2p/Tz8aTqgbU=</dsig:DigestValue>
+      </hash>
+    </dependentAssembly>
+  </dependency>
+  <dependency>
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="SharpNative.exe" size="216576">
+      <assemblyIdentity name="SharpNative" version="1.0.0.0" language="neutral" processorArchitecture="msil" />
+      <hash>
+        <dsig:Transforms>
+          <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
+        </dsig:Transforms>
+        <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
+        <dsig:DigestValue>/qpkWLjB3R1rFLK1RLpKlZdagE48jGp3OyZ/bSz30xA=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
@@ -448,13 +460,13 @@
       </hash>
     </dependentAssembly>
   </dependency>
-  <file name="CsNativeVisual.exe.config" size="1831">
+  <file name="CsNativeVisual.exe.config" size="1815">
     <hash>
       <dsig:Transforms>
         <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
       </dsig:Transforms>
       <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-      <dsig:DigestValue>42EKXQ5yB9GarMCW5eUDfyXfVNOuEdc77d1dj6jP1Oo=</dsig:DigestValue>
+      <dsig:DigestValue>Z5IVO1sx4D+IvxpkY1mDK4FeixDQnP0FEVpvh3iiT3w=</dsig:DigestValue>
     </hash>
   </file>
   <file name="MahApps.Metro.dll" size="285696">
@@ -464,6 +476,15 @@
       </dsig:Transforms>
       <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
       <dsig:DigestValue>pOVek8vhRnL/RCtAoErac3Qr0Y4vApiqNqZ0ZnYmb4Y=</dsig:DigestValue>
+    </hash>
+  </file>
+  <file name="Ookii.Dialogs.Wpf.dll" size="107696">
+    <hash>
+      <dsig:Transforms>
+        <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
+      </dsig:Transforms>
+      <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
+      <dsig:DigestValue>BLjLVf9IGk9PmmC8PF4G7XjBKoZ3whFiHtz52EZ72CM=</dsig:DigestValue>
     </hash>
   </file>
   <compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1">

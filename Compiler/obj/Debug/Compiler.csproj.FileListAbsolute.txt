@@ -1,3 +1,6 @@
+X:\Experiments\CsNative\SharpNative\Compiler\bin\Debug\SharpNative.exe.config
+X:\Experiments\CsNative\SharpNative\Compiler\bin\Debug\SharpNative.exe
+X:\Experiments\CsNative\SharpNative\Compiler\bin\Debug\SharpNative.pdb
 X:\Experiments\CsNative\SharpNative\Compiler\bin\Debug\Microsoft.CodeAnalysis.CSharp.Desktop.dll
 X:\Experiments\CsNative\SharpNative\Compiler\bin\Debug\Microsoft.CodeAnalysis.CSharp.dll
 X:\Experiments\CsNative\SharpNative\Compiler\bin\Debug\Microsoft.CodeAnalysis.CSharp.Workspaces.Desktop.dll
@@ -11,6 +14,11 @@ X:\Experiments\CsNative\SharpNative\Compiler\bin\Debug\Microsoft.CodeAnalysis.Vi
 X:\Experiments\CsNative\SharpNative\Compiler\bin\Debug\Microsoft.CodeAnalysis.Workspaces.Desktop.dll
 X:\Experiments\CsNative\SharpNative\Compiler\bin\Debug\Microsoft.CodeAnalysis.Workspaces.dll
 X:\Experiments\CsNative\SharpNative\Compiler\bin\Debug\System.Collections.Immutable.dll
+X:\Experiments\CsNative\SharpNative\Compiler\bin\Debug\System.Composition.AttributedModel.dll
+X:\Experiments\CsNative\SharpNative\Compiler\bin\Debug\System.Composition.Convention.dll
+X:\Experiments\CsNative\SharpNative\Compiler\bin\Debug\System.Composition.Hosting.dll
+X:\Experiments\CsNative\SharpNative\Compiler\bin\Debug\System.Composition.Runtime.dll
+X:\Experiments\CsNative\SharpNative\Compiler\bin\Debug\System.Composition.TypedParts.dll
 X:\Experiments\CsNative\SharpNative\Compiler\bin\Debug\System.Reflection.Metadata.dll
 X:\Experiments\CsNative\SharpNative\Compiler\bin\Debug\Microsoft.CodeAnalysis.xml
 X:\Experiments\CsNative\SharpNative\Compiler\bin\Debug\Microsoft.CodeAnalysis.CSharp.xml
@@ -25,9 +33,12 @@ X:\Experiments\CsNative\SharpNative\Compiler\bin\Debug\Microsoft.CodeAnalysis.Vi
 X:\Experiments\CsNative\SharpNative\Compiler\bin\Debug\Microsoft.CodeAnalysis.Workspaces.xml
 X:\Experiments\CsNative\SharpNative\Compiler\bin\Debug\Microsoft.CodeAnalysis.Workspaces.Desktop.xml
 X:\Experiments\CsNative\SharpNative\Compiler\bin\Debug\System.Collections.Immutable.xml
+X:\Experiments\CsNative\SharpNative\Compiler\bin\Debug\System.Composition.AttributedModel.xml
+X:\Experiments\CsNative\SharpNative\Compiler\bin\Debug\System.Composition.Convention.xml
+X:\Experiments\CsNative\SharpNative\Compiler\bin\Debug\System.Composition.Hosting.xml
+X:\Experiments\CsNative\SharpNative\Compiler\bin\Debug\System.Composition.Runtime.xml
+X:\Experiments\CsNative\SharpNative\Compiler\bin\Debug\System.Composition.TypedParts.xml
 X:\Experiments\CsNative\SharpNative\Compiler\bin\Debug\System.Reflection.Metadata.xml
-X:\Experiments\CsNative\SharpNative\Compiler\bin\Debug\SharpNative.exe.config
-X:\Experiments\CsNative\SharpNative\Compiler\bin\Debug\SharpNative.exe
-X:\Experiments\CsNative\SharpNative\Compiler\bin\Debug\SharpNative.pdb
+X:\Experiments\CsNative\SharpNative\Compiler\obj\Debug\Compiler.csprojResolveAssemblyReference.cache
 X:\Experiments\CsNative\SharpNative\Compiler\obj\Debug\SharpNative.exe
 X:\Experiments\CsNative\SharpNative\Compiler\obj\Debug\SharpNative.pdb

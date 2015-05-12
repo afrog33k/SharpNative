@@ -25,6 +25,7 @@ alias System.ArgumentException.ArgumentException ArgumentException;
 alias System.Func__G.Func__G Func__G;
 alias System.Comparison__G.Comparison__G Comparison__G;
 alias System.Predicate__G.Predicate__G Predicate__G;
+alias System.Environment.Environment Environment;
 
 alias System.Byte.Byte Byte;
 alias System.SByte.SByte SByte;

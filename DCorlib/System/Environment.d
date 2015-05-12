@@ -55,6 +55,8 @@ public static string NewLine() @property
 			
 		}
 
+		 static int ExitCode;
+
 	this()
 	{
 		// Constructor code

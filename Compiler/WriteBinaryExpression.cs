@@ -210,7 +210,7 @@ namespace SharpNative.Compiler
                 if (rightnull)
                 {
 
-                    switch (operatorToken.CSharpKind())
+                    switch (operatorToken.Kind())
                     {
                         case SyntaxKind.EqualsEqualsToken:
                             writer.Write("");
@@ -220,14 +220,18 @@ namespace SharpNative.Compiler
                             writer.Write("!");
                             break;
                         default:
+                            Core.Write(writer, leftExpression);
                             writer.Write(operatorToken.ToString());
+                            writer.Write("null");
+                            return;
                             break;
                     }
 
-
-                    writer.Write("__IsNull(");
-                    Core.Write(writer, leftExpression);
-                    writer.Write(")");
+                   
+                        writer.Write("__IsNull(");
+                        Core.Write(writer, leftExpression ?? SyntaxFactory.LiteralExpression(SyntaxKind.NullLiteralExpression));
+                        writer.Write(")");
+                    
                     return;
                 }
 
@@ -252,7 +256,7 @@ namespace SharpNative.Compiler
                     //                    Core.Write(writer, rightExpression);
                     //
                     //                    return;
-                    switch (operatorToken.CSharpKind())
+                    switch (operatorToken.Kind())
                     {
                         case SyntaxKind.EqualsEqualsToken:
                             writer.Write("");
@@ -262,14 +266,21 @@ namespace SharpNative.Compiler
                             writer.Write("!");
                             break;
                         default:
-                            writer.Write(operatorToken.ToString());
+                            writer.Write("null");
+                            if (!operatorToken.IsKind(SyntaxKind.None))
+                            {
+                                writer.Write(operatorToken.ToString());
+                                Core.Write(writer, rightExpression);
+                            }
+                            return;
                             break;
                     }
 
-
-                    writer.Write("__IsNull(");
-                    Core.Write(writer, rightExpression);
-                    writer.Write(")");
+                   
+                        writer.Write("__IsNull(");
+                        Core.Write(writer, rightExpression ?? SyntaxFactory.LiteralExpression(SyntaxKind.NullLiteralExpression));
+                        writer.Write(")");
+                    
                     return;
                 }
             }
@@ -312,8 +323,8 @@ namespace SharpNative.Compiler
                 }
             }
 
-            if (operatorToken.CSharpKind() == SyntaxKind.PlusEqualsToken ||
-                operatorToken.CSharpKind() == SyntaxKind.MinusEqualsToken)
+            if (operatorToken.Kind() == SyntaxKind.PlusEqualsToken ||
+                operatorToken.Kind() == SyntaxKind.MinusEqualsToken)
             {
                 var isname = rightExpression is NameSyntax;
 
@@ -368,7 +379,7 @@ namespace SharpNative.Compiler
                 {
                     writer.Write("/*value type cannot be null*/");
                     Core.Write(writer, leftExpression);
-                    switch (operatorToken.CSharpKind())
+                    switch (operatorToken.Kind())
                     {
                         case SyntaxKind.EqualsEqualsToken:
                             writer.Write("!=");
@@ -386,9 +397,9 @@ namespace SharpNative.Compiler
                 else
                 {
                     Core.Write(writer, leftExpression);
-                    if (operatorToken.CSharpKind() == SyntaxKind.EqualsEqualsToken)
+                    if (operatorToken.IsKind(SyntaxKind.EqualsEqualsToken))
                         writer.Write(" is ");
-                    else if (operatorToken.CSharpKind() == SyntaxKind.ExclamationEqualsToken)
+                    else if (operatorToken.IsKind(SyntaxKind.ExclamationEqualsToken))
                         writer.Write(" !is ");
                     else
                         writer.Write(operatorToken.ToString());

@@ -7,6 +7,7 @@ import System.Collections.Generic.Namespace;
  class InternalStringComparer :  EqualityComparer__G!(String)
 {
 
+	alias GetHashCode = EqualityComparer__G!(String).GetHashCode;
 
   public int GetHashCode(String obj) 
   {

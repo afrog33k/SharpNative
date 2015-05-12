@@ -132,7 +132,7 @@ namespace SharpNative.Compiler
                             if(type.TypeKind==TypeKind.Error)
                                 continue;
 
-                            var allgenericVirtualMethods = type.GetMembers().OfType<IMethodSymbol>().Where(k=>k.IsGenericMethod && k.IsVirtual);
+                            var allgenericVirtualMethods = type.GetMembers().OfType<IMethodSymbol>().Where(k=>k.IsGenericMethod && (k.IsVirtual || k.ContainingType.TypeKind==TypeKind.Interface));
                             genericMethods.AddRange(allgenericVirtualMethods);
                             if (((INamedTypeSymbol) type).IsGenericType)
                             {
@@ -173,15 +173,23 @@ namespace SharpNative.Compiler
                         writer.CloseBrace();
                         writer.CloseBrace();
 
+                        genericMethods = genericMethods.DistinctBy(l=>genericMethods.Any(k=>MemberUtilities.CompareMethodsWithReturnType(k,l))).ToList();
+
                         foreach (var genericMethod in genericMethods)
                         {
                             var allClasses = alltypes.Where(type => genericMethod.ContainingType.IsAssignableFrom(type)).ToList(); // Or use a HashSet, for better Contains perf.
                             IEnumerable<ITypeSymbol> firstImplementations = allClasses
-                                  .Except(allClasses.Where(t => allClasses.Contains(t.BaseType)));
+                                .Except(allClasses.Where(t => allClasses.Contains(t.BaseType)));
+                                  //.Except(allClasses.Where(t => !allClasses.Any(k => k.AllInterfaces.Contains(t))));//.Except(allClasses.Any(k=>t.AllInterfaces.Contains(k))));
+
+//                            if (firstImplementations.Any(l => l.TypeKind == TypeKind.Interface))
+//                            {
+//                                firstImplementations = firstImplementations.Where(l => l.TypeKind == TypeKind.Interface);
+//                            }
                         
                        // writer.WriteLine("public final static " + TypeProcessor.ConvertType(genericMethod.ReturnType) + WriteIdentifierName.TransformIdentifier(genericMethod.Name) +  );
                             if((firstImplementations.Contains( genericMethod.ContainingType )))
-                                   WriteMethod.WriteIt(writer,(MethodDeclarationSyntax) genericMethod.DeclaringSyntaxReferences[0].GetSyntax(),true, allClasses);
+                                   WriteMethod.WriteIt(writer,(MethodDeclarationSyntax) genericMethod.DeclaringSyntaxReferences[0].GetSyntax(),true, allClasses.Where(l=>l.TypeKind==TypeKind.Class || l.TypeKind==TypeKind.Struct));
 
                         }
 
@@ -286,6 +294,10 @@ namespace SharpNative.Compiler
                     //TODO... set/specify interfaces
                     if (property.IsAbstract == false)
                     {
+
+                        // Ignore compiler generated backing fields ... for properties etc ...
+                       
+
                         // Ignore compiler generated backing fields ... for properties etc ...
                         // //.__Property("Counter",new PropertyInfo__G!(Simple,int)(function int (Simple a){ return a.Counter();},function void (Simple a,int _age){ a.Counter(_age);})) // Need to explicitly set the interfaces etc ...
 
@@ -329,16 +341,41 @@ namespace SharpNative.Compiler
                     //Constructors
                 else if (member is IMethodSymbol)
                 {
-                    if(specialization.TypeKind==TypeKind.Enum || specialization.TypeKind == TypeKind.Delegate)
+                    var method = member as IMethodSymbol;
+
+                    var modifiers = member.DeclaredAccessibility;
+
+                    MethodAttributes attr = System.Reflection.MethodAttributes.Public;
+
+                    if (modifiers == Accessibility.Public)
+                        attr = System.Reflection.MethodAttributes.Public;
+
+                    if (modifiers == Accessibility.Private)
+                        attr = System.Reflection.MethodAttributes.Private;
+
+                    if (method.IsStatic)
+                        attr |= (System.Reflection.MethodAttributes.Static);
+
+                    if (method.IsVirtual)
+                        attr |= (System.Reflection.MethodAttributes.Virtual);
+
+                    if (method.IsAbstract)
+                        attr |= (System.Reflection.MethodAttributes.Abstract);
+
+                    var attString = attr.ToString().Split(',')
+                        .Select(k => "MethodAttributes." + k).Aggregate((a, b) => a + "|" + b);
+
+                    if (specialization.TypeKind==TypeKind.Enum || specialization.TypeKind == TypeKind.Delegate)
                         continue;
 
                    
 
-                    var method = member as IMethodSymbol;
+
+                   
 
                     if (method.IsGenericMethod && MemberUtilities.CompareArguments(method.TypeArguments, method.TypeParameters))
                     {
-                        //Add support for unbound generic methods
+                        //TODO:Add support for unbound generic methods
                         continue;
                     }
 
@@ -359,7 +396,7 @@ namespace SharpNative.Compiler
                             // Ignore compiler generated backing fields ... for properties etc ...
                             writer.WriteLine(
 
-                                ".__Constructor(\"{0}\", new ConstructorInfo__G!({1},{2} function({4}))( ({4})=> "+ (specialization.TypeKind==TypeKind.Struct?"" :"new ") +"{1}({5})))"
+                                ".__Constructor(\"{0}\", new ConstructorInfo__G!({1},{2} function({4}))( ({4})=> "+ (specialization.TypeKind==TypeKind.Struct?"" :"new ") + "{1}({5})),{6})"
                                 ,
                                 method.Name,
                                 TypeProcessor.ConvertType(method.ContainingType),
@@ -367,11 +404,17 @@ namespace SharpNative.Compiler
                                 "this",
                                 //WriteIdentifierName.TransformIdentifier(method.Name),
                                 WriteMethod.GetParameterListAsString(method.Parameters, true, null, false),
-                                WriteMethod.GetParameterListAsString(method.Parameters, false, null, false)
+                                WriteMethod.GetParameterListAsString(method.Parameters, false, null, false),attString
                                 );
                         }
                         else
                         {
+                          
+
+
+                         
+
+                          
                             if (method.MethodKind == MethodKind.Conversion)
                             {
                                 var mname = method.Name;
@@ -386,32 +429,34 @@ namespace SharpNative.Compiler
                                 // Ignore compiler generated backing fields ... for properties etc ...
                                 //&__traits(getOverloads, foo, "func")[1]
                                 int overloadindex = GetIndexOfMethod(method);
-                              
+
+                             
                                 writer.WriteLine(
 
-                                    ".__Method(\"{0}\", new MethodInfo__G!({1},{2} function({4}))(&__traits(getOverloads,{1},\"{3}\")[{5}]))"
+                                    ".__Method(\"{0}\", new MethodInfo__G!({1},{2} function({4}))(&__traits(getOverloads,{1},\"{3}\")[{5}]),{6})"
                                     ,
                                     method.Name,
                                     TypeProcessor.ConvertType(method.ContainingType),
                                     TypeProcessor.ConvertType(method.ReturnType),
                                     WriteIdentifierName.TransformIdentifier(mname),
                                     WriteMethod.GetParameterListAsString(method.Parameters, true, iface, false),
-                                    overloadindex);
+                                    overloadindex, attString);
                             }
                             else
                             {
+                              
                                 //.__Method("TellEm", new MethodInfo__G!(Simple,void function(Simple,int))(&Simple.TellEm))
                                 // Ignore compiler generated backing fields ... for properties etc ...
                                 int overloadindex = GetIndexOfMethod(method);
                                 writer.WriteLine(
 
-                                    ".__Method(\"{0}\", new MethodInfo__G!({1},{2} function({4}))(&__traits(getOverloads,{1},\"{3}\")[{5}]))"
+                                    ".__Method(\"{0}\", new MethodInfo__G!({1},{2} function({4}))(&__traits(getOverloads,{1},\"{3}\")[{5}]),{6})"
                                     ,
                                     method.Name,
                                     TypeProcessor.ConvertType(method.ContainingType),
                                     TypeProcessor.ConvertType(method.ReturnType),
                                     WriteIdentifierName.TransformIdentifier(name),
-                                    WriteMethod.GetParameterListAsString(method.Parameters, true, iface, false),overloadindex);
+                                    WriteMethod.GetParameterListAsString(method.Parameters, true, iface, false),overloadindex,attString);
                             }
                           
                         }

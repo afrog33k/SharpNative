@@ -95,6 +95,8 @@ class StringHelper
 		FormatHelper( result,  format,  args.Items);
 	}
 
+	
+
 	public static void FormatHelper(StringBuilder result, String format, NObject[] args) 
 	{
 		if (format is null||args is null)
@@ -201,6 +203,11 @@ class String : NObject, IComparable, IComparable__G!(String)
 		return text;
 	}
 
+
+	public String ToUpper()
+	{
+		return _S(std.uni.toUpper(text));
+	}
 	//	static const __typeID = typeid(wstring);
 
 	public override int GetHashCode()

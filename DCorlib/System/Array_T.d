@@ -354,28 +354,25 @@ public void __AdjustLength(int newLength)
 		{
 			finalindex = _indices[0] * _dims[1]  + _indices[1];
 			//Console.WriteLine("Assigning 2d...:" ~ std.conv.to!string(finalindex));
-
-
+		}
+		else if(index.length==3) 
+		{
+			finalindex = _indices[0] * _dims[1] *_dims[2] + _indices[1] * _dims[2] + _indices[2];
+			////Console.WriteLine("Assigning 3d...:" ~ std.conv.to!string(finalindex));
 		}
 		else
-			if(index.length==3) 
+		{
+			for(int i=len-1;i>=0;i--)
 			{
-				finalindex = _indices[0] * _dims[1] *_dims[2] + _indices[1] * _dims[2] + _indices[2];
-				////Console.WriteLine("Assigning 3d...:" ~ std.conv.to!string(finalindex));
-
-			}
-			else
-			{
-				for(int i=len-1;i>=0;i--)
+				int multiplier = _indices[i];
+				for(int j=i;j<len-1;j++)
 				{
-					int multiplier = _indices[i];
-					for(int j=i;j<len-1;j++)
-					{
-						multiplier*= _dims[j+1];
-					}
-					finalindex += multiplier;
+					multiplier*= _dims[j+1];
 				}
+				
+				finalindex += multiplier;
 			}
+		}
 
 		//Console.WriteLine("Assigning: "~ std.conv.to!string(value) ~ " to: " ~ std.conv.to!string(finalindex));
 
@@ -387,7 +384,8 @@ public void __AdjustLength(int newLength)
 
 
 
-	final  T opIndexAssign(T value, int index)  {
+	final  T opIndexAssign(T value, int index)  
+	{
 		//if (index >= _items.length)
 		//	throw new ArgumentOutOfRangeException(new String("index"));
 
@@ -395,7 +393,8 @@ public void __AdjustLength(int newLength)
 		return _items[index];
 	}
 
-	final  ref T opIndex(int index) { //TODO: ref could be a bad idea 
+	final  ref T opIndex(int index) 
+	{ //TODO: ref could be a bad idea 
 		//but allows alot of natural c# syntax
 		//if (index >= _items.length)
 		//	throw new ArgumentOutOfRangeException(new String("index"));
@@ -409,12 +408,13 @@ public void __AdjustLength(int newLength)
 	}
 
 	//Needs fix, look at MatrixTest.cs
-	final  ref T opIndex(int[] index...) {
+	final  ref T opIndex(int[] index...) 
+	{
 		//Console.WriteLine("Assigning ...");
 		int[] _indices = index; // .dup is slew
 
 		auto finalindex = 0;
-		auto len =cast(int)index.length;
+		const len =cast(int)index.length;
 
 		//Console.WriteLine(_indices);
 		//Console.WriteLine(_dims);
@@ -426,8 +426,7 @@ public void __AdjustLength(int newLength)
 			finalindex = _indices[0] * _dims[1]  + _indices[1];
 			//			Console.WriteLine(_dims);
 			//			Console.WriteLine(_items);
-			//		Console.WriteLine("Assigning 2d...:" ~ std.conv.to!string(finalindex));
-
+			//std.stdio.writeln("Assigning 2d...:" ~ std.conv.to!string(finalindex));
 
 		}
 		else

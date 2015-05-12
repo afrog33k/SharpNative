@@ -92,9 +92,22 @@ namespace SharpNative.Compiler
 
 
                 WriteNewOperator(writer, type, typeString);
+                var symbolInfo = TypeProcessor.GetSymbolInfo(expression);
+                var expressionSymbol = TypeProcessor.GetSymbolInfo(expression);
 
-                writer.Write("(");
-                if (expression.ArgumentList != null)
+                var symbol = symbolInfo.Symbol ?? symbolInfo.CandidateSymbols.FirstOrDefault(); // Resolution error
+
+//                if (symbol == null)
+//                {
+//                    writer.WriteLine("/*" + expression.ToFullString() + "  //SharpNative Failed To Get Symbol *//*");
+//                }
+               
+                    var methodSymbol = symbol != null ? symbol.OriginalDefinition.As<IMethodSymbol>().UnReduce() :null;
+                    writer.Write("(");
+                    WriteInvocationExpression.WriteArguments(writer,expression,expression.ArgumentList.Arguments,true,false,methodSymbol,false,null,false,symbol,null);
+                
+//               
+             /*   if (expression.ArgumentList != null)
                 {
                     bool first = true;
                     foreach (var param in TranslateParameters(expression.ArgumentList.Arguments))
@@ -108,7 +121,7 @@ namespace SharpNative.Compiler
                     }
                 }
 
-                writer.Write(")");
+                writer.Write(")");*/
             }
         }
 

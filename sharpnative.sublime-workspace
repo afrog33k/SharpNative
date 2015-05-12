@@ -4,6 +4,10 @@
 		"selected_items":
 		[
 			[
+				"w",
+				"writer	OutputWriter"
+			],
+			[
 				"Con",
 				"Context"
 			],
@@ -243,13 +247,170 @@
 	},
 	"buffers":
 	[
+		{
+			"contents": "// /*\n//   SharpNative - C# to D Transpiler\n//   (C) 2014 Irio Systems \n// */\n\n#region Imports\n\nusing System;\nusing Microsoft.CodeAnalysis;\nusing Microsoft.CodeAnalysis.CSharp.Syntax;\n\n#endregion\n\nnamespace SharpNative.Compiler\n{\n    internal static class Core\n    {\n        public static void Write(OutputWriter writer, SyntaxNode node, bool isConst = false)\n        {\n            Context.LastNode = node; //Helps with debugging\n            \n            //Write Leading Trivia\n            TriviaProcessor.WriteLeadingTrivia(writer, node);\n\n            TriviaProcessor.ProcessNode(writer, node);\n\n            if (Program.DoNotWrite.ContainsKey(node))\n                return;\n\n            Factory(writer, node, isConst);\n\n            TriviaProcessor.WriteTrailingTrivia(writer, node);\n        }\n\n        public static string WriteString(SyntaxNode node, bool isConst = false, int indent = 0)\n        {\n            var writer = new TempWriter();\n            writer.Indent = indent;\n\n            Write(writer, node, isConst);\n\n            return writer.ToString();\n        }\n\n\n        private static void Factory(OutputWriter writer, SyntaxNode node, bool isConst)\n        {\n            if (node is ConstructorInitializerSyntax)\n                WriteConstructorInitializer.Go(writer, node.As<ConstructorInitializerSyntax>());\n            else if (node is CheckedExpressionSyntax)\n                WriteChecked.Go(writer, node.As<CheckedExpressionSyntax>());\n            else if (node is CheckedStatementSyntax)\n                WriteChecked.Go(writer, node.As<CheckedStatementSyntax>());\n            else if (node is UnsafeStatementSyntax)\n                WriteUnsafeStatement.Go(writer, node.As<UnsafeStatementSyntax>());\n            else if (node is InitializerExpressionSyntax)\n                WriteInitializer.Go(writer, node.As<InitializerExpressionSyntax>());\n            else if (node is GotoStatementSyntax)\n                WriteGoto.Go(writer, node.As<GotoStatementSyntax>());\n            else if (node is CaseSwitchLabelSyntax)\n                WriteLabel.Go(writer, node.As<CaseSwitchLabelSyntax>());\n            else if (node is LabeledStatementSyntax)\n                WriteLabel.Go(writer, node.As<LabeledStatementSyntax>());\n            else if (node is OperatorDeclarationSyntax)\n                WriteOperatorDeclaration.Go(writer, node.As<OperatorDeclarationSyntax>());\n            else if (node is MethodDeclarationSyntax)\n                WriteMethod.Go(writer, node.As<MethodDeclarationSyntax>());\n            else if (node is PropertyDeclarationSyntax)\n                WriteProperty.Go(writer, node.As<PropertyDeclarationSyntax>());\n            else if (node is EventDeclarationSyntax)\n                WriteEvent.Go(writer, node.As<EventDeclarationSyntax>());\n            else if (node is FieldDeclarationSyntax)\n                WriteField.Go(writer, node.As<FieldDeclarationSyntax>());\n            else if (node is EventFieldDeclarationSyntax)\n                WriteField.Go(writer, node.As<EventFieldDeclarationSyntax>());\n            else if (node is ConstructorDeclarationSyntax)\n                WriteConstructorBody.Go(writer, node.As<ConstructorDeclarationSyntax>());\n            else if (node is ExpressionStatementSyntax)\n                WriteStatement(writer, node.As<ExpressionStatementSyntax>());\n            else if (node is FixedStatementSyntax)\n                WriteFixedStatement(writer, node.As<FixedStatementSyntax>());\n            else if (node is LocalDeclarationStatementSyntax)\n                WriteLocalDeclaration.Go(writer, node.As<LocalDeclarationStatementSyntax>());\n            else if (node is VariableDeclarationSyntax)\n                WriteVariableDeclaration.Go(writer, node.As<VariableDeclarationSyntax>());\n            else if (node is BlockSyntax)\n                WriteBlock(writer, node.As<BlockSyntax>());\n            else if (node is InvocationExpressionSyntax)\n                WriteInvocationExpression.Go(writer, node.As<InvocationExpressionSyntax>());\n            else if (node is LiteralExpressionSyntax)\n                WriteLiteralExpression.Go(writer, node.As<LiteralExpressionSyntax>(), isConst);\n            else if (node is IdentifierNameSyntax)\n                WriteIdentifierName.Go(writer, node.As<IdentifierNameSyntax>());\n            else if (node is ImplicitArrayCreationExpressionSyntax)\n                WriteArrayCreationExpression.Go(writer, node.As<ImplicitArrayCreationExpressionSyntax>());\n            else if (node is ArrayCreationExpressionSyntax)\n                WriteArrayCreationExpression.Go(writer, node.As<ArrayCreationExpressionSyntax>());\n            else if (node is MemberAccessExpressionSyntax)\n                WriteMemberAccessExpression.Go(writer, node.As<MemberAccessExpressionSyntax>());\n            else if (node is ParenthesizedLambdaExpressionSyntax)\n                WriteLambdaExpression.Go(writer, node.As<ParenthesizedLambdaExpressionSyntax>());\n            else if (node is SimpleLambdaExpressionSyntax)\n                WriteLambdaExpression.Go(writer, node.As<SimpleLambdaExpressionSyntax>());\n            else if (node is AnonymousMethodExpressionSyntax)\n                WriteLambdaExpression.Go(writer, node.As<AnonymousMethodExpressionSyntax>());\n            else if (node is ReturnStatementSyntax)\n                WriteReturnStatement.Go(writer, node.As<ReturnStatementSyntax>());\n            else if (node is ObjectCreationExpressionSyntax)\n                WriteObjectCreationExpression.Go(writer, node.As<ObjectCreationExpressionSyntax>());\n            else if (node is ElementAccessExpressionSyntax)\n                WriteElementAccessExpression.Go(writer, node.As<ElementAccessExpressionSyntax>());\n            else if (node is ForEachStatementSyntax)\n                WriteForEachStatement.Go(writer, node.As<ForEachStatementSyntax>());\n            else if (node is IfStatementSyntax)\n                WriteIfStatement.Go(writer, node.As<IfStatementSyntax>());\n            else if (node is BinaryExpressionSyntax)\n                WriteBinaryExpression.Go(writer, node.As<BinaryExpressionSyntax>());\n            else if (node is AssignmentExpressionSyntax)\n                WriteAssignmentExpression.Go(writer, node.As<AssignmentExpressionSyntax>());\n            else if (node is ConditionalExpressionSyntax)\n                WriteConditionalExpression.Go(writer, node.As<ConditionalExpressionSyntax>());\n            else if (node is BaseExpressionSyntax)\n                WriteBaseExpression.Go(writer, node.As<BaseExpressionSyntax>());\n            else if (node is ThisExpressionSyntax)\n                WriteThisExpression.Go(writer, node.As<ThisExpressionSyntax>());\n            else if (node is CastExpressionSyntax)\n                WriteCastExpression.Go(writer, node.As<CastExpressionSyntax>());\n            else if (node is ThrowStatementSyntax)\n                WriteThrowStatement.Go(writer, node.As<ThrowStatementSyntax>());\n            else if (node is EqualsValueClauseSyntax)\n                WriteEqualsValueClause.Go(writer, node.As<EqualsValueClauseSyntax>());\n            else if (node is ForStatementSyntax)\n                WriteForStatement.Go(writer, node.As<ForStatementSyntax>());\n            else if (node is WhileStatementSyntax)\n                WriteWhileStatement.Go(writer, node.As<WhileStatementSyntax>());\n            else if (node is BreakStatementSyntax)\n                WriteBreakStatement.Go(writer, node.As<BreakStatementSyntax>());\n            else if (node is ContinueStatementSyntax)\n                WriteContinueStatement.Go(writer, node.As<ContinueStatementSyntax>());\n            else if (node is DoStatementSyntax)\n                WriteDoStatement.Go(writer, node.As<DoStatementSyntax>());\n            else if (node is SwitchStatementSyntax)\n                WriteSwitchStatement.Go(writer, node.As<SwitchStatementSyntax>());\n            else if (node is TryStatementSyntax)\n                WriteTryStatement.Go(writer, node.As<TryStatementSyntax>());\n            else if (node is UsingStatementSyntax)\n                WriteUsingStatement.Go(writer, node.As<UsingStatementSyntax>());\n            else if (node is ParenthesizedExpressionSyntax)\n                WriteParenthesizedExpression.Go(writer, node.As<ParenthesizedExpressionSyntax>());\n            else if (node is LockStatementSyntax)\n                WriteLockStatement.Go(writer, node.As<LockStatementSyntax>());\n            else if (node is TypeOfExpressionSyntax)\n                WriteTypeOfExpression.Go(writer, node.As<TypeOfExpressionSyntax>());\n            else if (node is AnonymousObjectCreationExpressionSyntax)\n                WriteAnonymousObjectCreationExpression.Go(writer, node.As<AnonymousObjectCreationExpressionSyntax>());\n            else if (node is EmptyStatementSyntax)\n                return; //ignore empty statements\n            else if (node is DelegateDeclarationSyntax)\n                return; //don't write delegates - TypeProcessor converts them to function types directly\n            else if (node is DefaultExpressionSyntax)\n                WriteDefaultExpression.Go(writer, node.As<DefaultExpressionSyntax>());\n            else if (node is GenericNameSyntax)\n                WriteGenericName.Go(writer, node.As<GenericNameSyntax>());\n            else if (node is ConversionOperatorDeclarationSyntax)\n                WriteConversionOperatorDeclaration.Go(writer, node.As<ConversionOperatorDeclarationSyntax>());\n            else if (node is PrefixUnaryExpressionSyntax)\n                WriteUnaryExpression.WritePrefix(writer, node.As<PrefixUnaryExpressionSyntax>());\n            else if (node is PostfixUnaryExpressionSyntax)\n                WriteUnaryExpression.WritePostfix(writer, node.As<PostfixUnaryExpressionSyntax>());\n            else if (node is SizeOfExpressionSyntax)\n                WriteSizeOfExpression.Go(writer, node.As<SizeOfExpressionSyntax>());\n            else if (node is DestructorDeclarationSyntax)\n                WriteDestructorBody.WriteDestructor(writer, node.As<DestructorDeclarationSyntax>());\n            else if (node is IndexerDeclarationSyntax)\n                WriteIndexer.Go(writer, node.As<IndexerDeclarationSyntax>());\n            else if (node is StackAllocArrayCreationExpressionSyntax)\n                writer.Write(node.ToFullString() + \"//TODO: StackAlloc not supported yet\");\n            else\n                throw new NotImplementedException(node.GetType().Name + \" is not supported. \" + Utility.Descriptor(node));\n        }\n\n        public static void WriteStatement(OutputWriter writer, ExpressionStatementSyntax statement)\n        {\n            writer.WriteIndent();\n            Write(writer, statement.Expression);\n            writer.Write(\";\\r\\n\");\n        }\n\n        public static void WriteFixedStatement(OutputWriter writer, FixedStatementSyntax statement)\n        {\n//          writer.WriteIndent();\n            writer.WriteLine(\"//fixed() Scope\");\n            writer.OpenBrace();\n            Write(writer, statement.Declaration);\n            Write(writer, statement.Statement);\n            writer.CloseBrace();\n//          writer.Write(\";\\r\\n\");\n        }\n\n\n        public static void WriteBlock(OutputWriter writer, BlockSyntax block, bool writeBraces = true)\n        {\n            if (writeBraces)\n                writer.OpenBrace();\n\n            //writer.Indent++;\n            foreach (var statement in block.Statements)\n            {\n                // writer.WriteIndent();\n                Write(writer, statement);\n            }\n\n            TriviaProcessor.ProcessTrivias(writer, block.DescendantTrivia());\n            // writer.Indent--;\n\n            if (writeBraces)\n                writer.CloseBrace();\n        }\n\n        public static void WriteStatementAsBlock(OutputWriter writer, StatementSyntax statement, bool writeBraces = true)\n        {\n            if (statement is BlockSyntax)\n                WriteBlock(writer, statement.As<BlockSyntax>(), writeBraces);\n            else\n            {\n                if (writeBraces)\n                    writer.OpenBrace();\n\n                Write(writer, statement);\n                TriviaProcessor.ProcessTrivias(writer, statement.DescendantTrivia());\n\n                if (writeBraces)\n                    writer.CloseBrace();\n            }\n        }\n    }\n}",
+			"file": "Compiler/Core.cs",
+			"file_size": 12534,
+			"file_write_time": 130687679750000000,
+			"settings":
+			{
+				"buffer_size": 12295,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "Compiler/WriteVariableDeclaration.cs",
+			"settings":
+			{
+				"buffer_size": 8942,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "Compiler/WriteInvocationExpression.cs",
+			"settings":
+			{
+				"buffer_size": 33016,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "Compiler/WriteUsingStatement.cs",
+			"settings":
+			{
+				"buffer_size": 2279,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "Compiler/Utility.cs",
+			"settings":
+			{
+				"buffer_size": 23795,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"contents": "class Foo\n{\n	static Foo opAddAssign (Foo left, Foo right)\n	{\n		return left.addAssign(right);\n	}\n}",
+			"settings":
+			{
+				"buffer_size": 97,
+				"line_ending": "Unix",
+				"name": "class Foo"
+			}
+		},
+		{
+			"contents": "operator[-i]   -- opNeg\noperator[+i]   -- opPos\noperator[~i]   -- opCom\noperator[i++]  -- opPostInc\noperator[i--]  -- opPostDec\noperator[i+]   -- opAdd\noperator[x+i]  -- opAdd_r\noperator[i==]  -- opEquals\noperator[i+=]  -- opAddAssign\noperator[i in] -- opIn\noperator[in i] -- opIn_r\noperator[i[]]  -- opIndex\noperator[i[]=] -- opIndexAssign\noperator[i[..]] -- opSlice\noperator[i[..]=] -- opSliceAssign",
+			"settings":
+			{
+				"buffer_size": 401,
+				"line_ending": "Unix",
+				"name": "operator[-i]   -- opNeg"
+			}
+		},
+		{
+			"file": "/Users/radonyo2k9/Desktop/Aliases for conflicting typenames and variables",
+			"settings":
+			{
+				"buffer_size": 474,
+				"line_ending": "Unix",
+				"name": "Context.Instance.Aliases"
+			}
+		},
+		{
+			"contents": "using System;\n\n// Copyright (c) Microsoft. All rights reserved.\n// Licensed under the MIT license. See LICENSE file in the project root for full license information.\n\n// \n\n\n\n\nstruct Version<body>\n{\n    body count;\n}\n\nstruct Version<body,works> // with current code, this doesnt get written\n{\n    body count;\n    works count1;\n    \n}\n\nclass Primes\n{\n\nVersion<int> version;\nVersion<int,string> version1;\n\n\n public static void Main()\n    {\n        Console.WriteLine(\"Prime numbers: \".Length); \n        var len = 1000090;\n        var primes = AddPrimes(len);\n        Console.Write(primes);\n\n    }\n\n    private static int AddPrimes(int len,Version<int> version=default(Version<int>))  \n    {\n        Console.WriteLine(version);\n        var primes = 0;\n        for (var i = 2; i < len; i++) \n        {\n            if (i%2 == 0)\n                continue;\n            var isPrime = true;\n            for (var j = 2; j*j <= i; j++)\n            {\n                if (i%j == 0)\n                {\n                    isPrime = false;\n                    break;\n                }\n            }\n            if (isPrime)\n                primes++;\n        }\n        return primes;\n    }\n    \n}\n\n",
+			"settings":
+			{
+				"buffer_size": 1179,
+				"line_ending": "Unix",
+				"name": "using System;"
+			}
+		},
+		{
+			"contents": "Summary \nTotal:50 \nPass Rate:86 \nPassed: 43 \nFailed: 7 \ntest-16 , \ntest-19 , \ntest-28 , \ntest-39 , \ntest-40 , \ntest-45 , -- works\ntest-7",
+			"settings":
+			{
+				"buffer_size": 136,
+				"line_ending": "Unix",
+				"name": "Summary"
+			}
+		},
+		{
+			"contents": "CS time: 31 ms\n0\nFoo has a value of 254\nd\nValue: d\nEnum emission test okay\n\nCompiling to binary took 3671.8672 ms\nD time: 31.239 ms\nN.Bar\nFoo has a value of 254\nd\nValue: d\nEnum emission test okay",
+			"settings":
+			{
+				"buffer_size": 195,
+				"line_ending": "Unix",
+				"name": "CS time: 31 ms"
+			}
+		},
+		{
+			"contents": "Summary \nTotal:48 \nPass Rate:81.25 \nPassed: 39 \nFailed: 9 gtest-055 , gtest-056 , gtest-061 , gtest-062 , gtest-065 , gtest-066 , gtest-072 , gtest-073 , gtest-092",
+			"settings":
+			{
+				"buffer_size": 163,
+				"line_ending": "Unix",
+				"name": "Summary"
+			}
+		},
+		{
+			"contents": "\nCompiling to binary took 3366.9999 ms\nD time: 36.9959 ms\nFoo`1[T]\nBar`1[U]\nTest.FooEx`2[V,W]\nTest.FooEx`2[V,W]\nCS time: 31 ms\nFoo`1[T]\nFoo`1+Bar`1[T,U]\nTest.FooEx`2[V,W]\nTest.FooEx`2[V,W]\nCompiling to binary took 3510.0529 ms\nD time: 36.0022 ms\nFoo`1[T]\nBar`1[U]\nTest.FooEx`2[V,W]\nTest.FooEx`2[V,W]\n",
+			"settings":
+			{
+				"buffer_size": 300,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"contents": "2015-Feb-26 00:38:37.7061853\n2/26/2015 12:38:58 AM",
+			"settings":
+			{
+				"buffer_size": 50,
+				"line_ending": "Unix",
+				"name": "2015-Feb-26 00:38:37.7061853"
+			}
+		},
+		{
+			"contents": "Test Failed\n\nCompiling to binary took 3621.5789 ms\nD time: 46.117 ms\nFoo has a value of 254\nd\nValue: d\nEnum emission test okay\nCS time: 15 ms\nFoo has a value of 254\nValue: d\nEnum emission test okay\nCompiling to binary took 3843.769 ms\nD time: 31.2398 ms\n\n\nFoo has a value of 254\nd\nValue: d\nEnum emission test okay",
+			"settings":
+			{
+				"buffer_size": 313,
+				"line_ending": "Unix",
+				"name": "Test Failed"
+			}
+		},
+		{
+			"contents": "Summary \nTotal:48 \nPass Rate:75 \nPassed: 36 \nFailed: 12 test-100 , test-52 , test-68 , test-69 , test-74 , test-77 , test-80 , test-84 , test-85 , test-86 , test-91 , test-94\n\n\nTest-68 enum.ToString\n\n\n\n\nT opBinary(string op)(T rhs)\n  {\n    	return mixin(\"A(__Value \"~op~\" rhs.__Value)\");\n  } \n  \n  bool opEquals(const A a) { \n  		return a.__Value == this.__Value;\n  }\n\n	bool opEquals(const int a) { \n  		return a == this.__Value;\n  }\n\n  public String ToString()\n  {\n  \n  	if(this == A.Hello.__Value)\n  	{\n  		return _S(\"Hello\");\n  	}\n  	\n  	return _S(\"Hello\");\n  }\n\n \n //Using structs for enums makes my enums too large ... (All the backing) ... apparently not ... they are the same size :)\n\n  public enum bool __IsEnum = true;\n\n\nBOX!(A)(cast(A)(A.Hello+5)) ... boxing enums must be casted to the enum ...\n\n Console.WriteLine(A.sizeof);   ... seems the size is correct, its just named struct\n      Console.WriteLine(A.Hello);  ... this must print \"Hello\" not the value i.e. Zero ... so I'll have to change all enum rules to use   traits(compiles,T.__IsEnum) as the constraint for enums\n\n      Console.WriteLine(__TypeOf!(A)); ... this works with no issues\n      Console.WriteLine(BOX!(A)(cast(A)(A.Hello+5)));\n\n      A val = 9;// = A.Hello;\n      \n      switch(val.__Value) ... since we are not using actual enums, we need this to get the value we want\n      {\n      	case A.Hello:\n      		Console.WriteLine(\"val is a hello\");\n      		break;\n      	case 9:\n      		Console.WriteLine(\"looks like a ByeBye\");\n      		break;\n      	default:\n      		Console.WriteLine(\"don't know the val stored\");\n      }\n\n  //Need to create enum test\n\n //\n// Tests invocation of reference type functions with value type arguments\n//\nusing System;\nenum A {\n	Hello\n}\n\nclass Y {\n	public Y ()\n	{\n		value = 3;\n	}\n	public int value;\n}\n\nclass X {\n\n	public static int Main ()\n	{\n\n		Console.WriteLine(typeof(A));\n		Console.WriteLine((A.Hello + 5));\n		Console.WriteLine((A.Hello + 5));\n\n		if (\"Hello\" != A.Hello.ToString ())\n			return 1;\n\n		Console.WriteLine (\"value is: \" + (5.ToString ()));\n		if (5.ToString () != \"5\")\n			return 2;\n\n		Y y = new Y ();\n		if (y.value.ToString () != \"3\"){\n			string x = y.value.ToString ();\n			Console.WriteLine (\"Got: {0} expected 3\", x);\n			return 3;		\n		}\n		Console.WriteLine (\"Test ok\");\n		return 0;\n	}\n}\n	\n",
+			"settings":
+			{
+				"buffer_size": 2314,
+				"line_ending": "Unix",
+				"name": "Summary"
+			}
+		}
 	],
 	"build_system": "",
 	"command_palette":
 	{
-		"height": 129.0,
+		"height": 225.0,
 		"selected_items":
 		[
+			[
+				"Package Control: In",
+				"Package Control: Install Package"
+			],
+			[
+				"Package Control: insta",
+				"Package Control: Install Package"
+			],
+			[
+				"Package Control: ",
+				"Package Control: Install Package"
+			],
+			[
+				"install ",
+				"Package Control: Install Package"
+			],
 			[
 				"Package Control: inst",
 				"Package Control: Install Package"
@@ -291,6 +452,8 @@
 	],
 	"file_history":
 	[
+		"/Users/radonyo2k9/Desktop/output.bin",
+		"/Users/radonyo2k9/Library/Application Support/Sublime Text 3/Packages/User/C#.sublime-settings",
 		"/Projects/Experiments/CsNative/SharpNative/sharpnative.sublime-project",
 		"/Projects/Experiments/CsNative/SharpNative/Compiler/Driver.cs",
 		"/Projects/Experiments/CsNative/SharpNative/Compiler/FileExtensions.cs",
@@ -598,8 +761,472 @@
 	"groups":
 	[
 		{
+			"selected": 4,
 			"sheets":
 			[
+				{
+					"buffer": 0,
+					"file": "Compiler/Core.cs",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 12295,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								11403,
+								11403
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C#/C#.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 1926.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 15,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "Compiler/WriteVariableDeclaration.cs",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 8942,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C#/C#.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 2011.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 14,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "Compiler/WriteInvocationExpression.cs",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 33016,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C#/C#.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 244.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 13,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "Compiler/WriteUsingStatement.cs",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2279,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								218,
+								218
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C#/C#.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 12,
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "Compiler/Utility.cs",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 23795,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C#/C#.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 97,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								97,
+								97
+							]
+						],
+						"settings":
+						{
+							"auto_name": "class Foo",
+							"syntax": "Packages/Text/Plain text.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 6,
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 401,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								90,
+								99
+							]
+						],
+						"settings":
+						{
+							"auto_name": "operator[-i]   -- opNeg",
+							"syntax": "Packages/Text/Plain text.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 7,
+					"file": "/Users/radonyo2k9/Desktop/Aliases for conflicting typenames and variables",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 474,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								474,
+								474
+							]
+						],
+						"settings":
+						{
+							"auto_name": "Context.Instance.Aliases",
+							"syntax": "Packages/Text/Plain text.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 3,
+					"type": "text"
+				},
+				{
+					"buffer": 8,
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1179,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								325,
+								325
+							]
+						],
+						"settings":
+						{
+							"auto_name": "using System;",
+							"syntax": "Packages/Text/Plain text.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 4,
+					"type": "text"
+				},
+				{
+					"buffer": 9,
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 136,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								136,
+								136
+							]
+						],
+						"settings":
+						{
+							"auto_name": "Summary",
+							"syntax": "Packages/Text/Plain text.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 5,
+					"type": "text"
+				},
+				{
+					"buffer": 10,
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 195,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								162,
+								162
+							]
+						],
+						"settings":
+						{
+							"auto_name": "CS time: 31 ms",
+							"syntax": "Packages/Text/Plain text.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 6,
+					"type": "text"
+				},
+				{
+					"buffer": 11,
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 163,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								163,
+								163
+							]
+						],
+						"settings":
+						{
+							"auto_name": "Summary",
+							"syntax": "Packages/Text/Plain text.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 7,
+					"type": "text"
+				},
+				{
+					"buffer": 12,
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 300,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								300,
+								300
+							]
+						],
+						"settings":
+						{
+							"auto_name": "",
+							"syntax": "Packages/Text/Plain text.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 8,
+					"type": "text"
+				},
+				{
+					"buffer": 13,
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 50,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								50,
+								50
+							]
+						],
+						"settings":
+						{
+							"auto_name": "2015-Feb-26 00:38:37.7061853",
+							"syntax": "Packages/Text/Plain text.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 10,
+					"type": "text"
+				},
+				{
+					"buffer": 14,
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 313,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								253,
+								253
+							]
+						],
+						"settings":
+						{
+							"auto_name": "Test Failed",
+							"syntax": "Packages/Text/Plain text.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 11,
+					"type": "text"
+				},
+				{
+					"buffer": 15,
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2314,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								522,
+								522
+							]
+						],
+						"settings":
+						{
+							"auto_name": "Summary",
+							"syntax": "Packages/Text/Plain text.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 889.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 9,
+					"type": "text"
+				}
 			]
 		}
 	],
@@ -684,7 +1311,7 @@
 	"show_open_files": false,
 	"show_tabs": true,
 	"side_bar_visible": true,
-	"side_bar_width": 214.0,
+	"side_bar_width": 50.0,
 	"status_bar_visible": true,
 	"template_settings":
 	{

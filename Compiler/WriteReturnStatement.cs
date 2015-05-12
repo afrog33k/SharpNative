@@ -33,38 +33,38 @@ namespace SharpNative.Compiler
 
             if (method != null)
             {
-                returnTypeSymbol = TypeProcessor.GetTypeInfo(method.ReturnType).Type;
+                returnTypeSymbol = TypeProcessor.GetTypeInfo(method.ReturnType).Type ?? TypeProcessor.GetTypeInfo(method.ReturnType).ConvertedType;
             }
 
             if (property != null)
             {
-                returnTypeSymbol = TypeProcessor.GetTypeInfo(property.Type).Type;
+                returnTypeSymbol = TypeProcessor.GetTypeInfo(property.Type).Type?? TypeProcessor.GetTypeInfo(property.Type).ConvertedType;
             }
 
             if (indexer != null)
             {
-                returnTypeSymbol = TypeProcessor.GetTypeInfo(indexer.Type).Type;
+                returnTypeSymbol = TypeProcessor.GetTypeInfo(indexer.Type).Type ?? TypeProcessor.GetTypeInfo(indexer.Type).ConvertedType;
             }
 
             if (converter != null)
             {
-                returnTypeSymbol = TypeProcessor.GetTypeInfo(converter.Type).Type;
+                returnTypeSymbol = TypeProcessor.GetTypeInfo(converter.Type).Type?? TypeProcessor.GetTypeInfo(converter.Type).ConvertedType;
             }
 
 
             if (@operator != null)
             {
-                returnTypeSymbol = TypeProcessor.GetTypeInfo(@operator.ReturnType).Type;
+                returnTypeSymbol = TypeProcessor.GetTypeInfo(@operator.ReturnType).Type ?? TypeProcessor.GetTypeInfo(@operator.ReturnType).ConvertedType;
             }
 
             if (plambda != null)
             {
-                returnTypeSymbol = TypeProcessor.GetTypeInfo(plambda).Type;
+                returnTypeSymbol = TypeProcessor.GetTypeInfo(plambda).Type ?? TypeProcessor.GetTypeInfo(plambda).ConvertedType;
             }
 
             if (slambda != null)
             {
-                returnTypeSymbol = TypeProcessor.GetTypeInfo(slambda).Type;
+                returnTypeSymbol = TypeProcessor.GetTypeInfo(slambda).Type ?? TypeProcessor.GetTypeInfo(slambda).ConvertedType;
             }
 
             if (mlambda != null)

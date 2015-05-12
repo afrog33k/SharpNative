@@ -1,5 +1,7 @@
 module System.ValueType;
 
- public abstract class ValueType
+import System.Namespace;
+
+ public class ValueType : NObject
  {
  }

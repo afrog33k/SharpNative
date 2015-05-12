@@ -23,7 +23,8 @@ namespace SharpNative.Compiler
         {
             //            writer.IsInterface = true;
             writer.Write("struct ");
-            writer.Write(WriteType.TypeName(Context.Instance.Type, false) + "// Enum");
+            string name = WriteType.TypeName(Context.Instance.Type, false);
+            writer.Write(name + "// Enum");
 
             //            writer.Write(Context.Instance.TypeName);
 
@@ -59,15 +60,23 @@ namespace SharpNative.Compiler
             writer.WriteLine("__Value = value;");
             writer.CloseBrace();
 
+            writer.WriteLine(string.Format("private static {1} __create__({0} value)", TypeProcessor.ConvertType(Context.Instance.Type.EnumUnderlyingType),name ));
+            writer.OpenBrace();
+            writer.WriteLine("return {0}(value);", name);
+            writer.CloseBrace();
 
-            writer.WriteLine();
+             
+
+        writer.WriteLine();
             writer.WriteLine("public Type GetType()");
             writer.OpenBrace();
             writer.WriteLine("return __TypeOf!(typeof(this));");
             writer.CloseBrace();
 
+         
 
-            long lastEnumValue = 0;
+
+        long lastEnumValue = 0;
             var children = allChildren.ToArray();
             var values =
                 children.Select(
@@ -106,7 +115,7 @@ namespace SharpNative.Compiler
                     }
 
                     actualValues.Add(temp);
-                    text += " = " + temp;
+                    text += " = __create__(" + temp + ")";
                     tempw.Dispose();
                     ;
                 }
@@ -120,14 +129,14 @@ namespace SharpNative.Compiler
                         {
                             var temp =
                                 WriteIdentifierName.TransformIdentifier(values[index - 1].Syntax.Identifier.Text) + " + 1";
-                            text += " = " +
-                                temp;
+                            text += " = __create__(" +
+                                temp + ")";
                             actualValues.Add(temp);
 
                         }
                         else
                         {
-                            text += " = 0";
+                            text += " = __create__(0)";
                             actualValues.Add("0");
                         }
 
@@ -151,7 +160,7 @@ namespace SharpNative.Compiler
                             item.Replace(
                                 TypeProcessor.ConvertType(Context.Instance.Type, true, false, false) + "." +
                                 value.Syntax.Identifier.Text, actualValues[i]);
-                        actualValues[i] = item;
+                        actualValues[index] = item;
                     }
                 }
                 list.Add(item);

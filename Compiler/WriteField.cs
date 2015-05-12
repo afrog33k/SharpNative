@@ -101,7 +101,7 @@ namespace SharpNative.Compiler
 
           
 
-            if (isConst && typeinfo.Type.IsPrimitive())
+            if (isConst && typeinfo.Type.IsPrimitiveInteger())
             {
               
                 writer.Write("const "); //const has interesting semantics in Dlang 
@@ -147,8 +147,8 @@ namespace SharpNative.Compiler
                 {
 					writer.Write(String.Format(" = cast({0})", typeString));
 
-                    if (CSharpExtensions.CSharpKind(initializerOpt.Value) == SyntaxKind.CollectionInitializerExpression ||
-                        CSharpExtensions.CSharpKind(initializerOpt.Value) == SyntaxKind.ArrayInitializerExpression)
+                    if (initializerOpt.Value.Kind() == SyntaxKind.CollectionInitializerExpression ||
+                       initializerOpt.Value.Kind() == SyntaxKind.ArrayInitializerExpression)
                     {
 //                        writer.Write("gc::gc_ptr< " + typeStringNoPtr + " >(");
                         writer.Write(" new " + typeString + " (");
@@ -185,8 +185,8 @@ namespace SharpNative.Compiler
 
                     staticWriter.Write(" = ");
 
-                    if (CSharpExtensions.CSharpKind(initializerOpt.Value) == SyntaxKind.CollectionInitializerExpression ||
-                        CSharpExtensions.CSharpKind(initializerOpt.Value) == SyntaxKind.ArrayInitializerExpression)
+                    if (initializerOpt.Value.Kind() == SyntaxKind.CollectionInitializerExpression ||
+                        initializerOpt.Value.Kind() == SyntaxKind.ArrayInitializerExpression)
                     {
                         staticWriter.Write("new " + typeStringNoPtr + " (");
 

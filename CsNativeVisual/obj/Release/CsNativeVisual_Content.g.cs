@@ -8,6 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
+[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("ookii.dialogs.wpf.dll")]
 [assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("mahapps.metro.dll")]
 
 

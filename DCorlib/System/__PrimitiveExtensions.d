@@ -12,3 +12,10 @@ int opCmp(wstring a, wstring b)
 
 	return 0;
 }
+
+int GetHashCode(bool boolean)
+{
+	if(boolean)
+		return 1;
+	return 0;
+}

@@ -102,15 +102,15 @@ else
                     }
 
 //                    //Number literals //TODO: make these convert to D Literal Suffixes
-//                    var suffix = realTypeSuffixes.FirstOrDefault (j => str.EndsWith (j));
-//                    if (suffix != null)
-//						str = str.Replace(suffix,drealTypeSuffixes[Array.IndexOf(realTypeSuffixes,suffix)]);
-//					else
-//					{
-//						suffix = integerTypeSuffixes.FirstOrDefault (j => str.EndsWith (j));
-//						if (suffix != null)
-//							str = str.Replace(suffix,dintegerTypeSuffixes[Array.IndexOf(integerTypeSuffixes,suffix)]);
-//					}
+                    var suffix = realTypeSuffixes.FirstOrDefault (j => str.EndsWith (j));
+                    if (suffix != null)
+						str = str.Replace(suffix,drealTypeSuffixes[Array.IndexOf(realTypeSuffixes,suffix)]);
+					else
+					{
+						suffix = integerTypeSuffixes.FirstOrDefault (j => str.EndsWith (j));
+						if (suffix != null)
+							str = str.Replace(suffix,dintegerTypeSuffixes[Array.IndexOf(integerTypeSuffixes,suffix)]);
+					}
 
                     writer.Write(str);
                 }

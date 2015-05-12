@@ -6,6 +6,7 @@ import std.string;
 
 public class Console :  NObject
 {
+	Console Error;
 
 	//T DoIt(T)()
 	//{
@@ -29,12 +30,12 @@ public class Console :  NObject
 		//}
 public static void Write(T)(T value) if(is(T==float))
 {
-		write(BOX!(value).ToString());		
+		write(BOX(value).ToString());		
 }
 
 public static void Write(T)(T value) if(is(T==double))
 {
-		write(BOX!(value).ToString());		
+		write(BOX(value).ToString());		
 }
 
 

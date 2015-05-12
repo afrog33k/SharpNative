@@ -4,16 +4,16 @@
 winexe
 C#
 .cs
-X:\Experiments\Roslyn\CsNative\CsNativeVisual\obj\Release\
+X:\Experiments\CsNative\SharpNative\CsNativeVisual\obj\Release\
 CsNativeVisual
 none
 false
 TRACE
-X:\Experiments\Roslyn\CsNative\CsNativeVisual\App.xaml
+X:\Experiments\CsNative\SharpNative\CsNativeVisual\App.xaml
 2-247106556
-1-1476957637
-18-1680774161
-84199520233
+2-1763049341
+16-1860612129
+871215800708
 MainWindow.xaml;Views\Dialogs\CompilerOptionsWindow.xaml;
 
 False

@@ -20,8 +20,8 @@ namespace SharpNative.Compiler
         {
             writer.WriteIndent();
             var isCollectionInit = false;
-            if (CSharpExtensions.CSharpKind(initializer) == SyntaxKind.CollectionInitializerExpression ||
-                CSharpExtensions.CSharpKind(initializer) == SyntaxKind.ArrayInitializerExpression)
+            if (initializer.Kind() == SyntaxKind.CollectionInitializerExpression ||
+                initializer.Kind() == SyntaxKind.ArrayInitializerExpression)
             {
                 var tx = TypeProcessor.GetTypeInfo(initializer);
 

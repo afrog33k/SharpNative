@@ -63,7 +63,7 @@ struct Simple
     Console.WriteLine(++sinstance.P);
     Console.WriteLine(++sinstance.P);
 
-    
+	Console.WriteLine(new Simple(){P=56}.Equals(new Simple(){P=56}));    
 
 
         x = S = b = "hlo";

@@ -60,24 +60,24 @@
             Normalized absolute path to the referenced file or null if it can't be resolved.
             </returns>
         </member>
-        <member name="T:Microsoft.CodeAnalysis.Text.EncodedStringText">
+        <member name="F:Microsoft.CodeAnalysis.Text.EncodedStringText.s_fallbackEncoding">
             <summary>
-            Implementation of SourceText based on a <see cref="T:System.String"/> input
-            </summary>
-        </member>
-        <member name="F:Microsoft.CodeAnalysis.Text.EncodedStringText.source">
-            <summary>
-            Underlying string on which this SourceText instance is based
+            Encoding to use when there is no byte order mark (BOM) on the stream. This encoder may throw a <see cref="T:System.Text.DecoderFallbackException"/>
+            if the stream contains invalid UTF-8 bytes.
             </summary>
         </member>
         <member name="M:Microsoft.CodeAnalysis.Text.EncodedStringText.Create(System.IO.Stream,System.Text.Encoding,Microsoft.CodeAnalysis.Text.SourceHashAlgorithm)">
             <summary>
-            Initializes an instance of <see cref="T:StringText"/> with provided bytes.
+            Initializes an instance of <see cref="T:Microsoft.CodeAnalysis.Text.SourceText"/> from the provided stream. This version differs
+            from <see cref="M:Microsoft.CodeAnalysis.Text.SourceText.From(System.IO.Stream,System.Text.Encoding,Microsoft.CodeAnalysis.Text.SourceHashAlgorithm,System.Boolean)"/> in two ways:
+            1. It attempts to minimize allocations by trying to read the stream into a byte array.
+            2. If <paramref name="defaultEncoding"/> is null, it will first try UTF8 and, if that fails, it will
+               try <see cref="P:System.Text.Encoding.Default"/>.
             </summary>
-            <param name="stream"></param>
+            <param name="stream">The stream containing encoded text.</param>
             <param name="defaultEncoding">
             Specifies an encoding to be used if the actual encoding can't be determined from the stream content (the stream doesn't start with Byte Order Mark).
-            If not specified auto-detect heristics are used to determine the encoding. If these heristics fail the decoding is assumed to be <see cref="P:System.Text.Encoding.Default"/>.
+            If not specified auto-detect heuristics are used to determine the encoding. If these heuristics fail the decoding is assumed to be <see cref="P:System.Text.Encoding.Default"/>.
             Note that if the stream starts with Byte Order Mark the value of <paramref name="defaultEncoding"/> is ignored.
             </param>
             <param name="checksumAlgorithm">Hash algorithm used to calculate document checksum.</param>
@@ -85,66 +85,46 @@
             The stream content can't be decoded using the specified <paramref name="defaultEncoding"/>, or
             <paramref name="defaultEncoding"/> is null and the stream appears to be a binary file.
             </exception>
-            <exception cref="T:System.IO.IOException">An IO error occured while reading from the stream.</exception>
+            <exception cref="T:System.IO.IOException">An IO error occurred while reading from the stream.</exception>
         </member>
-        <member name="P:Microsoft.CodeAnalysis.Text.EncodedStringText.Source">
+        <member name="M:Microsoft.CodeAnalysis.Text.EncodedStringText.Decode(System.IO.Stream,System.Text.Encoding,Microsoft.CodeAnalysis.Text.SourceHashAlgorithm,System.Boolean)">
             <summary>
-            Underlying string which is the source of this SourceText instance
+            Try to create a <see cref="T:Microsoft.CodeAnalysis.Text.SourceText"/> from the given stream using the given encoding.
             </summary>
+            <param name="data">The input stream containing the encoded text. The stream will not be closed.</param>
+            <param name="encoding">The expected encoding of the stream. The actual encoding used may be different if byte order marks are detected.</param>
+            <param name="checksumAlgorithm">The checksum algorithm to use.</param>
+            <param name="throwIfBinaryDetected">Throw <see cref="T:System.IO.InvalidDataException"/> if binary (non-text) data is detected.</param>
+            <returns>The <see cref="T:Microsoft.CodeAnalysis.Text.SourceText"/> decoded from the stream.</returns>
+            <exception cref="T:System.Text.DecoderFallbackException">The decoder was unable to decode the stream with the given encoding.</exception>
+            <remarks>
+            internal for unit testing
+            </remarks>
         </member>
-        <member name="P:Microsoft.CodeAnalysis.Text.EncodedStringText.Length">
+        <member name="M:Microsoft.CodeAnalysis.Text.EncodedStringText.TryGetByteArrayFromStream(System.IO.Stream)">
             <summary>
-            The length of the text represented by <see cref="T:StringText"/>.
+            Some streams are easily represented as byte arrays.
             </summary>
+            <param name="data">The stream</param>
+            <returns>
+            The contents of <paramref name="data"/> as a byte array or null if the stream can't easily
+            be read into a byte array.
+            </returns>
         </member>
-        <member name="P:Microsoft.CodeAnalysis.Text.EncodedStringText.Item(System.Int32)">
-            <summary>
-            Returns a character at given position.
-            </summary>
-            <param name="position">The position to get the character from.</param>
-            <returns>The character.</returns>
-            <exception cref="T:ArgumentOutOfRangeException">When position is negative or 
-            greater than <see cref="T:"/> length.</exception>
-        </member>
-        <member name="M:Microsoft.CodeAnalysis.Text.EncodedStringText.ToString(Microsoft.CodeAnalysis.Text.TextSpan)">
-            <summary>
-            Provides a string representation of the StringText located within given span.
-            </summary>
-            <exception cref="T:ArgumentOutOfRangeException">When given span is outside of the text range.</exception>
-        </member>
-        <member name="M:Microsoft.CodeAnalysis.Text.EncodedStringText.IsBinary(System.String)">
-            <summary>
-            The heuristic checks
-            for occurrence of two consecutive NUL (U+0000) characters in the stream, which are 
-            highly unlikely to appear in a text file. Since the heuristic is applied after 
-            the text has been decoded, it can be used with any encoding.
-            </summary>
-        </member>
-        <member name="M:Microsoft.CodeAnalysis.Text.EncodedStringText.Decode(System.IO.Stream,System.Text.Encoding,System.Text.Encoding@)">
-            <summary>
-            Decode the given stream using the given encoding. Does not
-            close the stream afterwards.
-            </summary>
-            <param name="data">Data stream</param>
-            <param name="encoding">Default encoding to use for decoding.</param>
-            <param name="actualEncoding">Actual encoding used to read the text.</param>
-            <exception cref="T:System.Text.DecoderFallbackException">If the given encoding is set to use <see cref="T:System.Text.DecoderExceptionFallback"/> as its fallback decoder.</exception>
-            <returns>Decoded stream as a text string</returns>
-        </member>
-        <member name="M:Microsoft.CodeAnalysis.Text.EncodedStringText.ReadUnicodeStringFromMemoryMappedViewStream(System.IO.MemoryMappedFiles.MemoryMappedViewStream)">
-            <summary>
-            Read a Unicode string from a memory mapped view. The stream is not closed on exit.
-            </summary>
-            <param name="memoryMappedViewStream">A view over a memory mapped stream which contains a Unicode string (preceded by a Unicode BOM)</param>
-            <returns>The string</returns>
-        </member>
-        <member name="M:Microsoft.CodeAnalysis.Text.EncodedStringText.TryDecodeMemoryStream(System.IO.MemoryStream,System.Text.Encoding,System.Text.Encoding@,System.String@)">
+        <member name="M:Microsoft.CodeAnalysis.Text.EncodedStringText.TryGetByteArrayFromMemoryStream(System.IO.MemoryStream,System.Byte[]@)">
             <summary>
             If the MemoryStream was created with publiclyVisible=true, then we can access its buffer
             directly and save allocations in StreamReader. The input MemoryStream is not closed on exit.
             </summary>
-            <exception cref="T:System.Text.DecoderFallbackException">If the given encoding is set to use <see cref="T:System.Text.DecoderExceptionFallback"/> 
-            as its fallback decoder.</exception>
+            <returns>True if a byte array could be created.</returns>
+        </member>
+        <member name="M:Microsoft.CodeAnalysis.Text.EncodedStringText.TryGetByteArrayFromFileStream(System.IO.FileStream,System.Byte[]@)">
+            <summary>
+            Read the contents of a <see cref="T:System.IO.FileStream"/> into a byte array.
+            </summary>
+            <param name="stream">The FileStream with encoded text.</param>
+            <param name="buffer">A byte array filled with the contents of the file.</param>
+            <returns>True if a byte array could be created.</returns>
         </member>
         <member name="M:Microsoft.CodeAnalysis.FusionAssemblyIdentity.ToAssemblyName(Microsoft.CodeAnalysis.FusionAssemblyIdentity.IAssemblyName)">
             <summary>
@@ -234,6 +214,39 @@
             <returns>An assembly identity or null, if <paramref name="displayName"/> can't be resolved.</returns>
             <exception cref="T:System.ArgumentNullException"><paramref name="displayName"/> is null.</exception>
         </member>
+        <member name="T:Microsoft.CodeAnalysis.Scripting.GacFileResolver">
+            <summary>
+            Extends <see cref="T:Microsoft.CodeAnalysis.MetadataFileReferenceResolver"/> to enable resolution of assembly
+            simple names in the GAC.
+            </summary>
+        </member>
+        <member name="F:Microsoft.CodeAnalysis.Scripting.GacFileResolver.Default">
+            <summary>
+            A resolver that is configured to resolve against the GAC associated
+            with the bitness of the currently executing process.
+            </summary>
+        </member>
+        <member name="M:Microsoft.CodeAnalysis.Scripting.GacFileResolver.#ctor(System.Collections.Generic.IEnumerable{System.String},System.String,System.Collections.Immutable.ImmutableArray{System.Reflection.ProcessorArchitecture},System.Globalization.CultureInfo)">
+            <summary>
+            Constructs an instance of a <see cref="T:Microsoft.CodeAnalysis.Scripting.GacFileResolver"/>
+            </summary>
+            <param name="assemblySearchPaths">An ordered set of fully qualified 
+            paths which are searched when resolving assembly names.</param>
+            <param name="baseDirectory">Directory used when resolving relative paths.</param>
+            <param name="architectures">Supported architectures used to filter GAC assemblies.</param>
+            <param name="preferredCulture">A culture to use when choosing the best assembly from 
+            among the set filtered by <paramref name="architectures"/></param>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.Scripting.GacFileResolver.Architectures">
+            <summary>
+            Architecture filter used when resolving assembly references.
+            </summary>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.Scripting.GacFileResolver.PreferredCulture">
+            <summary>
+            CultureInfo used when resolving assembly references.
+            </summary>
+        </member>
         <member name="T:Microsoft.CodeAnalysis.Internal.Log.EtwLogger">
             <summary>
             A logger that publishes events to ETW using an EventSource.
@@ -251,12 +264,38 @@
             "\\clrmain\tools\managed\etw\eventRegister\bin\Debug\eventRegister.exe" Microsoft.CodeAnalysis.Workspaces.dll
             </summary>
         </member>
-        <member name="M:Microsoft.CodeAnalysis.CommandLineProject.CreateProjectInfo(Microsoft.CodeAnalysis.Workspace,System.String,System.String,System.Collections.Generic.IEnumerable{System.String},System.String)">
+        <member name="T:Microsoft.CodeAnalysis.WorkspaceDesktopResources">
+            <summary>
+              A strongly-typed resource class, for looking up localized strings, etc.
+            </summary>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.WorkspaceDesktopResources.ResourceManager">
+            <summary>
+              Returns the cached ResourceManager instance used by this class.
+            </summary>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.WorkspaceDesktopResources.Culture">
+            <summary>
+              Overrides the current thread's CurrentUICulture property for all
+              resource lookups using this strongly typed resource class.
+            </summary>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.WorkspaceDesktopResources.InvalidAssemblyName">
+            <summary>
+              Looks up a localized string similar to Invalid assembly name.
+            </summary>
+        </member>
+        <member name="P:Microsoft.CodeAnalysis.WorkspaceDesktopResources.InvalidCharactersInAssemblyName">
+            <summary>
+              Looks up a localized string similar to Invalid characters in assembly name.
+            </summary>
+        </member>
+        <member name="M:Microsoft.CodeAnalysis.CommandLineProject.CreateProjectInfo(System.String,System.String,System.Collections.Generic.IEnumerable{System.String},System.String,Microsoft.CodeAnalysis.Workspace)">
             <summary>
             Create a <see cref="T:Microsoft.CodeAnalysis.ProjectInfo"/> structure initialized from a compilers command line arguments.
             </summary>
         </member>
-        <member name="M:Microsoft.CodeAnalysis.CommandLineProject.CreateProjectInfo(Microsoft.CodeAnalysis.Workspace,System.String,System.String,System.String,System.String)">
+        <member name="M:Microsoft.CodeAnalysis.CommandLineProject.CreateProjectInfo(System.String,System.String,System.String,System.String,Microsoft.CodeAnalysis.Workspace)">
             <summary>
             Create a <see cref="T:Microsoft.CodeAnalysis.ProjectInfo"/> structure initialized with data from a compiler command line.
             </summary>
@@ -268,7 +307,7 @@
             <param name="path">An absolute file path.</param>
             <param name="defaultEncoding">
             Specifies an encoding to be used if the actual encoding can't be determined from the stream content (the stream doesn't start with Byte Order Mark).
-            If not specified auto-detect heristics are used to determine the encoding. If these heristics fail the decoding is assumed to be <see cref="P:System.Text.Encoding.Default"/>.
+            If not specified auto-detect heuristics are used to determine the encoding. If these heuristics fail the decoding is assumed to be <see cref="P:System.Text.Encoding.Default"/>.
             Note that if the stream starts with Byte Order Mark the value of <paramref name="defaultEncoding"/> is ignored.
             </param>
             <exception cref="T:System.ArgumentNullException"><paramref name="path"/> is null.</exception>
@@ -284,11 +323,14 @@
             Specifies an encoding to be used if the actual encoding of the file 
             can't be determined from the stream content (the stream doesn't start with Byte Order Mark).
             If <c>null</c> auto-detect heristics are used to determine the encoding. 
-            If these heristics fail the decoding is assumed to be <see cref="P:System.Text.Encoding.Default"/>.
+            If these heuristics fail the decoding is assumed to be <see cref="P:System.Text.Encoding.Default"/>.
             Note that if the stream starts with Byte Order Mark the value of <see cref="P:Microsoft.CodeAnalysis.FileTextLoader.DefaultEncoding"/> is ignored.
             </summary>
         </member>
         <member name="M:Microsoft.CodeAnalysis.FileTextLoader.LoadTextAndVersionAsync(Microsoft.CodeAnalysis.Workspace,Microsoft.CodeAnalysis.DocumentId,System.Threading.CancellationToken)">
+            <summary>
+            Load a text and a version of the document in the workspace.
+            </summary>
             <exception cref="T:System.IO.IOException"></exception>
         </member>
         <member name="T:Microsoft.CodeAnalysis.Host.Mef.MefV1HostServices">
@@ -336,12 +378,12 @@
             have very tight coupling in the current implementation.
             </summary>
         </member>
-        <member name="F:Microsoft.CodeAnalysis.Host.TemporaryStorageServiceFactory.MemoryMappedInfo.streamCount">
+        <member name="F:Microsoft.CodeAnalysis.Host.TemporaryStorageServiceFactory.MemoryMappedInfo._streamCount">
             <summary>
             ref count of stream given out
             </summary>
         </member>
-        <member name="F:Microsoft.CodeAnalysis.Host.TemporaryStorageServiceFactory.MemoryMappedInfo.accessor">
+        <member name="F:Microsoft.CodeAnalysis.Host.TemporaryStorageServiceFactory.MemoryMappedInfo._accessor">
             <summary>
             actual memory accessor that owns the VM
             </summary>
@@ -360,8 +402,15 @@
         </member>
         <member name="M:Microsoft.CodeAnalysis.Host.TemporaryStorageServiceFactory.MemoryMappedInfo.SharedReadableStream.GetPointer">
             <summary>
-            get underlying native memory directly
+            Get underlying native memory directly.
             </summary>
+        </member>
+        <member name="M:Microsoft.CodeAnalysis.Host.TemporaryStorageServiceFactory.MemoryMappedInfo.SharedReadableStream.AcquirePointer(System.IO.MemoryMappedFiles.MemoryMappedViewAccessor)">
+            <summary>
+            Acquire the fixed pointer to the start of the memory mapped view.
+            The pointer will be released during <see cref="M:Microsoft.CodeAnalysis.Host.TemporaryStorageServiceFactory.MemoryMappedInfo.SharedReadableStream.Dispose(System.Boolean)"/>
+            </summary>
+            <returns>The pointer to the start of the memory mapped view. The pointer is valid, and remains fixed for the lifetime of this object.</returns>
         </member>
         <member name="T:Microsoft.CodeAnalysis.MSBuild.MSBuildWorkspace">
             <summary>
@@ -377,20 +426,20 @@
             <summary>
             Create a new instance of a workspace that can be populated by opening solution and project files.
             </summary>
-            <param name="properties">An optional set of MSBuild properties used when interpretting project files.
+            <param name="properties">An optional set of MSBuild properties used when interpreting project files.
             These are the same properties that are passed to msbuild via the /property:&lt;n&gt;=&lt;v&gt; command line argument.</param>
         </member>
         <member name="M:Microsoft.CodeAnalysis.MSBuild.MSBuildWorkspace.Create(System.Collections.Generic.IDictionary{System.String,System.String},Microsoft.CodeAnalysis.Host.HostServices)">
             <summary>
             Create a new instance of a workspace that can be populated by opening solution and project files.
             </summary>
-            <param name="properties">The MSBuild properties used when interpretting project files.
+            <param name="properties">The MSBuild properties used when interpreting project files.
             These are the same properties that are passed to msbuild via the /property:&lt;n&gt;=&lt;v&gt; command line argument.</param>
             <param name="hostServices">The <see cref="T:Microsoft.CodeAnalysis.Host.HostServices"/> used to configure this workspace.</param>
         </member>
         <member name="P:Microsoft.CodeAnalysis.MSBuild.MSBuildWorkspace.Properties">
             <summary>
-            The MSBuild properties used when interpretting project files.
+            The MSBuild properties used when interpreting project files.
             These are the same properties that are passed to msbuild via the /property:&lt;n&gt;=&lt;v&gt; command line argument.
             </summary>
         </member>
@@ -498,11 +547,6 @@
             The path to the project file.
             </summary>
         </member>
-        <member name="P:Microsoft.CodeAnalysis.MSBuild.IProjectFile.Guid">
-            <summary>
-            The unique Guid associated with the project.
-            </summary>
-        </member>
         <member name="M:Microsoft.CodeAnalysis.MSBuild.IProjectFile.GetProjectFileInfoAsync(System.Threading.CancellationToken)">
             <summary>
             Gets the project file info asynchronously.
@@ -534,9 +578,44 @@
             Remove a source document from a project file.
             </summary>
         </member>
+        <member name="M:Microsoft.CodeAnalysis.MSBuild.IProjectFile.AddMetadataReference(Microsoft.CodeAnalysis.MetadataReference,Microsoft.CodeAnalysis.AssemblyIdentity)">
+            <summary>
+             Add a metadata reference to a project file.
+            </summary>
+        </member>
+        <member name="M:Microsoft.CodeAnalysis.MSBuild.IProjectFile.RemoveMetadataReference(Microsoft.CodeAnalysis.MetadataReference,Microsoft.CodeAnalysis.AssemblyIdentity)">
+            <summary>
+            Remove a metadata reference from a project file.
+            </summary>
+        </member>
+        <member name="M:Microsoft.CodeAnalysis.MSBuild.IProjectFile.AddProjectReference(System.String,Microsoft.CodeAnalysis.MSBuild.ProjectFileReference)">
+            <summary>
+            Add a reference to another project to a project file.
+            </summary>
+        </member>
+        <member name="M:Microsoft.CodeAnalysis.MSBuild.IProjectFile.RemoveProjectReference(System.String,System.String)">
+            <summary>
+            Remove a reference to another project from a project file.
+            </summary>
+        </member>
+        <member name="M:Microsoft.CodeAnalysis.MSBuild.IProjectFile.AddAnalyzerReference(Microsoft.CodeAnalysis.Diagnostics.AnalyzerReference)">
+            <summary>
+            Add an analyzer reference to the project file.
+            </summary>
+        </member>
+        <member name="M:Microsoft.CodeAnalysis.MSBuild.IProjectFile.RemoveAnalyzerReference(Microsoft.CodeAnalysis.Diagnostics.AnalyzerReference)">
+            <summary>
+            Remove an analyzer reference from the project file.
+            </summary>
+        </member>
         <member name="M:Microsoft.CodeAnalysis.MSBuild.IProjectFile.Save">
             <summary>
             Save the current state of the project file to disk.
+            </summary>
+        </member>
+        <member name="M:Microsoft.CodeAnalysis.MSBuild.ProjectFile.CreateProjectFileReference(Microsoft.Build.Execution.ProjectItemInstance)">
+            <summary>
+            Create a <see cref="T:Microsoft.CodeAnalysis.MSBuild.ProjectFileReference"/> from a ProjectReference node in the MSBuild file.
             </summary>
         </member>
         <member name="M:Microsoft.CodeAnalysis.MSBuild.ProjectFile.GetAbsolutePath(System.String)">
@@ -550,11 +629,6 @@
         <member name="T:Microsoft.CodeAnalysis.MSBuild.ProjectFileInfo">
             <summary>
             Represents a project file loaded from disk.
-            </summary>
-        </member>
-        <member name="P:Microsoft.CodeAnalysis.MSBuild.ProjectFileInfo.Guid">
-            <summary>
-            The project's individual GUID
             </summary>
         </member>
         <member name="P:Microsoft.CodeAnalysis.MSBuild.ProjectFileInfo.OutputFilePath">
@@ -640,7 +714,7 @@
         </member>
         <member name="F:Roslyn.Utilities.FileKey.Timestamp">
             <summary>
-            Last write time (Utc).
+            Last write time (UTC).
             </summary>
         </member>
         <member name="M:Roslyn.Utilities.FileKey.#ctor(System.String,System.DateTime)">
@@ -648,7 +722,7 @@
             Constructor.
             </summary>
             <param name="fullPath">Full path.</param>
-            <param name="timestamp">Last write time (Utc).</param>
+            <param name="timestamp">Last write time (UTC).</param>
         </member>
         <member name="M:Roslyn.Utilities.FileKey.Create(System.String)">
             <exception cref="T:System.IO.IOException"/>
@@ -704,37 +778,67 @@
         <member name="M:Roslyn.Utilities.FileUtilities.GetFileTimeStamp(System.String)">
             <exception cref="T:System.IO.IOException"/>
         </member>
-        <member name="T:Roslyn.Scripting.GacFileResolver">
+        <member name="M:Roslyn.Utilities.PathUtilities.GetDirectoryName(System.String)">
             <summary>
-            Extends <see cref="T:Microsoft.CodeAnalysis.MetadataFileReferenceResolver"/> to enable resolution of assembly
-            simple names in the GAC.
+            Get directory name from path.
+            </summary>
+            <remarks>
+            Unlike <see cref="M:System.IO.Path.GetDirectoryName(System.String)"/> it
+                doesn't check for invalid path characters, 
+                doesn't strip any trailing directory separators (TODO: tomat),
+                doesn't recognize UNC structure \\computer-name\share\directory-name\file-name (TODO: tomat).
+            </remarks>
+            <returns>Prefix of path that represents a directory. </returns>
+        </member>
+        <member name="M:Roslyn.Utilities.PathUtilities.IsDriveRootedAbsolutePath(System.String)">
+            <summary>
+            Returns true if given path is absolute and starts with a drive specification ("C:\").
             </summary>
         </member>
-        <member name="F:Roslyn.Scripting.GacFileResolver.Default">
+        <member name="M:Roslyn.Utilities.PathUtilities.GetPathRoot(System.String)">
             <summary>
-            A resolver that is configured to resolve against the GAC associated
-            with the bitness of the currently executing process.
+            Get a prefix of given path which is the root of the path.
             </summary>
+            <returns>
+            Root of an absolute path or null if the path isn't absolute or has invalid format (e.g. "\\").
+            It may or may not end with a directory separator (e.g. "C:\", "C:\foo", "\\machine\share", etc.) .
+            </returns>
         </member>
-        <member name="M:Roslyn.Scripting.GacFileResolver.#ctor(System.Collections.Generic.IEnumerable{System.String},System.String,System.Collections.Immutable.ImmutableArray{System.Reflection.ProcessorArchitecture},System.Globalization.CultureInfo)">
+        <member name="M:Roslyn.Utilities.PathUtilities.GetUncPathRootLength(System.String)">
             <summary>
-            Constructs an instance of a <see cref="T:Roslyn.Scripting.GacFileResolver"/>
+            Calculates the length of root of an UNC path.
             </summary>
-            <param name="assemblySearchPaths">An ordered set of fully qualified 
-            paths which are searched when resolving assembly names.</param>
-            <param name="baseDirectory">Directory used when resolving relative paths.</param>
-            <param name="architectures">Supported architectures used to filter GAC assemblies.</param>
-            <param name="preferredCulture">A culture to use when choosing the best assembly from 
-            among the set filtered by <paramref name="architectures"/></param>
+            <remarks>
+            "\\server\share" is root of UNC path "\\server\share\dir1\dir2\file".
+            </remarks>
         </member>
-        <member name="P:Roslyn.Scripting.GacFileResolver.Architectures">
+        <member name="M:Roslyn.Utilities.PathUtilities.CombineAbsoluteAndRelativePaths(System.String,System.String)">
             <summary>
-            Architecture filter used when resolving assembly references.
+            Combines an absolute path with a relative.
             </summary>
+            <param name="root">Absolute root path.</param>
+            <param name="relativePath">Relative path.</param>
+            <returns>
+            An absolute combined path, or null if <paramref name="relativePath"/> is 
+            absolute (e.g. "C:\abc", "\\machine\share\abc"), 
+            relative to the current root (e.g. "\abc"), 
+            or relative to a drive directory (e.g. "C:abc\def").
+            </returns>
+            <seealso cref="M:Roslyn.Utilities.PathUtilities.CombinePossiblyRelativeAndRelativePaths(System.String,System.String)"/>
         </member>
-        <member name="P:Roslyn.Scripting.GacFileResolver.PreferredCulture">
+        <member name="M:Roslyn.Utilities.PathUtilities.CombinePossiblyRelativeAndRelativePaths(System.String,System.String)">
             <summary>
-            CultureInfo used when resolving assembly references.
+            Combine two paths, the first of which may be absolute.
+            </summary>
+            <param name="rootOpt">First path: absolute, relative, or null.</param>
+            <param name="relativePath">Second path: relative and non-null.</param>
+            <returns>null, if <paramref name="rootOpt"/> is null; a combined path, otherwise.</returns>
+            <seealso cref="M:Roslyn.Utilities.PathUtilities.CombineAbsoluteAndRelativePaths(System.String,System.String)"/>
+        </member>
+        <member name="M:Roslyn.Utilities.PathUtilities.IsFilePath(System.String)">
+            <summary>
+            Determines whether an assembly reference is considered an assembly file path or an assembly name.
+            used, for example, on values of /r and #r.
             </summary>
         </member>
     </members>
