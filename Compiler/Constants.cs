@@ -2,8 +2,9 @@
 {
     public static class Constants
     {
+		
         public static string Version = "0.1.6";
-        public	const string Usage = @"
+        public const string Usage = @"
 Usage:
     SharpNative.exe  /sln:<path to solution file> [options]  -- To compile a solution/project
 	SharpNative.exe  /source:""<comma separated paths to C# files>"" /of:outputname [options]   -- To compile C# file(s)
@@ -46,3 +47,4 @@ Options available:
 ";
     }
 }
+

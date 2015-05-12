@@ -1,19 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.30723.0
+# Visual Studio 14
+VisualStudioVersion = 14.0.22310.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SharpNative", "SharpNative", "{C7FBAEEE-E800-40C8-894E-30EC2CB9DAD9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Compiler", "Compiler\Compiler.csproj", "{5EE86D6A-2292-41F4-9A61-031A7BB20AC6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CsNativeVisual", "CsNativeVisual\CsNativeVisual.csproj", "{A431F246-1D68-4280-9FA7-2418D4D11730}"
-EndProject
-Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "DCorlib", "DCorlib\DCorlib.visualdproj", "{35CBB647-24BD-4E76-AF54-E75214C51E81}"
-EndProject
-Project("{3947E667-4C90-4C3A-BEB9-7148D6FE0D7C}") = "DCorlibMD", "DCorlibMD\DCorlibMD.dproj", "{A4BF9763-0F27-47F2-AF82-82C6394C92B0}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VisualCompilerMac", "VisualCompilerMac\VisualCompilerMac.csproj", "{945513EF-E93C-4007-BE8E-7F2B94D7D8BE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -91,102 +85,6 @@ Global
 		{A431F246-1D68-4280-9FA7-2418D4D11730}.Unittest|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{A431F246-1D68-4280-9FA7-2418D4D11730}.Unittest|Win32.ActiveCfg = Release|Any CPU
 		{A431F246-1D68-4280-9FA7-2418D4D11730}.Unittest|x86.ActiveCfg = Release|Any CPU
-		{35CBB647-24BD-4E76-AF54-E75214C51E81}.AppStore|Any CPU.ActiveCfg = Release|Win32
-		{35CBB647-24BD-4E76-AF54-E75214C51E81}.AppStore|ARM.ActiveCfg = Release|Win32
-		{35CBB647-24BD-4E76-AF54-E75214C51E81}.AppStore|Mixed Platforms.ActiveCfg = Release|Win32
-		{35CBB647-24BD-4E76-AF54-E75214C51E81}.AppStore|Mixed Platforms.Build.0 = Release|Win32
-		{35CBB647-24BD-4E76-AF54-E75214C51E81}.AppStore|Win32.ActiveCfg = Release|Win32
-		{35CBB647-24BD-4E76-AF54-E75214C51E81}.AppStore|Win32.Build.0 = Release|Win32
-		{35CBB647-24BD-4E76-AF54-E75214C51E81}.AppStore|x86.ActiveCfg = Release|Win32
-		{35CBB647-24BD-4E76-AF54-E75214C51E81}.AppStore|x86.Build.0 = Release|Win32
-		{35CBB647-24BD-4E76-AF54-E75214C51E81}.Debug|Any CPU.ActiveCfg = Debug|Win32
-		{35CBB647-24BD-4E76-AF54-E75214C51E81}.Debug|ARM.ActiveCfg = Debug|Win32
-		{35CBB647-24BD-4E76-AF54-E75214C51E81}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
-		{35CBB647-24BD-4E76-AF54-E75214C51E81}.Debug|Mixed Platforms.Build.0 = Debug|Win32
-		{35CBB647-24BD-4E76-AF54-E75214C51E81}.Debug|Win32.ActiveCfg = Debug|Win32
-		{35CBB647-24BD-4E76-AF54-E75214C51E81}.Debug|Win32.Build.0 = Debug|Win32
-		{35CBB647-24BD-4E76-AF54-E75214C51E81}.Debug|x86.ActiveCfg = Debug|Win32
-		{35CBB647-24BD-4E76-AF54-E75214C51E81}.Debug|x86.Build.0 = Debug|Win32
-		{35CBB647-24BD-4E76-AF54-E75214C51E81}.Release|Any CPU.ActiveCfg = Release|Win32
-		{35CBB647-24BD-4E76-AF54-E75214C51E81}.Release|ARM.ActiveCfg = Release|Win32
-		{35CBB647-24BD-4E76-AF54-E75214C51E81}.Release|Mixed Platforms.ActiveCfg = Release|Win32
-		{35CBB647-24BD-4E76-AF54-E75214C51E81}.Release|Mixed Platforms.Build.0 = Release|Win32
-		{35CBB647-24BD-4E76-AF54-E75214C51E81}.Release|Win32.ActiveCfg = Release|Win32
-		{35CBB647-24BD-4E76-AF54-E75214C51E81}.Release|Win32.Build.0 = Release|Win32
-		{35CBB647-24BD-4E76-AF54-E75214C51E81}.Release|x86.ActiveCfg = Release|Win32
-		{35CBB647-24BD-4E76-AF54-E75214C51E81}.Release|x86.Build.0 = Release|Win32
-		{35CBB647-24BD-4E76-AF54-E75214C51E81}.Unittest|Any CPU.ActiveCfg = Release|Win32
-		{35CBB647-24BD-4E76-AF54-E75214C51E81}.Unittest|ARM.ActiveCfg = Release|Win32
-		{35CBB647-24BD-4E76-AF54-E75214C51E81}.Unittest|Mixed Platforms.ActiveCfg = Release|Win32
-		{35CBB647-24BD-4E76-AF54-E75214C51E81}.Unittest|Mixed Platforms.Build.0 = Release|Win32
-		{35CBB647-24BD-4E76-AF54-E75214C51E81}.Unittest|Win32.ActiveCfg = Release|Win32
-		{35CBB647-24BD-4E76-AF54-E75214C51E81}.Unittest|Win32.Build.0 = Release|Win32
-		{35CBB647-24BD-4E76-AF54-E75214C51E81}.Unittest|x86.ActiveCfg = Release|Win32
-		{35CBB647-24BD-4E76-AF54-E75214C51E81}.Unittest|x86.Build.0 = Release|Win32
-		{A4BF9763-0F27-47F2-AF82-82C6394C92B0}.AppStore|Any CPU.ActiveCfg = Debug|Any CPU
-		{A4BF9763-0F27-47F2-AF82-82C6394C92B0}.AppStore|Any CPU.Build.0 = Debug|Any CPU
-		{A4BF9763-0F27-47F2-AF82-82C6394C92B0}.AppStore|ARM.ActiveCfg = Unittest|Any CPU
-		{A4BF9763-0F27-47F2-AF82-82C6394C92B0}.AppStore|Mixed Platforms.ActiveCfg = Unittest|Any CPU
-		{A4BF9763-0F27-47F2-AF82-82C6394C92B0}.AppStore|Win32.ActiveCfg = Unittest|Any CPU
-		{A4BF9763-0F27-47F2-AF82-82C6394C92B0}.AppStore|x86.ActiveCfg = Unittest|Any CPU
-		{A4BF9763-0F27-47F2-AF82-82C6394C92B0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A4BF9763-0F27-47F2-AF82-82C6394C92B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A4BF9763-0F27-47F2-AF82-82C6394C92B0}.Debug|ARM.ActiveCfg = Debug|Any CPU
-		{A4BF9763-0F27-47F2-AF82-82C6394C92B0}.Debug|ARM.Build.0 = Debug|Any CPU
-		{A4BF9763-0F27-47F2-AF82-82C6394C92B0}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{A4BF9763-0F27-47F2-AF82-82C6394C92B0}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{A4BF9763-0F27-47F2-AF82-82C6394C92B0}.Debug|Win32.ActiveCfg = Debug|Any CPU
-		{A4BF9763-0F27-47F2-AF82-82C6394C92B0}.Debug|Win32.Build.0 = Debug|Any CPU
-		{A4BF9763-0F27-47F2-AF82-82C6394C92B0}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{A4BF9763-0F27-47F2-AF82-82C6394C92B0}.Debug|x86.Build.0 = Debug|Any CPU
-		{A4BF9763-0F27-47F2-AF82-82C6394C92B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A4BF9763-0F27-47F2-AF82-82C6394C92B0}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A4BF9763-0F27-47F2-AF82-82C6394C92B0}.Release|ARM.ActiveCfg = Release|Any CPU
-		{A4BF9763-0F27-47F2-AF82-82C6394C92B0}.Release|ARM.Build.0 = Release|Any CPU
-		{A4BF9763-0F27-47F2-AF82-82C6394C92B0}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{A4BF9763-0F27-47F2-AF82-82C6394C92B0}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{A4BF9763-0F27-47F2-AF82-82C6394C92B0}.Release|Win32.ActiveCfg = Release|Any CPU
-		{A4BF9763-0F27-47F2-AF82-82C6394C92B0}.Release|Win32.Build.0 = Release|Any CPU
-		{A4BF9763-0F27-47F2-AF82-82C6394C92B0}.Release|x86.ActiveCfg = Release|Any CPU
-		{A4BF9763-0F27-47F2-AF82-82C6394C92B0}.Release|x86.Build.0 = Release|Any CPU
-		{A4BF9763-0F27-47F2-AF82-82C6394C92B0}.Unittest|Any CPU.ActiveCfg = Unittest|Any CPU
-		{A4BF9763-0F27-47F2-AF82-82C6394C92B0}.Unittest|Any CPU.Build.0 = Unittest|Any CPU
-		{A4BF9763-0F27-47F2-AF82-82C6394C92B0}.Unittest|ARM.ActiveCfg = Unittest|Any CPU
-		{A4BF9763-0F27-47F2-AF82-82C6394C92B0}.Unittest|Mixed Platforms.ActiveCfg = Unittest|Any CPU
-		{A4BF9763-0F27-47F2-AF82-82C6394C92B0}.Unittest|Win32.ActiveCfg = Unittest|Any CPU
-		{A4BF9763-0F27-47F2-AF82-82C6394C92B0}.Unittest|x86.ActiveCfg = Unittest|Any CPU
-		{945513EF-E93C-4007-BE8E-7F2B94D7D8BE}.AppStore|Any CPU.ActiveCfg = AppStore|Any CPU
-		{945513EF-E93C-4007-BE8E-7F2B94D7D8BE}.AppStore|Any CPU.Build.0 = AppStore|Any CPU
-		{945513EF-E93C-4007-BE8E-7F2B94D7D8BE}.AppStore|ARM.ActiveCfg = AppStore|Any CPU
-		{945513EF-E93C-4007-BE8E-7F2B94D7D8BE}.AppStore|Mixed Platforms.ActiveCfg = AppStore|Any CPU
-		{945513EF-E93C-4007-BE8E-7F2B94D7D8BE}.AppStore|Win32.ActiveCfg = AppStore|Any CPU
-		{945513EF-E93C-4007-BE8E-7F2B94D7D8BE}.AppStore|x86.ActiveCfg = AppStore|Any CPU
-		{945513EF-E93C-4007-BE8E-7F2B94D7D8BE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{945513EF-E93C-4007-BE8E-7F2B94D7D8BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{945513EF-E93C-4007-BE8E-7F2B94D7D8BE}.Debug|ARM.ActiveCfg = Debug|Any CPU
-		{945513EF-E93C-4007-BE8E-7F2B94D7D8BE}.Debug|ARM.Build.0 = Debug|Any CPU
-		{945513EF-E93C-4007-BE8E-7F2B94D7D8BE}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{945513EF-E93C-4007-BE8E-7F2B94D7D8BE}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{945513EF-E93C-4007-BE8E-7F2B94D7D8BE}.Debug|Win32.ActiveCfg = Debug|Any CPU
-		{945513EF-E93C-4007-BE8E-7F2B94D7D8BE}.Debug|Win32.Build.0 = Debug|Any CPU
-		{945513EF-E93C-4007-BE8E-7F2B94D7D8BE}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{945513EF-E93C-4007-BE8E-7F2B94D7D8BE}.Debug|x86.Build.0 = Debug|Any CPU
-		{945513EF-E93C-4007-BE8E-7F2B94D7D8BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{945513EF-E93C-4007-BE8E-7F2B94D7D8BE}.Release|Any CPU.Build.0 = Release|Any CPU
-		{945513EF-E93C-4007-BE8E-7F2B94D7D8BE}.Release|ARM.ActiveCfg = Release|Any CPU
-		{945513EF-E93C-4007-BE8E-7F2B94D7D8BE}.Release|ARM.Build.0 = Release|Any CPU
-		{945513EF-E93C-4007-BE8E-7F2B94D7D8BE}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{945513EF-E93C-4007-BE8E-7F2B94D7D8BE}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{945513EF-E93C-4007-BE8E-7F2B94D7D8BE}.Release|Win32.ActiveCfg = Release|Any CPU
-		{945513EF-E93C-4007-BE8E-7F2B94D7D8BE}.Release|Win32.Build.0 = Release|Any CPU
-		{945513EF-E93C-4007-BE8E-7F2B94D7D8BE}.Release|x86.ActiveCfg = Release|Any CPU
-		{945513EF-E93C-4007-BE8E-7F2B94D7D8BE}.Release|x86.Build.0 = Release|Any CPU
-		{945513EF-E93C-4007-BE8E-7F2B94D7D8BE}.Unittest|Any CPU.ActiveCfg = Debug|Any CPU
-		{945513EF-E93C-4007-BE8E-7F2B94D7D8BE}.Unittest|Any CPU.Build.0 = Debug|Any CPU
-		{945513EF-E93C-4007-BE8E-7F2B94D7D8BE}.Unittest|ARM.ActiveCfg = Release|Any CPU
-		{945513EF-E93C-4007-BE8E-7F2B94D7D8BE}.Unittest|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{945513EF-E93C-4007-BE8E-7F2B94D7D8BE}.Unittest|Win32.ActiveCfg = Release|Any CPU
-		{945513EF-E93C-4007-BE8E-7F2B94D7D8BE}.Unittest|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -194,9 +92,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{5EE86D6A-2292-41F4-9A61-031A7BB20AC6} = {C7FBAEEE-E800-40C8-894E-30EC2CB9DAD9}
 		{A431F246-1D68-4280-9FA7-2418D4D11730} = {C7FBAEEE-E800-40C8-894E-30EC2CB9DAD9}
-		{35CBB647-24BD-4E76-AF54-E75214C51E81} = {C7FBAEEE-E800-40C8-894E-30EC2CB9DAD9}
-		{A4BF9763-0F27-47F2-AF82-82C6394C92B0} = {C7FBAEEE-E800-40C8-894E-30EC2CB9DAD9}
-		{945513EF-E93C-4007-BE8E-7F2B94D7D8BE} = {C7FBAEEE-E800-40C8-894E-30EC2CB9DAD9}
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		StartupItem = VisualCompilerMac\VisualCompilerMac.csproj
