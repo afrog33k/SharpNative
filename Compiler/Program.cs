@@ -435,7 +435,7 @@ namespace SharpNative.Compiler
                              
                                 writer.WriteLine(
 
-									".__Method(\"{0}\", new MethodInfo__G!({1},{2} function({4}))(cast({2} function({4}))&__traits(getOverloads,{1},\"{3}\")[{5}]),{6})"
+									".__Method(\"{0}\", new MethodInfo__G!({1},{2} function({4}))(cast({2} function({4}))&__traits(getOverloads,{1},\"{3}\")[{5}]),{6})" //Fixes gtest-40.cs
                                     ,
                                     method.Name,
                                     TypeProcessor.ConvertType(method.ContainingType),
@@ -452,7 +452,7 @@ namespace SharpNative.Compiler
                                 int overloadindex = GetIndexOfMethod(method);
                                 writer.WriteLine(
 
-									".__Method(\"{0}\", new MethodInfo__G!({1},{2} function({4}))(cast({2} function({4}))&__traits(getOverloads,{1},\"{3}\")[{5}]),{6})"
+									".__Method(\"{0}\", new MethodInfo__G!({1},{2} function({4}))(cast({2} function({4}))&__traits(getOverloads,{1},\"{3}\")[{5}]),{6})" //Fixes gtest-40.cs
                                     ,
                                     method.Name,
                                     TypeProcessor.ConvertType(method.ContainingType),
