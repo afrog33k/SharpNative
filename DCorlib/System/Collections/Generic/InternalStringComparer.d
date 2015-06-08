@@ -31,7 +31,7 @@ import System.Collections.Generic.Namespace;
       return (y is null);
     
 }
-    if (AsCast!( System.Namespace.NObject )(x)==AsCast!( System.Namespace.NObject )(y))
+    if (x==y)
     {
 
       return (true);

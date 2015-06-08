@@ -53,6 +53,11 @@
   </dependency>
   <dependency>
     <dependentAssembly dependencyType="preRequisite" allowDelayedBinding="true">
+      <assemblyIdentity name="System.Collections.Immutable" version="1.1.33.0" publicKeyToken="B03F5F7F11D50A3A" language="neutral" processorArchitecture="msil" />
+    </dependentAssembly>
+  </dependency>
+  <dependency>
+    <dependentAssembly dependencyType="preRequisite" allowDelayedBinding="true">
       <assemblyIdentity name="System.Composition.AttributedModel" version="1.0.27.0" publicKeyToken="B03F5F7F11D50A3A" language="neutral" processorArchitecture="msil" />
     </dependentAssembly>
   </dependency>
@@ -73,7 +78,7 @@
   </dependency>
   <dependency>
     <dependentAssembly dependencyType="preRequisite" allowDelayedBinding="true">
-      <assemblyIdentity name="System.Threading.Tasks.Dataflow" version="4.5.9.0" publicKeyToken="B03F5F7F11D50A3A" language="neutral" processorArchitecture="msil" />
+      <assemblyIdentity name="System.Threading.Tasks.Dataflow" version="4.5.24.0" publicKeyToken="B03F5F7F11D50A3A" language="neutral" processorArchitecture="msil" />
     </dependentAssembly>
   </dependency>
   <dependency>
@@ -84,7 +89,7 @@
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>vlGymW5NuxtK8p5hV6ucJbh0RuRvJ8xDb53OtI8nFtA=</dsig:DigestValue>
+        <dsig:DigestValue>D/QidgdhU44sPk2Dkoazn77/DStr5Zrnsc4ILGLxuus=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
@@ -353,26 +358,14 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="SharpNative.exe" size="307200">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="SharpNative.exe" size="303104">
       <assemblyIdentity name="SharpNative" version="1.0.0.0" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>8EgkvqadFnxivVccUN9WE45VMbHJIxGpGJ7coWlylSQ=</dsig:DigestValue>
-      </hash>
-    </dependentAssembly>
-  </dependency>
-  <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="System.Collections.Immutable.dll" size="230624">
-      <assemblyIdentity name="System.Collections.Immutable" version="1.1.33.0" publicKeyToken="B03F5F7F11D50A3A" language="neutral" processorArchitecture="msil" />
-      <hash>
-        <dsig:Transforms>
-          <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
-        </dsig:Transforms>
-        <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>evLakJu84WATp5uR+GirsqeClmfW6ac7RP2s+9dxF6U=</dsig:DigestValue>
+        <dsig:DigestValue>dj92yjzbN5Ps3xVUDI00WfV3cbhLK92RFnd0ELafJ9A=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
@@ -568,13 +561,13 @@
       </hash>
     </dependentAssembly>
   </dependency>
-  <file name="CsNativeVisual.exe.config" size="1831">
+  <file name="CsNativeVisual.exe.config" size="1813">
     <hash>
       <dsig:Transforms>
         <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
       </dsig:Transforms>
       <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-      <dsig:DigestValue>6AE0xTNJEZT6w4yyr+IvnF1HOysPuC5pFHp9G0rzLGM=</dsig:DigestValue>
+      <dsig:DigestValue>vtcsTev5OU7cPrxOKnrt/Jd9YKDGU42vyjASrwtphAw=</dsig:DigestValue>
     </hash>
   </file>
   <file name="MahApps.Metro.dll" size="285696">

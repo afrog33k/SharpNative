@@ -72,6 +72,7 @@ namespace SharpNative.Compiler
                     u =>
                         u.GetMembers(methodName)).ToArray();
 
+            
             ISymbol interfaceMethod =
                 interfaceMethods.FirstOrDefault(
                     o => methodSymbol.ContainingType.FindImplementationForInterfaceMember(o) == methodSymbol);
@@ -115,7 +116,7 @@ namespace SharpNative.Compiler
            
 
             if (isVirtualGeneric)
-                methodName = TypeProcessor.ConvertType(containingType,false,false,false).Replace(".", "_") + "_" + methodName;
+                methodName = TypeProcessor.ConvertType(containingType, false, false, false).Replace(".", "_").Replace("!", "_").Replace("(", "_").Replace(")", "_") + "_" + methodName;
 
             if (methodSymbol.MethodKind == MethodKind.DelegateInvoke)
                 subExpressionOpt = invocationExpression.Expression;
@@ -223,6 +224,9 @@ namespace SharpNative.Compiler
                     if (!isVirtualGeneric)
                     {
                        WriteMemberAccessExpression.WriteMember(writer, subExpressionOpt);
+
+                        if(expressionSymbol.Symbol is IEventSymbol)
+                            writer.Write("()");
 
                         //                    if (!(subExpressionOpt is BaseExpressionSyntax))
                         //                    {

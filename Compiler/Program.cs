@@ -34,7 +34,9 @@ namespace SharpNative.Compiler
     {
         public static Compilation Compilation
         {
-            get { return _compilation; }
+            get { 
+                return _compilation;
+                }
         }
 
         private static readonly ConcurrentDictionary<SyntaxTree, SemanticModel> _models =
@@ -232,7 +234,7 @@ namespace SharpNative.Compiler
                 writer.WriteLine("import System.Collections.Generic.Namespace;");
             }
             */
-
+          
             writer.WriteLine("__TypeOf!(" + TypeProcessor.ConvertType(specialization,false, false, false) + "" + ")(\"" +
                              genericName
                              + "\")");
@@ -429,11 +431,11 @@ namespace SharpNative.Compiler
                                 // Ignore compiler generated backing fields ... for properties etc ...
                                 //&__traits(getOverloads, foo, "func")[1]
                                 int overloadindex = GetIndexOfMethod(method);
-
+								//cast({2} function({4})
                              
                                 writer.WriteLine(
 
-                                    ".__Method(\"{0}\", new MethodInfo__G!({1},{2} function({4}))(&__traits(getOverloads,{1},\"{3}\")[{5}]),{6})"
+									".__Method(\"{0}\", new MethodInfo__G!({1},{2} function({4}))(cast({2} function({4}))&__traits(getOverloads,{1},\"{3}\")[{5}]),{6})"
                                     ,
                                     method.Name,
                                     TypeProcessor.ConvertType(method.ContainingType),
@@ -450,7 +452,7 @@ namespace SharpNative.Compiler
                                 int overloadindex = GetIndexOfMethod(method);
                                 writer.WriteLine(
 
-                                    ".__Method(\"{0}\", new MethodInfo__G!({1},{2} function({4}))(&__traits(getOverloads,{1},\"{3}\")[{5}]),{6})"
+									".__Method(\"{0}\", new MethodInfo__G!({1},{2} function({4}))(cast({2} function({4}))&__traits(getOverloads,{1},\"{3}\")[{5}]),{6})"
                                     ,
                                     method.Name,
                                     TypeProcessor.ConvertType(method.ContainingType),
@@ -582,6 +584,11 @@ namespace SharpNative.Compiler
             var compilation = CSharpCompilation.Create(testName, cSharp.Select(o => CSharpSyntaxTree.ParseText(o)),
                                   new MetadataReference[]
                 {
+                
+                AssemblyMetadata.CreateFromFile(typeof(System.Dynamic.DynamicObject).Assembly.Location).GetReference(),
+                AssemblyMetadata.CreateFromFile(typeof(Microsoft.CSharp.RuntimeBinder.CSharpArgumentInfo).Assembly.Location).GetReference(),
+                AssemblyMetadata.CreateFromFile(typeof(System.Dynamic.ExpandoObject).Assembly.Location).GetReference(),
+
                     AssemblyMetadata.CreateFromFile(typeof(object).Assembly.Location).GetReference(),
                     AssemblyMetadata.CreateFromFile(typeof(RuntimeBinderException).Assembly.Location).GetReference(),
                     AssemblyMetadata.CreateFromFile(typeof(DynamicAttribute).Assembly.Location).GetReference(),
@@ -627,7 +634,7 @@ namespace SharpNative.Compiler
                 }
                 else
                 {
-                   //  CurrentAssembly = Assembly.LoadFile(exePath);
+					Driver.LastBuildPath = exePath;
                     
                 }
                 if (Driver.Verbose)
@@ -635,7 +642,7 @@ namespace SharpNative.Compiler
             }
         }
 
-        public static Assembly CurrentAssembly { get; set; }
+        
 
         private static bool isCorlib = false;
         private static void Generate(IEnumerable<string> extraTranslation)

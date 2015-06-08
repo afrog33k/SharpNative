@@ -12,14 +12,14 @@ class ArrayIterator(T):IEnumerator__G!(T)
 	this(Array_T!(T) array)
 	{
 		_array = array;
-		//Console.WriteLine(_S("inted with {0}"), BOX!(int)(index));
+		//Console.WriteLine(String("inted with {0}"), BOX!(int)(index));
 		//writeln(_array.Items[index]);
 	}
 
 	public T  Current(IEnumerator__G!(T) k=null)   @property
 	{
 		//writeln(_array is null);
-		//Console.WriteLine(_S("returning {0}"), BOX!(int)(index));
+		//Console.WriteLine(String("returning {0}"), BOX!(int)(index));
 		//writeln(_array.Items[index]);
 
 		return _array.Items[index];
@@ -62,7 +62,7 @@ public class Array_T(T=NObject) :  Array, ICollection__G!(T), IList
 {
 	private int index_;
 
-	private T[] _items;
+	public T[] _items; // For optimizations where possible
 	private int[] _dims;
 
 	T[] Items() @property
@@ -278,7 +278,7 @@ public void __AdjustLength(int newLength)
 
 	public override String ToString()
 	{
-					return _S(__TypeOf!(T).FullName.Text ~ "[]");
+					return new String(__TypeOf!(T).FullName.Text ~ "[]");
 	}
 
 	//Adds foreach support
@@ -387,17 +387,17 @@ public void __AdjustLength(int newLength)
 	final  T opIndexAssign(T value, int index)  
 	{
 		//if (index >= _items.length)
-		//	throw new ArgumentOutOfRangeException(new String("index"));
+		//	throw new ArgumentOutOfRangeException(String("index"));
 
 		_items[index] = value;
 		return _items[index];
 	}
 
-	final  ref T opIndex(int index) 
+	final ref T opIndex(int index) 
 	{ //TODO: ref could be a bad idea 
 		//but allows alot of natural c# syntax
 		//if (index >= _items.length)
-		//	throw new ArgumentOutOfRangeException(new String("index"));
+		//	throw new ArgumentOutOfRangeException(String("index"));
 
 		return _items[index];
 	}

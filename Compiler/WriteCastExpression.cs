@@ -25,9 +25,9 @@ namespace SharpNative.Compiler
             var destType = TypeProcessor.GetTypeInfo(expression.Type).Type;
             var destTypeDlang = TypeProcessor.TryConvertType(expression.Type);
 
-            if (destTypeDlang == srcTypeDlang)
-                Core.Write(writer, expression.Expression);
-            else
+//            if (destTypeDlang == srcTypeDlang) // Looks like roslyn lies sometimes ... so lets cast anyway
+//                Core.Write(writer, expression.Expression);
+//            else
                 //if (symbol.Symbol != null)// && srcTypeCpp != "int" && srcTypeCpp != "System.String" && srcTypeCpp != "bool")
             {
 //                if (castingFrom != destType) // Check for implicit first then explicit

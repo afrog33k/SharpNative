@@ -361,7 +361,7 @@ public class KeyNotFoundException : Exception {
 /**
 * Provides a base class for implementations of the IEqualityComparer(T) interface.
 */
-abstract class EqualityComparer(T) : IEqualityComparer!(T) {
+abstract class EqualityComparer(T) : IEqualityComparer__G!(T) {
 
 	/**
 	* $(I Property.) Returns a default equality comparer for the type specified by the template parameter.

@@ -33,7 +33,7 @@ public bool IEnumerator_MoveNext()
     if (this.ver!=l._version)
     {
 
-      throw  new InvalidOperationException( (new String ("Collection was modified; enumeration operation may not execute.")));
+      throw  new InvalidOperationException( ( String ("Collection was modified; enumeration operation may not execute.")));
     
 }
     this.next=-1;
@@ -59,7 +59,7 @@ void IEnumerator_Reset()
     if (this.ver!=l._version)
     {
 
-      throw  new InvalidOperationException( (new String ("Collection was modified; enumeration operation may not execute.")));
+      throw  new InvalidOperationException( ( String ("Collection was modified; enumeration operation may not execute.")));
     
 }
     this.next=0;
@@ -75,7 +75,7 @@ void IEnumerator_Reset()
       if (this.ver!=l._version)
       {
 
-        throw  new InvalidOperationException( (new String ("Collection was modified; enumeration operation may not execute.")));
+        throw  new InvalidOperationException( ( String ("Collection was modified; enumeration operation may not execute.")));
       
 }
       if (this.next<=0)

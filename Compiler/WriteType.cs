@@ -456,7 +456,8 @@ namespace SharpNative.Compiler
                         if (condition is TypeConstraintSyntax)
                         {
                             var type = (condition as TypeConstraintSyntax).Type;
-                            constraints += (isFirst ? "" : "&&") + "is(" + WriteIdentifierName.TransformIdentifier(constraint.Name.ToFullString()) + ":" + TypeProcessor.ConvertType(type) +")";
+                            constraints += (isFirst ? "" : "&&") + "is(__BoxesTo!(" + WriteIdentifierName.TransformIdentifier(constraint.Name.ToFullString()) + "):" + TypeProcessor.ConvertType(type) +")";
+                            //Added support for __BoxableObjects
                         }
 
                         if (condition is ConstructorConstraintSyntax)
@@ -741,8 +742,10 @@ namespace SharpNative.Compiler
                     {
                         writer.WriteLine("//FieldOffset(" + @group.Key + ")");
                         writer.WriteLine("union {");
+                        Context.Instance.ShouldInitializeVariables = false;
                         foreach (var member in @group)
                             Core.Write(writer, member);
+                        Context.Instance.ShouldInitializeVariables = true;
                         writer.WriteLine("}");
                     }
 

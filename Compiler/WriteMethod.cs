@@ -220,10 +220,10 @@ namespace SharpNative.Compiler
             ISymbol[] proxies;
             var methodName = MemberUtilities.GetMethodName(method, ref isInterface, out iface, out proxies); //
             var originalMethodName = methodName;
-            var containingType = iface == null ? methodSymbol.ContainingType : iface;
+            var containingType = iface ?? methodSymbol.ContainingType;
             if (virtualGenericClasses != null)
             {
-                methodName = TypeProcessor.ConvertType(containingType, false, false, false).Replace(".","_") + "_"+methodName;
+                methodName = TypeProcessor.ConvertType(containingType, false, false, false).Replace(".","_").Replace("!","_").Replace("(","_").Replace(")","_") + "_"+methodName;
                 accessString = "public static final ";
             }
             else if (methodName == "Main" /*&& method.Modifiers.Any(SyntaxKind.PublicKeyword)*/&&

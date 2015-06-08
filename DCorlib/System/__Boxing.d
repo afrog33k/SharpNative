@@ -291,9 +291,20 @@ NObject __BOXPrimitive(T)(T value)
 
 
 static T UNBOX(T,U)(U nobject) 
-if(__isClass!(T)) // This should never happen /// how did you box a class and why ?
+if(__isClass!(T)) // This should never happen how did you box a class and why ?
 {
 		return  cast(T) nobject;
+}
+
+static T UNBOX(T,U)(U object)
+if(__isScalar!(T) && is(U==T))
+{
+	return cast(T)object;
+}
+static T UNBOX(T,U)(U object)
+if(__isScalar!(T) && is(U==const(T)))
+{
+	return cast(T)object;
 }
 
 static T UNBOX(T,U)(U nobject) 
@@ -310,7 +321,7 @@ if(__isStruct!(T) && __isInterface!(U))
 
 //Reflection Support for fields and properties, fixes up structs 
 static T* UNBOX_R(T,U)(ref U nobject) 
-if(is(T==class)) // This should never happen /// how did you box a class and why ?
+if(is(T==class)) // This should never happen how did you box a class and why ?
 {
 		return  cast(T*)&(nobject);
 }
@@ -342,7 +353,7 @@ public class BoxedEnum(T): Enum
 
 	override String ToString()
 	{
-		return _S(__Value.toString);
+		return new String(__Value.toString);
 	}
 
 	override Type GetType()

@@ -28,14 +28,14 @@ public Dictionary_TKey_TValue_ValueCollection_EnumeratorTKey_TValue GetEnumerato
 void ICollection_T_Add(TValue item) 
   {
 
-    throw  new NotSupportedException( (new String ("this is a read-only collection")));
+    throw  new NotSupportedException( ( String ("this is a read-only collection")));
   
 }
 
 void ICollection_T_Clear() 
   {
 
-    throw  new NotSupportedException( (new String ("this is a read-only collection")));
+    throw  new NotSupportedException( ( String ("this is a read-only collection")));
   
 }
 
@@ -49,7 +49,7 @@ bool ICollection_T_Contains(TValue item)
 bool ICollection_T_Remove(TValue item) 
   {
 
-    throw  new NotSupportedException( (new String ("this is a read-only collection")));
+    throw  new NotSupportedException( ( String ("this is a read-only collection")));
   
 }
 
@@ -138,7 +138,7 @@ public this(Dictionary_TKey_TValue!(TKey, TValue) dictionary)
     if (dictionary is null)
     {
 
-      throw  new ArgumentNullException( (new String ("dictionary")));
+      throw  new ArgumentNullException( ( String ("dictionary")));
     
 }
     this.dictionary=dictionary;

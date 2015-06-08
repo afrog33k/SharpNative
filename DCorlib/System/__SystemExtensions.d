@@ -93,24 +93,34 @@ template __unConstType(U:const(T),T)
 
 
 //TODO: Improve this to reuse strings
-
-
-public static String _S(const(wstring) text)
+final static String  _S(wstring text)
 {
-	auto str = new String(text);
+	return new String(text);
+}
+
+final static String  _S(string text)
+{
+	return new String(text);
+}
+
+/*
+public static String String(const(wstring) text)
+{
+	auto str =  String(text);
 	return str;
 }
 
 
-public static String _S(const(string) text) 
+public static String String(const(string) text) 
 {
-	auto str = new String(text);
+	auto str = String(text);
 	return str;
 }
-public static String _S(String text)
+public static String String(String text)
 {
 	return text;
 }
+*/
 
 public static __IsNull(T)(T value)
 if(__isScalar!(T))
@@ -135,7 +145,8 @@ struct __UNBOUND // object used to keep unbound generic types, for sharing and r
 
 	T opCast(T)() // __UNBOUND doesn't exist ;)
 	{
-		return cast(T) __Value;
+		//return cast(T) cast(void*) __Value;
+		return T.init;
 	}
 
 	alias __Value this;
@@ -756,6 +767,17 @@ public static string toString(T)(T value) if(is(T==float))
 	return str;
 }
 
+bool IsCast(T)(NObject obj)  
+if (__isCSStruct!(T))
+{
+	if(is(U:T))
+	{
+		return true;
+	}
+	return (cast(Boxed!(T))(obj)) !is null;
+}
+
+
 bool IsCast(T, U)(U obj)  if (__isClass!(T))
 {
 	if(is(U:T))
@@ -792,7 +814,25 @@ static T Cast(T)(NObject object)
 }
 
 static T Cast(T,U)(U object)
-if((!is(U==class) &&!is(U==interface))&&!(is(T==interface) && is(U==struct)))
+if(__isCSStruct!U && __isCSStruct!T)
+{
+	return cast(T)object;
+}
+
+static T Cast(T,U)(U object)
+	if(__isCSStruct!U && __isClass!T)
+{
+	return cast(T) BOX!U(object);
+}
+
+static T Cast(T,U)(U object)
+if((!is(U==class) &&!is(U==interface))&&(is(T==class) && is(U==struct)))
+{
+	return cast(T)object;
+}
+
+static T Cast(T,U)(U object)
+	if((!is(U==class) &&!is(U==interface))&&(!is(T==interface) && is(U==struct)))
 {
 	return cast(T)object;
 }
@@ -883,10 +923,10 @@ if(is(T==struct) && !__traits(compiles, T.__IsEnum==true))
 		auto type = CachedTypes[info];
 		if(csName !is null)
 		{
-			type.FullName = _S(csName);
+			type.FullName = new String(csName);
 			if(csName.lastIndexOf(".")!=-1)
 			{
-				type.Name = _S(csName[csName.lastIndexOf(".")..$]);
+				type.Name = new String(csName[csName.lastIndexOf(".")..$]);
 			}
 		}
 		return cast(Type_T!(T.__Boxed_)) type;
@@ -911,10 +951,10 @@ if(is(T==struct) && __traits(compiles, T.__IsEnum==true))
 		auto type = CachedTypes[info];
 		if(csName !is null)
 		{
-			type.FullName = _S(csName);
+			type.FullName = new String(csName);
 			if(csName.lastIndexOf(".")!=-1)
 			{
-				type.Name = _S(csName[csName.lastIndexOf(".")..$]);
+				type.Name = new String(csName[csName.lastIndexOf(".")..$]);
 			}
 		}
 		return cast(Type_T!(T)) type;
@@ -938,10 +978,10 @@ if(!is(T==struct))
 		auto type = CachedTypes[info];
 		if(csName !is null)
 		{
-			type.FullName = _S(csName);
+			type.FullName = new String(csName);
 			if(csName.lastIndexOf(".")!=-1)
 			{
-				type.Name = _S(csName[csName.lastIndexOf(".")..$]);
+				type.Name = new String(csName[csName.lastIndexOf(".")..$]);
 			}
 		}
 		return cast(Type_T!(T)) type;

@@ -11,7 +11,7 @@ class File : NObject
 {
 	public static String ReadAllText(String filename)
 	{
-		return new String(std.file.readText(to!(string)(filename.Text)));
+		return  new String(std.file.readText(to!(string)(filename.Text)));
 	}
 
 	public static void WriteAllText(String filename, String text)

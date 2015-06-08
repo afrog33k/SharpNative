@@ -23,7 +23,7 @@ class AmbiguousMatchException : SystemException {
 
 
 	this(String paramName) {
-		super(_S(E_AMBIGUOUSMATCH));
+		super(new String(E_AMBIGUOUSMATCH));
 	}
 
 	
@@ -529,7 +529,7 @@ public class FieldInfo__G(C,T) : FieldInfo
 	override void SetValue(NObject instance, NObject value)
 	{
 
-	//	Console.WriteLine(String.Format(_S("Setting {0} to {1}"), [value, instance]));
+	//	Console.WriteLine(String.Format(String("Setting {0} to {1}"), [value, instance]));
 		if(instance is null)
 		{
 			//Console.WriteLine("instance is null");
@@ -1106,7 +1106,7 @@ override					MethodInfo GetBaseDefinition(){
 			//if(_method !is null)
 			del.funcptr =_method;//addressOf!(T[1]);
 
-			del.ptr = cast(void *)UNBOX!(T[0])(ptr);
+			del.ptr = cast(void *)UNBOX_R!(T[0])(ptr);
 
 			static if(is(return_type == void))
 			{
@@ -1546,19 +1546,19 @@ public class Type_T(T):Type
 			}
 
 
-			FullName = _S(fullName);
+			FullName = new String(fullName);
 
 
 
-			Name = _S(name);
+			Name = new String(name);
 		}
 		else
 		{
 			
 			if(is(T==void))
 			{
-				FullName = _S("System.Void");
-				Name = _S("Void");
+				FullName = new String("System.Void");
+				Name = new String("Void");
 			}
 			else
 			{
@@ -1573,14 +1573,14 @@ public class Type_T(T):Type
 
 		if(csName !is null)
 		{
-			FullName = _S(csName);
+			FullName = new String(csName);
 			if(csName.lastIndexOf(".")!=-1)
 			{
-				Name = _S(csName[csName.lastIndexOf(".")..$]);
+				Name = new String(csName[csName.lastIndexOf(".")..$]);
 			}
 		}
 
-		//FullName =_S("Dummy");
+		//FullName =String("Dummy");
 		//	Console.WriteLine(FullName);
 		//		Console.WriteLine(Name);
 
@@ -1605,7 +1605,7 @@ public class Type_T(T):Type
 
 		
 //runtime
-		Console.WriteLine(_S("Members Of :") + FullName);
+		Console.WriteLine(String("Members Of :") + FullName);
 		int count = 0;
 		foreach(member; __members) 
 		{
@@ -1639,7 +1639,7 @@ public class Type_T(T):Type
 		}
 
 		//return __GetValue!(fieldname);
-		//return _S("yo");
+		//return String("yo");
 		//auto value = getValue(__Meta,cast(string)fieldname, anobject);
 
 		//std.stdio.writeln(value);
@@ -1649,7 +1649,7 @@ public class Type_T(T):Type
 		__Meta.getValue(sfieldname, anobject);
 		std.stdio.writeln("attempting to get value of " ~ sfieldname);
 
-		return _S("nada");*/
+		return String("nada");*/
 
 
 		/*if(value.type==typeid(int))
@@ -1677,7 +1677,7 @@ public class Type_T(T):Type
 				(
 				__IA!(String[])(
 				`	 ([__traits(allMembers,T)]
-				.map!(a=>new String(a))).array
+				.map!(a=> String(a))).array
 				)
 				);
 

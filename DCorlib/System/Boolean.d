@@ -19,11 +19,11 @@ class Boolean : Boxed!bool
 
 	// The internal string representation of true.
 	// 
-	public  __gshared  String TrueLiteral  = _S("True");
+	public  __gshared  String TrueLiteral  = new String("True");
 
 	// The internal string representation of false.
 	// 
-	public  __gshared  String FalseLiteral = _S("False");
+	public  __gshared  String FalseLiteral = new String("False");
 
 
 	//
@@ -32,11 +32,11 @@ class Boolean : Boxed!bool
 
 	// The public string representation of true.
 	// 
-	public __gshared  String TrueString  = _S("True");
+	public __gshared  String TrueString  = new String("True");
 
 	// The public string representation of false.
 	// 
-	public __gshared  String FalseString = _S("False");
+	public __gshared  String FalseString = new String("False");
 
 	//
 	// Overriden Instance Methods

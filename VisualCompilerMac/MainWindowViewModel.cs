@@ -45,22 +45,21 @@ namespace VisualCompiler
             try
             {
 
-           
-           
 
+           
             //Structure: Generate File, Compile  and Run It
 
             //Call Mcs / Csc
            
-        //    parameters.OutputAssembly = outputExeName;
-				//	try
-				//	{
-		//		parameters.OutputAssembly = TempDir + "\\" + outputExeName;
-		//		parameters.CompilerOptions = " /unsafe";
-
-
-			//	CompilerResults results = codeProvider.CompileAssemblyFromSource(parameters, code);
-			
+//            parameters.OutputAssembly = outputExeName;
+//					try
+//					{
+//				parameters.OutputAssembly = TempDir + "\\" + outputExeName;
+//				parameters.CompilerOptions = " /unsafe";
+//
+//
+//				CompilerResults results = codeProvider.CompileAssemblyFromSource(parameters, code);
+//			
 //            if (results.Errors.Count > 0)
 //            {
 //                
@@ -73,8 +72,9 @@ namespace VisualCompiler
 //
 //                return;
 //            }
-				//	}catch(Exception ex) {
-				//	}
+//					}catch(Exception ex) {
+//					}
+
 
           
             }

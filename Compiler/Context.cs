@@ -135,6 +135,7 @@ namespace SharpNative.Compiler
         
         public int ForeachCount = 0;
         public static Dictionary<ITypeSymbol,List<string>> TypeImports = new Dictionary<ITypeSymbol, List<string>>();
+        public bool ShouldInitializeVariables;
 
         internal static void Push()
         {

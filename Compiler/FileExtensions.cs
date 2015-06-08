@@ -25,6 +25,7 @@ namespace SharpNative.Compiler
        
         public static Accessibility GetResultantVisibility(this ISymbol symbol)
         {
+            
             // Start by assuming it's visible.
             var visibility = Accessibility.Public;
 

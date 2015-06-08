@@ -1337,7 +1337,17 @@ class __KillableThread : core.thread.Thread {
 		super(&run);
 	}
 
-	public void abort() 
+	version(OSX)
+	{
+		public void abort()
+		{
+			//pthread_cancel(m_thisThread);
+		}
+
+	}
+	else
+	{
+	 public void abort() 
 	{
 		version(Windows)
 		{
@@ -1349,6 +1359,7 @@ class __KillableThread : core.thread.Thread {
 		{
 		pthread_cancel(m_thisThread);
 		}
+	}
 	}
 
 	private void run() {

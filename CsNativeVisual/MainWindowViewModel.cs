@@ -103,11 +103,18 @@ namespace CsNativeVisual
 
                 if (Directory.Exists(TempDir))
                 {
-                    foreach (var existing in GetFiles(TempDir, "*.d|*.o|*.exe", SearchOption.AllDirectories))
-                    {
-                        File.SetAttributes(existing, FileAttributes.Normal); //clear read only flag so we can delete it
-                        File.Delete(existing);
-                    }
+//                    foreach (var existing in GetFiles(TempDir, "*.d", SearchOption.AllDirectories))
+//                    {
+//                        File.SetAttributes(existing, FileAttributes.Normal); //clear read only flag so we can delete it
+//                        File.Delete(existing);
+//                    }
+//                    foreach (var existing in GetFiles(TempDir, "*.obj", SearchOption.AllDirectories))
+//                    {
+//                        File.SetAttributes(existing, FileAttributes.Normal); //clear read only flag so we can delete it
+//                        File.Delete(existing);
+//                    }
+
+                    // Directory.Delete(TempDir,true);
                 }
 
                 Console.WriteLine("Parsing into " + TempDir);

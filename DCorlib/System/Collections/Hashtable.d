@@ -11,7 +11,7 @@ import System.Collections.Namespace;
 
 	final  NObject opIndexAssign(NObject value, NObject index, IDictionary j=null)  {
 		//if (index >= _items.length)
-		//	throw new ArgumentOutOfRangeException(new String("index"));
+		//	throw new ArgumentOutOfRangeException(String("index"));
 		
 		_items[index] = value;
 		return _items[index];
@@ -20,7 +20,7 @@ import System.Collections.Namespace;
 	final  ref NObject opIndex(NObject index, IDictionary j=null) { //TODO: ref could be a bad idea 
 		//but allows alot of natural c# syntax
 		//if (index >= _items.length)
-		//	throw new ArgumentOutOfRangeException(new String("index"));
+		//	throw new ArgumentOutOfRangeException(String("index"));
 		
 		return _items[index];
 	}

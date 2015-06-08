@@ -162,7 +162,7 @@ namespace SharpNative.Compiler
                 }
                 if (shouldUnBox)
                 {
-                    WriteUnbox(writer, type, value);
+                    WriteUnbox(writer, type.TypeKind==TypeKind.Error?convertedType :type, value);
                     return;
                 }
 
@@ -197,9 +197,9 @@ namespace SharpNative.Compiler
             {
 //Should be able to extend this to do some basic CTFE and speed up pure method calls
                 // var assembly = Compile(code);
-                var type2 = Program.CurrentAssembly.GetType("Primes");
-                var method = type2.GetMethod("AddPrimes", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
-                var result = method.Invoke(null, new object[] {10000});
+//                var type2 = Program.CurrentAssembly.GetType("Primes");
+//                var method = type2.GetMethod("AddPrimes", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+//                var result = method.Invoke(null, new object[] {10000});
 
 
                 // var constantval = Program.GetModel(value).GetConstantValue(result);

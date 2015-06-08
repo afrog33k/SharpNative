@@ -35,7 +35,7 @@ class StringHelper
 			n=ParseDecimal(str, ptr);
 			if (n<0)
 			{
-				throw ( new FormatException( (new String ("Input string was not in a correct format."))));
+				throw ( new FormatException( ( new String ("Input string was not in a correct format."))));
 			}
 			if (str[ptr]==',')
 			{
@@ -54,14 +54,14 @@ class StringHelper
 				width=ParseDecimal(str, ptr);
 				if (width<0)
 				{
-					throw ( new FormatException( (new String ("Input string was not in a correct format."))));
+					throw ( new FormatException( ( new String ("Input string was not in a correct format."))));
 				}
 			}
 			else
 			{
 				width=0;
 				leftAlign=false;
-				format= (new String (""));
+				format= ( new String (""));
 			}
 			if (str[ptr]==':')
 			{
@@ -78,12 +78,12 @@ class StringHelper
 			}
 			if (str[ptr++]!='}')
 			{
-				throw ( new FormatException( (new String ("Input string was not in a correct format."))));
+				throw ( new FormatException( ( new String ("Input string was not in a correct format."))));
 			}
 		}
 		catch(
 			  IndexOutOfRangeException __ex)    {
-				  throw ( new FormatException( (new String ("Input string was not in a correct format."))));
+				  throw ( new FormatException( ( new String ("Input string was not in a correct format."))));
 			  }
 	}
 
@@ -124,14 +124,14 @@ class StringHelper
 				int n = 0;
 				int width = 0;
 				bool leftAlign = false;
-				String  argFormat = null;
+				String  argFormat = _S("");
 				ParseFormatSpecifier(format, ptr, n, width, leftAlign, argFormat);
 				if (n>=args.length)
 				{
-					throw ( new FormatException( (new String ("Index (zero based) must be greater than or equal to zero and less than the size of the argument list."))));
+					throw ( new FormatException( ( new String ("Index (zero based) must be greater than or equal to zero and less than the size of the argument list."))));
 				}
 				NObject  arg = args[n];
-				String  str = null;
+				String  str = _S("");
 				if (arg is null)
 				{
 					str=new String("");
@@ -172,7 +172,7 @@ class StringHelper
 				}
 				else
 				{
-					throw ( new FormatException( (new String ("Input string was not of the correct format."))));
+					throw ( new FormatException( ( new String ("Input string was not of the correct format."))));
 				}
 			}
 		}
@@ -188,7 +188,7 @@ class StringHelper
 
 
 
-class String : NObject, IComparable, IComparable__G!(String)
+class String : NObject //,IComparable__G!(String) //, IComparable, IComparable__G!(String) IComparable causes duplicate symbol in ldc
 {
 	wstring text;
 	//	char[] text;
@@ -198,6 +198,8 @@ class String : NObject, IComparable, IComparable__G!(String)
 	//		text = source;
 	//	}
 
+	alias text this;
+
 	public wstring Text() @property const
 	{
 		return text;
@@ -206,7 +208,7 @@ class String : NObject, IComparable, IComparable__G!(String)
 
 	public String ToUpper()
 	{
-		return _S(std.uni.toUpper(text));
+		return new String(std.uni.toUpper(text));
 	}
 	//	static const __typeID = typeid(wstring);
 
@@ -226,18 +228,27 @@ class String : NObject, IComparable, IComparable__G!(String)
 		//return hash;
 	}
 
+	class __Boxed_ : Boxed!(String)
+	{
+		this(String astring)
+		{
+			super(astring);
+		}
+	}
+
 	public __gshared String Empty = new String("");
 	public __gshared String Null =  new String(cast(wstring)null);
 
 	static this()
 	{
-		//Empty =  new String("");
+		//Empty =  String("");
 	}
 
-	this()
+	/*this()
 	{
 		text = "";
-	}
+	}*/
+
 	this(wstring source)
 	{
 		text = source;
@@ -268,8 +279,8 @@ class String : NObject, IComparable, IComparable__G!(String)
 	}
 
 	public bool StartsWith(String str) {
-		//Console.WriteLine(new String("str = {0}, ss = {1}") , str , this.Substring(0, str.Length) );
-		return this.Substring(0, str.Length).Equals(str);
+		//Console.WriteLine(String("str = {0}, ss = {1}") , str , this.Substring(0, str.Length) );
+		return this.Substring(0, str.Length)==(str);
 	}
 
 	public bool EndsWith(String str) {
@@ -329,7 +340,7 @@ class String : NObject, IComparable, IComparable__G!(String)
 	public override String ToString()
 	{
 		return this;
-		//return new String(text[0..text.length]);
+		//return String(text[0..text.length]);
 	}
 
 	public String Substring(int index, int length)
@@ -344,23 +355,42 @@ class String : NObject, IComparable, IComparable__G!(String)
 		return Equals(rhs);
 	}
 
-	override bool Equals (NObject rhs)
+	override bool  Equals (NObject rhs)
     {
 		
         return text == (rhs.ToString()).text;
     }
 
+	bool Equals (String rhs)
+    {
+
+        return text == rhs.text;
+    }
+
 	override bool  opEquals(Object rhs)
 	{
-		 if(cast(String)rhs)
+
+		if(cast(String)rhs)
 		{
-			return text==(cast(String)(rhs)).text;
+			return text==(cast(String)rhs).text;
 		}
-		return super.opEquals(rhs);
-			//Console.WriteLine("opEquals");
+		//return super.opEquals(rhs);
+			//Console.WriteLine("opEquals...");
+		//	return text==(rhs.text);
+		return false;
+	
+	}
+
+	bool  opEquals(String rhs)
+	{
+		//Console.WriteLine("opEqualsS");
+
+			return text==rhs.text;
+		
+		
 		//	return text==(rhs.text);
 		//return false;
-	
+
 	}
 
 	
@@ -369,11 +399,11 @@ class String : NObject, IComparable, IComparable__G!(String)
 	{
 		if(object is null)
 			return 1;
-		if(is(object:String))
+		/*if(is(object:String))
 		{
 			auto aStr = cast(String) object;
 			return aStr.Text.opCmp(this.Text);
-		}
+		}*/
 		return -1;
 	}
 
@@ -401,6 +431,16 @@ class String : NObject, IComparable, IComparable__G!(String)
 		}
 	}
 
+	
+
+	String opBinaryRight(string op)(NObject rhs)
+	{
+		static if (op == "+") 
+		{
+			return  new String(rhs.ToString().text ~ text);	
+		}
+	}
+
 	String opBinary(string op)(String rhs)
 	{
 		//Console.WriteLine(op);
@@ -413,6 +453,10 @@ class String : NObject, IComparable, IComparable__G!(String)
 		//	text = text ~ rhs.text;
 		//	return  this;	
 		//}
+		static if (op == "==") 
+		{
+			return text == rhs.text;
+		}
 	}
 
 
@@ -424,10 +468,10 @@ class String : NObject, IComparable, IComparable__G!(String)
 
 
 	//seems we can overload just like c# yay ;)
-	String opBinaryRight(string op)(NObject lhs)
+	String opBinaryRight(String op)(NObject lhs)
 	{
 		static if (op == "+") 
-			return  new String(lhs.ToString().text ~ text);  
+			return new  String(lhs.ToString().text ~ text);  
 
 	}
 
@@ -471,7 +515,7 @@ class String : NObject, IComparable, IComparable__G!(String)
 
 	final U opCast(U:String)(const(String) astring)
 	{	
-		return _S(astring.Text);
+		return String(astring.Text);
 	}
 
 	
@@ -483,7 +527,7 @@ class String : NObject, IComparable, IComparable__G!(String)
 		//using this makes concats in D faster than those in C# (otherwise they are about 3 times  slower)... so all s+=other especially when we are using plain strings should become
 		// s.Concat(other)
 		//text ~=  other;
-		return _S(ntext);
+		return new String(ntext);
 	}
 
 	//Faster internal concat

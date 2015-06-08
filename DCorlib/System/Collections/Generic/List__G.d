@@ -194,7 +194,7 @@ class List__G(T) : NObject ,IList__G!(T) ,System.Collections.Namespace.IList //,
     {
 		// Non-null values are fine.  Only accept nulls if T is a class or Nullable<U>.
 		// Note that default(T) is not equal to null for value types except when T is Nullable<U>. 
-		return (((IsCast!(T)(value)))||(value is null&&__Default!(T) is null));
+		return (((IsCast!(T)(value)))||(__IsNull(value)&& __IsNull(__Default!(T))));
     }
 
     NObject opIndex(int index, System.Collections.Namespace.IList __j = null)
@@ -231,6 +231,7 @@ class List__G(T) : NObject ,IList__G!(T) ,System.Collections.Namespace.IList //,
 		{
 			EnsureCapacity(this._size+1);
 		}
+		//_items._items.length=this._size++;
 		this._items[this._size++]=item;
 		this._version++;
     }
@@ -1960,7 +1961,7 @@ class List__G(T) : NObject ,IList__G!(T) ,System.Collections.Namespace.IList //,
 //  final void opIndexAssign(T value, int index) 
 //  {
 //    if (index >= size_)
-//      throw new ArgumentOutOfRangeException(new String("index"));
+//      throw new ArgumentOutOfRangeException(String("index"));
 //    
 //    _items[index] = value;
 //  }
@@ -1968,7 +1969,7 @@ class List__G(T) : NObject ,IList__G!(T) ,System.Collections.Namespace.IList //,
 //  final T opIndex(int index) 
 //  {
 //    if (index >= size_)
-//      throw new ArgumentOutOfRangeException(new String("index"));
+//      throw new ArgumentOutOfRangeException(String("index"));
 //    
 //    return _items[index];
 //  }
@@ -2038,7 +2039,7 @@ class List__G(T) : NObject ,IList__G!(T) ,System.Collections.Namespace.IList //,
 //      this(List__G!(T) array)
 //      {
 //          _list = array;
-//          //Console.WriteLine(_S("inted with {0}"), BOX!(int)(index));
+//          //Console.WriteLine(String("inted with {0}"), BOX!(int)(index));
 //          //writeln(_array.Items[index]);
 //      }
 //

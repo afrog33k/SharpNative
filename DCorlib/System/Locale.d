@@ -12,11 +12,11 @@ struct Locale
 
 	String GetText(string aString)
 	{
-		return _S(aString);
+		return new String(aString);
 	}
 
 	String GetText(wstring aString)
 	{
-		return _S(aString);
+		return new String(aString);
 	}
 }

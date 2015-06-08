@@ -47,7 +47,7 @@ public    TValue  opIndex( TKey key )   {
       if (key is null)
       {
 
-        throw  new ArgumentNullException( (new String ("key")));
+        throw  new ArgumentNullException( ( String ("key")));
       
 }
       int hashCode = cast(int)(hcp.IEqualityComparer_T_GetHashCode(key)|HASH_FLAG);
@@ -77,7 +77,7 @@ public   void opIndexAssign( TValue  value, TKey key )   {
       if (key is null)
       {
 
-        throw  new ArgumentNullException( (new String ("key")));
+        throw  new ArgumentNullException( ( String ("key")));
       
 }
       int hashCode = cast(int)(hcp.IEqualityComparer_T_GetHashCode(key)|HASH_FLAG);
@@ -187,25 +187,25 @@ void CopyToCheck(Array_T array, int index)
     if (array is null)
     {
 
-      throw  new ArgumentNullException( (new String ("array")));
+      throw  new ArgumentNullException( ( String ("array")));
     
 }
     if (index<0)
     {
 
-      throw  new ArgumentOutOfRangeException( (new String ("index")));
+      throw  new ArgumentOutOfRangeException( ( String ("index")));
     
 }
     if (index>array.Length)
     {
 
-      throw  new ArgumentException( (new String ("index larger than largest valid index of array")));
+      throw  new ArgumentException( ( String ("index larger than largest valid index of array")));
     
 }
     if (array.Length-index<this.ICollection_T_Count)
     {
 
-      throw  new ArgumentException( (new String ("Destination array cannot hold the requested elements!")));
+      throw  new ArgumentException( ( String ("Destination array cannot hold the requested elements!")));
     
 }
   
@@ -311,7 +311,7 @@ void Do_ICollectionCopyTo (  TRet ) (Array_T array, int index, Dictionary_TKey_T
             catch(
             NException e)            {
 
-                throw  new ArgumentException( (new String ("Cannot copy source collection elements to destination array")),  (new String ("array")), e);
+                throw  new ArgumentException( ( String ("Cannot copy source collection elements to destination array")),  ( String ("array")), e);
             
 }
           
@@ -356,7 +356,7 @@ public void IDictionary_TKey_TValue_Add(TKey key, TValue value)
               if (key is null)
               {
 
-                throw  new ArgumentNullException( (new String ("key")));
+                throw  new ArgumentNullException( ( String ("key")));
               
 }
               int hashCode = cast(int)(hcp.IEqualityComparer_T_GetHashCode(key)|HASH_FLAG);
@@ -368,7 +368,7 @@ public void IDictionary_TKey_TValue_Add(TKey key, TValue value)
                 if (this.linkSlots[cur].HashCode==hashCode&&hcp.IEqualityComparer_T_Equals(this.keySlots[cur], key))
                 {
 
-                  throw  new ArgumentException( (new String ("An element with the same key already exists in the dictionary.")));
+                  throw  new ArgumentException( ( String ("An element with the same key already exists in the dictionary.")));
                 
 }
                 cur=this.linkSlots[cur].Next;
@@ -441,7 +441,7 @@ public bool IDictionary_TKey_TValue_ContainsKey(TKey key)
               if (key is null)
               {
 
-                throw  new ArgumentNullException( (new String ("key")));
+                throw  new ArgumentNullException( ( String ("key")));
               
 }
               int hashCode = cast(int)(hcp.IEqualityComparer_T_GetHashCode(key)|HASH_FLAG);
@@ -493,11 +493,11 @@ public void ISerializable_GetObjectData(System.Runtime.Serialization.Namespace.S
                 if (info is null)
                 {
 
-                  throw  new ArgumentNullException( (new String ("info")));
+                  throw  new ArgumentNullException( ( String ("info")));
                 
 }
-                info.AddValue( (new String ("Version")), generation);
-                info.AddValue( (new String ("Comparer")), hcp);
+                info.AddValue( ( String ("Version")), generation);
+                info.AddValue( ( String ("Comparer")), hcp);
                  Array_T!(System.Collections.Generic.Namespace.KeyValuePair_TKey_TValue!(TKey, TValue))  data =  new Array_T!(KeyValuePair_TKey_TValue!(TKey, TValue) )(count);
                 if (this.count>0)
                 {
@@ -505,8 +505,8 @@ public void ISerializable_GetObjectData(System.Runtime.Serialization.Namespace.S
                   CopyTo(data, 0);
                 
 }
-                info.AddValue( (new String ("HashSize")), table.Length);
-                info.AddValue( (new String ("KeyValuePairs")), data);
+                info.AddValue( ( String ("HashSize")), table.Length);
+                info.AddValue( ( String ("KeyValuePairs")), data);
               
 }
 
@@ -528,13 +528,13 @@ public void IDeserializationCallback_OnDeserialization(NObject sender)
                   switch( e.Name.Text )
                   {
 
-                    case  (new String ("Version")).Text                    :
+                    case  ( String ("Version")).Text                    :
                       this.generation=UNBOX!(int)(e.Value);
-break;                    case  (new String ("Comparer")).Text                    :
+break;                    case  ( String ("Comparer")).Text                    :
                       this.hcp=AsCast!( System.Collections.Generic.Namespace.IEqualityComparer_T!(TKey) )(e.Value);
-break;                    case  (new String ("HashSize")).Text                    :
+break;                    case  ( String ("HashSize")).Text                    :
                       hashSize=UNBOX!(int)(e.Value);
-break;                    case  (new String ("KeyValuePairs")).Text                    :
+break;                    case  ( String ("KeyValuePairs")).Text                    :
                       data=AsCast!( Array_T!(System.Collections.Generic.Namespace.KeyValuePair_TKey_TValue!(TKey, TValue)) )(e.Value);
 break;                    default:
 break;
@@ -578,7 +578,7 @@ public bool IDictionary_TKey_TValue_Remove(TKey key)
                   if (key is null)
                   {
 
-                    throw  new ArgumentNullException( (new String ("key")));
+                    throw  new ArgumentNullException( ( String ("key")));
                   
 }
                   int hashCode = cast( int )(hcp.IEqualityComparer_T_GetHashCode(key)|HASH_FLAG);
@@ -640,7 +640,7 @@ public bool IDictionary_TKey_TValue_TryGetValue(TKey key,  out TValue value)
                   if (key is null)
                   {
 
-                    throw  new ArgumentNullException( (new String ("key")));
+                    throw  new ArgumentNullException( ( String ("key")));
                   
 }
                   int hashCode = cast(int)(hcp.IEqualityComparer_T_GetHashCode(key)|HASH_FLAG);
@@ -765,13 +765,13 @@ static TKey ToTKey(NObject key)
                   if (key is null)
                   {
 
-                    throw  new ArgumentNullException( (new String ("key")));
+                    throw  new ArgumentNullException( ( String ("key")));
                   
 }
                   if (!((IsCast!( TKey )(key))))
                   {
 
-                    throw  new ArgumentException( (new String ("not of type: "))+new System.Type(classOf[TKey])._Type_ToString(),  (new String ("key")));
+                    throw  new ArgumentException( ( String ("not of type: "))+new System.Type(classOf[TKey])._Type_ToString(),  ( String ("key")));
                   
 }
                   return (AsCast!( TKey )(key));
@@ -790,7 +790,7 @@ static TValue ToTValue(NObject value)
                   if (!((IsCast!( TValue )(value))))
                   {
 
-                    throw  new ArgumentException( (new String ("not of type: "))+new System.Type(classOf[TValue])._Type_ToString(),  (new String ("value")));
+                    throw  new ArgumentException( ( String ("not of type: "))+new System.Type(classOf[TValue])._Type_ToString(),  ( String ("value")));
                   
 }
                   return (AsCast!( TValue )(value));
@@ -839,7 +839,7 @@ bool IDictionary_Contains(NObject key)
                   if (key is null)
                   {
 
-                    throw  new ArgumentNullException( (new String ("key")));
+                    throw  new ArgumentNullException( ( String ("key")));
                   
 }
                   if ((IsCast!( TKey )(key)))
@@ -858,7 +858,7 @@ void IDictionary_Remove(NObject key)
                   if (key is null)
                   {
 
-                    throw  new ArgumentNullException( (new String ("key")));
+                    throw  new ArgumentNullException( ( String ("key")));
                   
 }
                   if ((IsCast!( TKey )(key)))
@@ -1054,7 +1054,7 @@ public this(IDictionary_TKey_TValue!(TKey, TValue) dictionary, IEqualityComparer
                     if (dictionary is null)
                     {
 
-                      throw  new ArgumentNullException( (new String ("dictionary")));
+                      throw  new ArgumentNullException( ( String ("dictionary")));
                     
 }
                     Init(dictionary.ICollection_T_Count, comparer);
@@ -1074,7 +1074,7 @@ public this(int capacity, IEqualityComparer_T!(TKey) comparer)
                     if (capacity<0)
                     {
 
-                      throw  new ArgumentOutOfRangeException( (new String ("capacity")));
+                      throw  new ArgumentOutOfRangeException( ( String ("capacity")));
                     
 }
                     Init(capacity, comparer);

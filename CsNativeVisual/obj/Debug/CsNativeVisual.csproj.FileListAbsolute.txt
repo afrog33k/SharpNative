@@ -22,7 +22,6 @@ X:\Experiments\CsNative\SharpNative\CsNativeVisual\bin\Debug\RoslynDomCommon.dll
 X:\Experiments\CsNative\SharpNative\CsNativeVisual\bin\Debug\RoslynDomRDomCommon.dll
 X:\Experiments\CsNative\SharpNative\CsNativeVisual\bin\Debug\RoslynDomUtilities.dll
 X:\Experiments\CsNative\SharpNative\CsNativeVisual\bin\Debug\SharpNative.exe
-X:\Experiments\CsNative\SharpNative\CsNativeVisual\bin\Debug\System.Collections.Immutable.dll
 X:\Experiments\CsNative\SharpNative\CsNativeVisual\bin\Debug\System.Reflection.Metadata.dll
 X:\Experiments\CsNative\SharpNative\CsNativeVisual\bin\Debug\System.Windows.Interactivity.dll
 X:\Experiments\CsNative\SharpNative\CsNativeVisual\bin\Debug\SharpNative.pdb
@@ -38,7 +37,6 @@ X:\Experiments\CsNative\SharpNative\CsNativeVisual\bin\Debug\Microsoft.CodeAnaly
 X:\Experiments\CsNative\SharpNative\CsNativeVisual\bin\Debug\Microsoft.Practices.Unity.xml
 X:\Experiments\CsNative\SharpNative\CsNativeVisual\bin\Debug\Microsoft.Practices.Unity.Configuration.xml
 X:\Experiments\CsNative\SharpNative\CsNativeVisual\bin\Debug\Microsoft.Practices.Unity.RegistrationByConvention.xml
-X:\Experiments\CsNative\SharpNative\CsNativeVisual\bin\Debug\System.Collections.Immutable.xml
 X:\Experiments\CsNative\SharpNative\CsNativeVisual\bin\Debug\System.Reflection.Metadata.xml
 X:\Experiments\CsNative\SharpNative\CsNativeVisual\bin\Debug\System.Windows.Interactivity.xml
 X:\Experiments\CsNative\SharpNative\CsNativeVisual\bin\Debug\de\System.Windows.Interactivity.resources.dll

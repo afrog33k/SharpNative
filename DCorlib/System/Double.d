@@ -44,14 +44,14 @@ class Double : Boxed!double
 		//Almost there ;)
 		auto writer = appender!string();
 		formattedWrite(writer,"%G",__Value);
-		return _S(writer.data);
+		return new String(writer.data);
 		//char[256] buf;
 		//buf.length = 256;
 		//vsprintf(cast(char*)buf, cast(const(char*))"%.17g",cast(char*) __Value);
 	//	//buf.length = core.stdc.string.strlen(cast(char*)buf);
 
 		//printf( "%.*s", cast(char*)buf );
-		//return _S("");//; new String(buf);
+		//return String("");//; String(buf);
 	}
 
 	public override Type GetType()

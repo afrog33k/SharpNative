@@ -40,12 +40,20 @@ int System_DateTime_gettimeofday(int *time ,int *tzp)
 
 		return gettimeofday(cast(timeval *)time,cast(timezone *)tzp);
 	}
-	else
+	//else{
+	//	extern (C) int gettimeofday(timeval * tp, timezone * tz);
+	//	return gettimeofday(cast(timeval *)time,cast(timezone *)tzp);
+	//}
+	version(OSX)
 	{
-		extern (C) int gettimeofday(timeval * tp, timezone * tz);
-		return gettimeofday(cast(timeval *)time,cast(timezone *)tzp);
+	
+	
+		//extern (C) int gettimeofday(timeval * tp, timezone * tz);
+		return 24;//gettimeofday(cast(timeval *)time,cast(timezone *)tzp);
 
 	}
+	
+	
 	return 0;
 }
 

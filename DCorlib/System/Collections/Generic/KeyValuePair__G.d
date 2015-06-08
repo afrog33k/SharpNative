@@ -36,7 +36,7 @@ struct KeyValuePair__G(TKey , TValue)
 		{
 			s.Append(BOX!(TKey)(Key));
 		}
-		s.Append(_S(", "));
+		s.Append(new String(", "));
 		if(this.Value !is null)
 		{
 			s.Append(BOX!(TValue)(Value));

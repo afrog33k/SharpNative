@@ -37,7 +37,7 @@ import System.Collections.Generic.Namespace;
       return (-i.IComparable_CompareTo(x));
     
 }
-    throw  new ArgumentException( (new String ("At least one argument has to implement IComparable interface")));
+    throw  new ArgumentException( ( String ("At least one argument has to implement IComparable interface")));
   
 }
 

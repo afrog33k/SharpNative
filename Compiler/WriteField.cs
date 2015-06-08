@@ -112,16 +112,38 @@ namespace SharpNative.Compiler
             ISymbol[] proxies;
 
             bool isInterface =false;
-           // var ename = MemberUtilities.GetMethodName(field, ref isInterface, out iface, out proxies);
+           // 
             if (@event)
             {
+                var ename = MemberUtilities.GetMethodName(field, ref isInterface, out iface, out proxies);
+                var fieldName = "__evtfield__" + ename + (iface != null ? TypeProcessor.ConvertType(iface)
+                    .Replace("(", "_").Replace("!", "_").Replace(")", "_").Replace(".", "_") : "");
+
+
                 typeString = ("__Event!(" + typeString + ")");
 
-                if (field.Parent is InterfaceDeclarationSyntax)
+                if (iface != null && !isInterface)
                 {
-                    
+                    writer.WriteLine(typeString + " " + fieldName + " = new " + typeString+"();");
+
                     //writer.Write(typeString);
-                    writer.WriteLine(typeString + " " + name + "(" + TypeProcessor.ConvertType(field.Parent) +" __ij)" + "@property;");
+                    writer.WriteLine((typeString + " " + name + "(" + TypeProcessor.ConvertType(iface) + " __ij=null)" +
+                                      "@property { return " + fieldName + "; }"));
+
+                    return;
+
+                }
+                else if (isInterface)
+                {
+                    writer.WriteLine((typeString + " " + name + "(" + TypeProcessor.ConvertType(field.Parent) + " __ij=null)" +
+                                       "@property;"));
+                    return;
+                }
+                else
+                {
+                    writer.WriteLine(typeString + " " + fieldName + " = new " + typeString + "();");
+                    writer.WriteLine((typeString + " " + name + "()" +
+                                      "@property { return " + fieldName + "; }"));
                     return;
                 }
             }
@@ -164,12 +186,15 @@ namespace SharpNative.Compiler
 
                 else
                 {
-                   // if (typeinfo.Type.TypeKind != TypeKind.Struct)
+                    // if (typeinfo.Type.TypeKind != TypeKind.Struct)
+                    if (Context.Instance.ShouldInitializeVariables)
                     {
                         writer.Write(" = ");
                         if (typeinfo.Type.TypeKind == TypeKind.Delegate)
                             writer.Write("new " + typeString + "()");
+                       
                         else
+                         
                             writer.Write(TypeProcessor.DefaultValue(type));
                     }
                 }

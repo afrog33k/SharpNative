@@ -7,7 +7,7 @@ class Activator : NObject
 	public static NObject CreateInstance(Type type, Array_T!(NObject) args) //Just testing
         {
 			if (type is null)
-                throw new ArgumentNullException(_S("type"));
+                throw new ArgumentNullException(new String("type"));
 
 			return type.Create();
           /*  return CreateInstance(type,

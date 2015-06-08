@@ -44,7 +44,7 @@ namespace SharpNative.Compiler
             var methodSymbol = symbolInfo.Symbol;
             if (methodSymbol == null)
                 symbolInfo = TypeProcessor.GetSymbolInfo(expression.Expression);
-            if (type != null && methodSymbol != null)
+            if (type != null &&methodSymbol!=null)
                 //if type is null, then we're just a namespace.  We can ignore these.
             {
                 var directInvocationOnBasics = methodSymbol.ContainingType.IsBasicType() && methodSymbol.IsStatic;
@@ -68,6 +68,21 @@ namespace SharpNative.Compiler
                 writer.Write(".");
                 // Ideally Escape analysis should take care of this, but for now all value types are on heap and ref types on stack
             }
+//            else if (methodSymbol==null)
+//            {
+//                if (type.TypeKind == TypeKind.Error)
+//                {
+//                    typeInfo = TypeProcessor.GetTypeInfo(expression);
+//                    type = typeInfo.Type;
+//                    if (type.TypeKind == TypeKind.Error)
+//                        type = typeInfo.ConvertedType;
+//                }
+//                if (type.TypeKind != TypeKind.Error)
+//                {
+//                    writer.Write(TypeProcessor.ConvertType(type));
+//                    writer.Write(".");
+//                }
+//            }
 
             if (methodSymbol != null && methodSymbol.Kind == SymbolKind.Property)
             {

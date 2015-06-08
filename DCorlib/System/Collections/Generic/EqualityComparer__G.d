@@ -40,7 +40,7 @@ int GetHashCode(NObject obj,IEqualityComparer __j=null)
 
    /* if (!((IsCast!( T )(obj))))
     {
-      throw  new ArgumentException( (new String ("Argument is not compatible")),  (new String ("obj"))); 
+      throw  new ArgumentException( ( String ("Argument is not compatible")),  ( String ("obj"))); 
     }
 
     return (IEqualityComparer_T_GetHashCode(AsCast!( T )(obj)));*/

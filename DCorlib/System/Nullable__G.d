@@ -1,10 +1,11 @@
 module System.Nullable__G;
 import System.Namespace;
 
-public class Nullable__G(T) : NObject //where T : struct
+
+public struct Nullable__G(T) //: NObject //where T : struct
 {
 	private bool hasValue_ =false; 
-	private T value_=T.init; 
+	public T value_=T.init; 
 
 	alias value_ this;
 	/*static Nullable opCall(T value) {
@@ -14,9 +15,13 @@ public class Nullable__G(T) : NObject //where T : struct
 	return self;
 	}*/
 
-	this()
+	/*this()
 	{
 
+	}*/
+
+	class __Boxed_: Boxed!(T)
+	{
 	}
 
 
@@ -75,7 +80,7 @@ public class Nullable__G(T) : NObject //where T : struct
 
 		if (!HasValue) 
 		{
-			throw new NException(_S("Nullable object must have a value."));
+			throw new NException(new String("Nullable object must have a value."));
 			//ThrowHelper.ThrowInvalidOperationException(ExceptionResource.InvalidOperation_NoValue);
 		}
 		return value_;
@@ -99,14 +104,14 @@ public class Nullable__G(T) : NObject //where T : struct
 	return value.Equals(other);
 	}*/
 
-	public override  int GetHashCode() 
+	public  int GetHashCode() 
 	{
-		return HasValue ? cast(int)value_.toHash : 0;
+		return HasValue ? cast(int) value_.GetHashCode() : 0;
 	}
 
-	public override  String ToString() 
+	public   String ToString() 
 	{
-		return HasValue ? _S(value_.toString) : String.Empty;
+		return HasValue ? new String(value_.toString) : String.Empty;
 	}
 
 	public void Dispose(IDisposable j=null)

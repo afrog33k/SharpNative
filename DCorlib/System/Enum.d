@@ -21,9 +21,9 @@ public class Enum : NObject
 		enum allMembers = __traits(allMembers, T);
 
 		if(type is null) 
-			throw new ArgumentNullException(_S("type"));
+			throw new ArgumentNullException(String("type"));
 		if(name is null)
-			throw new ArgumentNullException(_S("name"));
+			throw new ArgumentNullException(String("name"));
 
 		//auto temp = __TypeNew!(T);
 
@@ -49,7 +49,7 @@ public class Enum : NObject
 		}
 		}*/
 
-		throw new ArgumentException(_S(""));
+		throw new ArgumentException(String(""));
 	}
 
 

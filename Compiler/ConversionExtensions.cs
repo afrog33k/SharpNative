@@ -1,6 +1,6 @@
 // /*
 //   SharpNative - C# to D Transpiler
-//   (C) 2014 Irio Systems 
+//   (C) 2014 Irio Systems
 // */
 
 #region Imports
@@ -21,6 +21,7 @@ namespace SharpNative.Compiler
             if (!returnTypeSymbol.IsPrimitiveInteger())
                 allowNarrowing = false;
 
+            
             if (!allowNarrowing)
             {
                 return

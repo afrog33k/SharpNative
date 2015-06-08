@@ -158,9 +158,11 @@ public class Type:NObject
 	PropertyInfo GetProperty(String name)
 	{
 		auto index = -1;
+		
 
 		for(int c =0; c < __properties.length; c++)
 		{
+			//Console.WriteLine(__properties[c].Name==name);
 			if(__properties[c].Name==name)
 			{
 				index = c;
@@ -177,7 +179,7 @@ public class Type:NObject
 
 	Type __Method(string name, MethodInfo info, MethodAttributes attributes = MethodAttributes.Public)
 	{
-		info.Name = _S(name);
+		info.Name = new String(name);
 		info.__rtAttributes = attributes;
 		__methods ~= info;
 		return this;
@@ -185,7 +187,7 @@ public class Type:NObject
 
 	Type __Field(string name, FieldInfo info,  FieldAttributes attributes = FieldAttributes.Public)
 	{
-		info.Name = _S(name);
+		info.Name = new String(name);
 		info.Attributes = attributes;
 		__fields ~= info;
 		return this;
@@ -193,14 +195,14 @@ public class Type:NObject
 
 	Type __Property(string name, PropertyInfo info)
 	{
-		info.Name = _S(name);
+		info.Name = new String(name);
 		__properties ~= info;
 		return this;
 	}
 
 	Type __Constructor(string name, ConstructorInfo info)
 	{
-		info.Name = _S(name);
+		info.Name = new String(name);
 		__constructors ~= info;
 		return this;
 	}

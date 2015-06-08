@@ -49,10 +49,11 @@ namespace CsNativeVisual
 
             //            Dispatcher.Invoke(() => Console.SetOut(new ControlWriter(Errors)));
 
-            CompilerUtils.DeleteFilesByWildcards("Test*.exe", MainWindowViewModel.TempDir);
+            CompilerUtils.DeleteFilesByWildcards("*.", MainWindowViewModel.TempDir);
 
             ViewModel.Window = this;
 
+			Driver.Verbose = true;
 
             TextEditor.Text = ViewModel.SourceCode;
             TextEditor.TextArea.TextEntering += textEditor_TextArea_TextEntering;

@@ -42,21 +42,62 @@
     <DebugLevel>0</DebugLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="main.d" />
+    <Compile Include="..\DCorlib\Namespace.d">
+      <Link>Namespace.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Action.d">
+      <Link>System\Action.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Action__G.d">
+      <Link>System\Action__G.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Activator.d">
+      <Link>System\Activator.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\ArgumentException.d">
+      <Link>System\ArgumentException.d</Link>
+    </Compile>
     <Compile Include="..\DCorlib\System\Array.d">
       <Link>System\Array.d</Link>
     </Compile>
     <Compile Include="..\DCorlib\System\Array_T.d">
       <Link>System\Array_T.d</Link>
     </Compile>
+    <Compile Include="..\DCorlib\System\Attribute.d">
+      <Link>System\Attribute.d</Link>
+    </Compile>
     <Compile Include="..\DCorlib\System\Boolean.d">
       <Link>System\Boolean.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Byte.d">
+      <Link>System\Byte.d</Link>
     </Compile>
     <Compile Include="..\DCorlib\System\Char.d">
       <Link>System\Char.d</Link>
     </Compile>
+    <Compile Include="..\DCorlib\System\Comparison__G.d">
+      <Link>System\Comparison__G.d</Link>
+    </Compile>
     <Compile Include="..\DCorlib\System\Console.d">
       <Link>System\Console.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\DateTime.d">
+      <Link>System\DateTime.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\DateTimeKind.d">
+      <Link>System\DateTimeKind.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\DateTimeParse.d">
+      <Link>System\DateTimeParse.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\DayOfWeek.d">
+      <Link>System\DayOfWeek.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Decimal.d">
+      <Link>System\Decimal.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Delegate.d">
+      <Link>System\Delegate.d</Link>
     </Compile>
     <Compile Include="..\DCorlib\System\Double.d">
       <Link>System\Double.d</Link>
@@ -64,8 +105,23 @@
     <Compile Include="..\DCorlib\System\EmptyArray_T.d">
       <Link>System\EmptyArray_T.d</Link>
     </Compile>
+    <Compile Include="..\DCorlib\System\Enum.d">
+      <Link>System\Enum.d</Link>
+    </Compile>
     <Compile Include="..\DCorlib\System\Environment.d">
       <Link>System\Environment.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\EventArgs.d">
+      <Link>System\EventArgs.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\EventHandler.d">
+      <Link>System\EventHandler.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\EventHandler__G.d">
+      <Link>System\EventHandler__G.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Func__G.d">
+      <Link>System\Func__G.d</Link>
     </Compile>
     <Compile Include="..\DCorlib\System\GC.d">
       <Link>System\GC.d</Link>
@@ -73,14 +129,68 @@
     <Compile Include="..\DCorlib\System\ICloneable.d">
       <Link>System\ICloneable.d</Link>
     </Compile>
+    <Compile Include="..\DCorlib\System\IComparable.d">
+      <Link>System\IComparable.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\IComparable__G.d">
+      <Link>System\IComparable__G.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\IConvertible.d">
+      <Link>System\IConvertible.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\IDisposable.d">
+      <Link>System\IDisposable.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\IFormatProvider.d">
+      <Link>System\IFormatProvider.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\IFormattable.d">
+      <Link>System\IFormattable.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Int16.d">
+      <Link>System\Int16.d</Link>
+    </Compile>
     <Compile Include="..\DCorlib\System\Int32.d">
       <Link>System\Int32.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Int64.d">
+      <Link>System\Int64.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\IntPtr.d">
+      <Link>System\IntPtr.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Locale.d">
+      <Link>System\Locale.d</Link>
     </Compile>
     <Compile Include="..\DCorlib\System\Math.d">
       <Link>System\Math.d</Link>
     </Compile>
+    <Compile Include="..\DCorlib\System\MulticastDelegate.d">
+      <Link>System\MulticastDelegate.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\NException.d">
+      <Link>System\NException.d</Link>
+    </Compile>
     <Compile Include="..\DCorlib\System\NObject.d">
       <Link>System\NObject.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Namespace.d">
+      <Link>System\Namespace.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Nullable__G.d">
+      <Link>System\Nullable__G.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\PlatformID.d">
+      <Link>System\PlatformID.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Predicate__G.d">
+      <Link>System\Predicate__G.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Random.d">
+      <Link>System\Random.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\SByte.d">
+      <Link>System\SByte.d</Link>
     </Compile>
     <Compile Include="..\DCorlib\System\Single.d">
       <Link>System\Single.d</Link>
@@ -88,8 +198,56 @@
     <Compile Include="..\DCorlib\System\String.d">
       <Link>System\String.d</Link>
     </Compile>
-    <Compile Include="..\DCorlib\System\System.d">
-      <Link>System\System.d</Link>
+    <Compile Include="..\DCorlib\System\SystemException.d">
+      <Link>System\SystemException.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Timespan.d">
+      <Link>System\Timespan.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Type.d">
+      <Link>System\Type.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\TypeCode.d">
+      <Link>System\TypeCode.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\UInt16.d">
+      <Link>System\UInt16.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\UInt32.d">
+      <Link>System\UInt32.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\UInt64.d">
+      <Link>System\UInt64.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\ValueType.d">
+      <Link>System\ValueType.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Version.d">
+      <Link>System\Version.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\__Boxing.d">
+      <Link>System\__Boxing.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\__Constraints.d">
+      <Link>System\__Constraints.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\__NativeMethods.d">
+      <Link>System\__NativeMethods.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\__PInvokeSupport.d">
+      <Link>System\__PInvokeSupport.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\__PrimitiveExtensions.d">
+      <Link>System\__PrimitiveExtensions.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\__SystemExtensions.d">
+      <Link>System\__SystemExtensions.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\__YieldAsyncSupport.d">
+      <Link>System\__YieldAsyncSupport.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\__YieldIterator__G.d">
+      <Link>System\__YieldIterator__G.d</Link>
     </Compile>
     <Compile Include="..\DCorlib\System\Collections\Collection.d">
       <Link>System\Collections\Collection.d</Link>
@@ -172,8 +330,8 @@
     <Compile Include="..\DCorlib\System\Collections\Generic\EnumIntEqualityComparer_T.d">
       <Link>System\Collections\Generic\EnumIntEqualityComparer_T.d</Link>
     </Compile>
-    <Compile Include="..\DCorlib\System\Collections\Generic\EqualityComparer_T.d">
-      <Link>System\Collections\Generic\EqualityComparer_T.d</Link>
+    <Compile Include="..\DCorlib\System\Collections\Generic\EqualityComparer__G.d">
+      <Link>System\Collections\Generic\EqualityComparer__G.d</Link>
     </Compile>
     <Compile Include="..\DCorlib\System\Collections\Generic\GenericComparer_T.d">
       <Link>System\Collections\Generic\GenericComparer_T.d</Link>
@@ -181,26 +339,26 @@
     <Compile Include="..\DCorlib\System\Collections\Generic\GenericEqualityComparer_T.d">
       <Link>System\Collections\Generic\GenericEqualityComparer_T.d</Link>
     </Compile>
-    <Compile Include="..\DCorlib\System\Collections\Generic\ICollection_T.d">
-      <Link>System\Collections\Generic\ICollection_T.d</Link>
+    <Compile Include="..\DCorlib\System\Collections\Generic\ICollection__G.d">
+      <Link>System\Collections\Generic\ICollection__G.d</Link>
     </Compile>
-    <Compile Include="..\DCorlib\System\Collections\Generic\IComparer_T.d">
-      <Link>System\Collections\Generic\IComparer_T.d</Link>
+    <Compile Include="..\DCorlib\System\Collections\Generic\IComparer__G.d">
+      <Link>System\Collections\Generic\IComparer__G.d</Link>
     </Compile>
     <Compile Include="..\DCorlib\System\Collections\Generic\IDictionary_TKey_TValue.d">
       <Link>System\Collections\Generic\IDictionary_TKey_TValue.d</Link>
     </Compile>
-    <Compile Include="..\DCorlib\System\Collections\Generic\IEnumerable_T.d">
-      <Link>System\Collections\Generic\IEnumerable_T.d</Link>
+    <Compile Include="..\DCorlib\System\Collections\Generic\IEnumerable__G.d">
+      <Link>System\Collections\Generic\IEnumerable__G.d</Link>
     </Compile>
-    <Compile Include="..\DCorlib\System\Collections\Generic\IEnumerator_T.d">
-      <Link>System\Collections\Generic\IEnumerator_T.d</Link>
+    <Compile Include="..\DCorlib\System\Collections\Generic\IEnumerator__G.d">
+      <Link>System\Collections\Generic\IEnumerator__G.d</Link>
     </Compile>
-    <Compile Include="..\DCorlib\System\Collections\Generic\IEqualityComparer_T.d">
-      <Link>System\Collections\Generic\IEqualityComparer_T.d</Link>
+    <Compile Include="..\DCorlib\System\Collections\Generic\IEqualityComparer__G.d">
+      <Link>System\Collections\Generic\IEqualityComparer__G.d</Link>
     </Compile>
-    <Compile Include="..\DCorlib\System\Collections\Generic\IList_T.d">
-      <Link>System\Collections\Generic\IList_T.d</Link>
+    <Compile Include="..\DCorlib\System\Collections\Generic\IList__G.d">
+      <Link>System\Collections\Generic\IList__G.d</Link>
     </Compile>
     <Compile Include="..\DCorlib\System\Collections\Generic\IntEqualityComparer.d">
       <Link>System\Collections\Generic\IntEqualityComparer.d</Link>
@@ -211,20 +369,23 @@
     <Compile Include="..\DCorlib\System\Collections\Generic\KeyNotFoundException.d">
       <Link>System\Collections\Generic\KeyNotFoundException.d</Link>
     </Compile>
-    <Compile Include="..\DCorlib\System\Collections\Generic\KeyValuePair_TKey_TValue.d">
-      <Link>System\Collections\Generic\KeyValuePair_TKey_TValue.d</Link>
+    <Compile Include="..\DCorlib\System\Collections\Generic\KeyValuePair__G.d">
+      <Link>System\Collections\Generic\KeyValuePair__G.d</Link>
     </Compile>
     <Compile Include="..\DCorlib\System\Collections\Generic\Link.d">
       <Link>System\Collections\Generic\Link.d</Link>
     </Compile>
-    <Compile Include="..\DCorlib\System\Collections\Generic\List_T.d">
-      <Link>System\Collections\Generic\List_T.d</Link>
-    </Compile>
     <Compile Include="..\DCorlib\System\Collections\Generic\List_T_EnumeratorT.d">
       <Link>System\Collections\Generic\List_T_EnumeratorT.d</Link>
     </Compile>
+    <Compile Include="..\DCorlib\System\Collections\Generic\List__G.d">
+      <Link>System\Collections\Generic\List__G.d</Link>
+    </Compile>
     <Compile Include="..\DCorlib\System\Collections\Generic\System.Collections.Generic.Namespace.d">
       <Link>System\Collections\Generic\System.Collections.Generic.Namespace.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Globalization\Namespace.d">
+      <Link>System\Globalization\Namespace.d</Link>
     </Compile>
     <Compile Include="..\DCorlib\System\IO\File.d">
       <Link>System\IO\File.d</Link>
@@ -232,36 +393,33 @@
     <Compile Include="..\DCorlib\System\IO\System.IO.Namespace.d">
       <Link>System\IO\System.IO.Namespace.d</Link>
     </Compile>
-    <Compile Include="..\DCorlib\System\Runtime\InteropServices\InteropServices.d">
-      <Link>System\Runtime\InteropServices\InteropServices.d</Link>
+    <Compile Include="..\DCorlib\System\Reflection\Internal.d">
+      <Link>System\Reflection\Internal.d</Link>
     </Compile>
-    <Compile Include="..\DCorlib\System\Text\IFormatProvider.d">
-      <Link>System\Text\IFormatProvider.d</Link>
+    <Compile Include="..\DCorlib\System\Reflection\Namespace.d">
+      <Link>System\Reflection\Namespace.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Runtime\CompilerServices\Namespace.d">
+      <Link>System\Runtime\CompilerServices\Namespace.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Runtime\InteropServices\Namespace.d">
+      <Link>System\Runtime\InteropServices\Namespace.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\Text\Namespace.d">
+      <Link>System\Text\Namespace.d</Link>
     </Compile>
     <Compile Include="..\DCorlib\System\Text\StringBuilder.d">
       <Link>System\Text\StringBuilder.d</Link>
     </Compile>
-    <Compile Include="..\DCorlib\System\Text\Text.d">
-      <Link>System\Text\Text.d</Link>
+    <Compile Include="..\DCorlib\System\Threading\Namespace.d">
+      <Link>System\Threading\Namespace.d</Link>
     </Compile>
-    <Compile Include="..\DCorlib\__Internal.d">
-      <Link>System\__Internal\__Internal.d</Link>
+    <Compile Include="..\DCorlib\System\__Internal\Namespace.d">
+      <Link>System\__Internal\Namespace.d</Link>
     </Compile>
-    <Compile Include="..\DCorlib\Reflection.d">
-      <Link>System\__Internal\Reflection\Reflection.d</Link>
+    <Compile Include="..\DCorlib\System\__Internal\xxhash.d">
+      <Link>System\__Internal\xxhash.d</Link>
     </Compile>
-    <Compile Include="..\DCorlib\System.Reflection.Namespace.d">
-      <Link>System\Reflection\System.Reflection.Namespace.d</Link>
-    </Compile>
-    <Compile Include="..\DCorlib\System\Decimal.d">
-      <Link>System\Decimal.d</Link>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="System\" />
-    <Folder Include="System\Reflection\" />
-    <Folder Include="System\__Internal\" />
-    <Folder Include="System\__Internal\Reflection\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\DCorlib\System\Collections\.DS_Store">

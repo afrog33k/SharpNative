@@ -216,8 +216,16 @@ namespace SharpNative.Compiler
             interfaceImplemented = null;
             proxies = null;
             var methodSymbol = TypeProcessor.GetDeclaredSymbol(member);
-            var name = WriteIdentifierName.TransformIdentifier(OverloadResolver.MethodName(methodSymbol));
-
+            string name;
+            if (member is EventFieldDeclarationSyntax)
+            {
+                var eMember = member as EventFieldDeclarationSyntax;
+                methodSymbol =
+                    TypeProcessor.GetDeclaredSymbol((eMember).Declaration.Variables[0]);
+                name = WriteIdentifierName.TransformIdentifier(methodSymbol.Name);
+            }
+           else
+            name = WriteIdentifierName.TransformIdentifier(OverloadResolver.MethodName(methodSymbol));
             if (methodSymbol.ContainingType.TypeKind == TypeKind.Interface)
             {
                 isInterface = true;

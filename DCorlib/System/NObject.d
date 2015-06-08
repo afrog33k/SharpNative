@@ -137,7 +137,7 @@ void clobber(NObject dest, NObject source) {
     //String opBinary(string op)(String rhs)
     //{
     //    static if (op == "+") 
-    //        return  new String(ToString().text ~ rhs.text);    
+    //        return  String(ToString().text ~ rhs.text);    
       
     //}
 	

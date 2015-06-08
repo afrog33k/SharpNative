@@ -374,7 +374,7 @@ namespace VisualCompiler
 
 //				this.Execute(LastCompiledExecutablePath);
 
-				var output = ("/bin/bash").ExecuteCommand(" -c \"/usr/bin/mono --attach=disable --gc=sgen " + LastCompiledExecutablePath +"\"","");
+				var output = ("/bin/bash").ExecuteCommand(" -c \"/usr/bin/mono  --gc=sgen " + Driver.LastBuildPath +"\"","");
 				//Console.WriteLine(output);
 
 				var end = Environment.TickCount - start;

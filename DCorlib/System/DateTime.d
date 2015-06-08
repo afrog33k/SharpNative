@@ -440,25 +440,25 @@ struct DateTime
     public String ToString()
     {
 		//return DateTimeFormat.Format(this, null, DateTimeFormatInfo.CurrentInfo);
-		return cast(String) null;
+		return new String("");
     }
 
     public String ToString(String format)
     {
 		//            return DateTimeFormat.Format(this, format, DateTimeFormatInfo.CurrentInfo);
-		return cast(String) null;
+		return new String("");
     }
 
     public String ToString(IFormatProvider provider, IConvertible __j = null)
     {
 		//            return DateTimeFormat.Format(this, null, DateTimeFormatInfo.GetInstance(provider));
-		return cast(String) null;
+		return new String("");
     }
 
     public String ToString(String format, IFormatProvider provider, IFormattable __j = null)
     {
 		//            return DateTimeFormat.Format(this, format, DateTimeFormatInfo.GetInstance(provider));
-		return cast(String) null;
+		return new String("");
     }
 
     public DateTime ToUniversalTime()
@@ -525,11 +525,10 @@ struct DateTime
 		return d1.Subtract(d2);
     }
 
-    public final bool  opEquals (string _op) (DateTime other)
-		if(_op=="==")
-		{ 
-			return op_Equality(this); 
-		}
+    public final bool  opEquals(DateTime other)
+	{ 
+			return op_Equality(this,other); 
+	}
 
 
     public static bool  op_Equality(DateTime d1, DateTime d2)
@@ -796,11 +795,11 @@ struct DateTime
 
     public  void __init(long ticks)
     {
-		if(((ticks&Cast!(long)(DateTime.TickMask))<DateTime.MinTicks)||((ticks&Cast!(long)(DateTime.TickMask))>DateTime.MaxTicks))
+		if(((ticks&cast(long)(DateTime.TickMask))<DateTime.MinTicks)||((ticks&cast(long)(DateTime.TickMask))>DateTime.MaxTicks))
 		{
-			//throw  new ArgumentOutOfRangeException(_S("ticks"), _S("Ticks must be between DateTime.MinValue.Ticks and DateTime.MaxValue.Ticks."));
+			//throw  new ArgumentOutOfRangeException(String("ticks"), String("Ticks must be between DateTime.MinValue.Ticks and DateTime.MaxValue.Ticks."));
 		}
-		this.m_ticks=Cast!(ulong)(ticks);
+		this.m_ticks=cast(ulong)(ticks);
     }
 
     public  void __init(long ticks, DateTimeKind kind)

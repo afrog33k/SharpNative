@@ -25,6 +25,11 @@ namespace SharpNative.Compiler
 
     public static class Driver
     {
+		public static string LastBuildPath {
+			get;
+			set;
+		}
+
         public static void CompileProject(string outDir, string pathToSolution, string projects, string[] extraDefines,
             List<string> extraTranslations)
         {

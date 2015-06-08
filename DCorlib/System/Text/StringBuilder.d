@@ -72,8 +72,8 @@ class StringBuilder : NObject
 		public override String ToString() 
 		{
 		//	Console.WriteLine(data);
-			return _S(data);
-		//	return _S("");
+			return new String(data);
+		//	return String("");
 		}
 
 		public String ToString(int startIndex, int length) 
@@ -81,7 +81,7 @@ class StringBuilder : NObject
 			if (startIndex < 0 || length < 0 || startIndex + length > this.Length) {
 				throw new ArgumentOutOfRangeException();
 			}
-			return new String((data[startIndex..(startIndex+length)]));
+			return  new String((data[startIndex..(startIndex+length)]));
 		}
 
 		public int Capacity() @property
@@ -224,12 +224,12 @@ class StringBuilder : NObject
 
 	public String Substring(int index, int length)
 	{
-		return new String(text[index..(length+index)]);//(index,length);
+		return  new String(text[index..(length+index)]);//(index,length);
 	}
 
 	final char opIndex(int index) {
 		if (index >= text.length)
-			throw new ArgumentOutOfRangeException(new String("index"));
+			throw new ArgumentOutOfRangeException( new String("index"));
 		
 		return text[index];
 	}
@@ -237,7 +237,7 @@ class StringBuilder : NObject
 	String opBinary(string op)(String rhs)
 	{
 		static if (op == "+") 
-			return  new String(text ~ rhs.text);	
+			return  String(text ~ rhs.text);	
 		static if (op == "+=") 
 		{
 			text = text ~ rhs.text;

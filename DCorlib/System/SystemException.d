@@ -8,7 +8,7 @@ static class SystemException : System.Namespace.NException
 
 	public this()
 	{
-		super(_S("System Exception"));
+		super(new String("System Exception"));
 	}
 
 	public this(String message)

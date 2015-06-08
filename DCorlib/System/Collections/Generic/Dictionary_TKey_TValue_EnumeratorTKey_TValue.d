@@ -151,13 +151,13 @@ void VerifyState()
     if (this.dictionary is null)
     {
 
-      throw  new ObjectDisposedException( (new String (null)));
+      throw  new ObjectDisposedException( ( String (null)));
     
 }
     if (dictionary.generation!=this.stamp)
     {
 
-      throw  new InvalidOperationException( (new String ("out of sync")));
+      throw  new InvalidOperationException( ( String ("out of sync")));
     
 }
   
@@ -170,7 +170,7 @@ void VerifyCurrent()
     if (this.next<=0)
     {
 
-      throw  new InvalidOperationException( (new String ("Current is not valid")));
+      throw  new InvalidOperationException( ( String ("Current is not valid")));
     
 }
   
