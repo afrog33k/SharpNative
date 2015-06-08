@@ -114,18 +114,22 @@ namespace SharpNative.Compiler
                             addedTypes.Add(properClassName);
                         }
 
+						writer.WriteLine ("\n//Reflection Imports");
                         //Reflection Info
-                        writer.WriteLine("\n\nimport System.Namespace;");
-                        writer.WriteLine("\n\nimport System.Reflection.Namespace;");
+                        writer.WriteLine("import System.Namespace;");
+                        writer.WriteLine("import System.Reflection.Namespace;");
 
                         //To be on the safe side, import all namespaces except us... this allows us to create correct reflectioninfo
                         //gtest-053.cs
-                        //                        foreach (var @name in namespaces.DistinctBy(o=>o.Key).Except(@namespace)) //Cant work leads to cycles
-                        //                        {
-                        //                            writer.WriteLine("import {0};", @name.Key.GetModuleName(false));
-                        //                        }
+                                                foreach (var @name in namespaces.DistinctBy(o=>o.Key).Except(@namespace)) //Cant work leads to cycles
+                                                {
+							var nname = @name.Key.GetModuleName (false);
+							if(nname!="System.Namespace")
+								writer.WriteLine("import {0};", nname);
+                                                }
+
                         var genericMethods = new List<IMethodSymbol>();
-                        writer.WriteLine("public class __ReflectionInfo");
+                        writer.WriteLine("\npublic class __ReflectionInfo");
                         writer.OpenBrace();
                         writer.WriteLine("static this()");
                         writer.OpenBrace();
@@ -209,8 +213,7 @@ namespace SharpNative.Compiler
                 return;
             }
 
-//            List<string> imports;
-//            Context.TypeImports.TryGetValue(Context.Instance.Type, out imports);
+           
 //
 //            if (imports == null)
 //                return;
@@ -223,10 +226,7 @@ namespace SharpNative.Compiler
 
             writer.WriteLine();
 
-//            foreach (var import in imports)
-//            {
-//                writer.WriteLine("import " +  import + ";");
-//            }
+           
 
           /*  if (specialization.Name.StartsWith("YieldEnumerator"))
             {

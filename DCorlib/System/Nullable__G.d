@@ -8,6 +8,10 @@ public struct Nullable__G(T) //: NObject //where T : struct
 	public T value_=T.init; 
 
 	alias value_ this;
+
+	public static const bool __nullable = true;
+
+
 	/*static Nullable opCall(T value) {
 	Optional self;
 	self.value_ = value;
@@ -20,9 +24,88 @@ public struct Nullable__G(T) //: NObject //where T : struct
 
 	}*/
 
-	class __Boxed_: Boxed!(T)
+	void __init(){}//default xtor
+	static Nullable__G!(T) opCall(__U...)(__U args_)
 	{
+		Nullable__G!(T) s;
+		s.__init(args_);
+		return s;
 	}
+	
+	public String ToString()
+	{
+		return GetType().FullName;
+	}
+	
+	public static class __Boxed_ : Boxed!(T)
+	{
+		import std.traits;
+		
+		this()
+		{
+			super(Nullable__G!(T).init);
+		}
+		public override String ToString()
+		{
+			return __Value.ToString();
+		}
+		
+		public override bool Equals(NObject other)
+		{
+			if (cast(Boxed!(T)) other)
+			{
+				auto otherValue = (cast(Boxed!(T)) other).__Value;
+				return otherValue == __Value;
+			}
+			return false;
+		}
+		
+		this(ref Nullable__G!(T) value)
+		{
+			super(value);
+		}
+
+		U opCast(U)()
+			if(is(U:T))
+		{
+			return __Value;
+		}
+		
+		U opCast(U)()
+			if(!is(U:T))
+		{
+			return this;
+		}
+		
+		auto opDispatch(string op, Args...)(Args args)
+		{
+			enum name = op;
+			return __traits(getMember, __Value, name)(args);
+		}
+		
+		public override Type GetType()
+		{
+			return __Value.GetType();
+		}
+	}
+	
+/*	public __Boxed_ __Get_Boxed()
+	{
+		return new __Boxed_(this);
+	}*/
+	//alias __Get_Boxed this;
+	
+	public bool opEquals(T other)
+	{
+		return other==value_;
+	}
+	
+	
+	public Type GetType()
+	{
+		return __TypeOf!(typeof(this));
+	}
+
 
 
 	void opAssign(T value)

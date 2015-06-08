@@ -1,7 +1,22 @@
 module System.__SystemExtensions;
 
 import System.Namespace;
-
+import std.typetuple;
+import std.traits;
+//http://forum.dlang.org/thread/orcthzbphtpngsvzlblp@forum.dlang.org#post-mailman.608.1343110124.31962.digitalmars-d:40puremagic.com
+//Get composition of generic type
+//Philippe Sigaud
+template Composition(T) //if (isComposite!T)
+{
+	static if (is(T comp == Name!(U), alias Name, U) || is (T 
+			comp == Name!(U), alias Name, U...))
+		alias TypeTuple!(Name, U) Composition;
+	else static if (is(T comp == Name!(U,V), alias Name, U, V))
+		alias TypeTuple!(Name, U,V) Composition;
+	else static if (is(T comp == Name!(U,V,W), alias Name, U, V, 
+			W))
+		alias TypeTuple!(Name, U,V,W) Composition;
+}
 
 public static string __ConvertEnumToString(T)(T enumVal)
 {
@@ -123,14 +138,22 @@ public static String String(String text)
 */
 
 public static __IsNull(T)(T value)
-if(__isScalar!(T))
+if(__isScalar!(T)&&!__isNullable!(T))
 {
 		return false;
 }
 
 public static __IsNull(T)(T value)
-if(!__isScalar!(T))
+if(__isNullable!(T))
 {
+	return !value.HasValue;
+}
+
+
+public static __IsNull(T)(T value)
+if(__isClass!(T)||__isInterface!(T))
+{
+
 	return value is null;
 }
 

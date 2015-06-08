@@ -105,9 +105,17 @@ if(__isEnum!(T))
 }
 
 static Boxed!T BOX(T)(T value)
-if(__isStruct!(T))
+if(__isStruct!(T) && !__isNullable!(T))
 {
 	return new T.__Boxed_(value);
+}
+
+static Boxed!(Composition!(T)[1]) BOX(T)(T value)
+if(__isStruct!(T) && __isNullable!(T))
+{
+	if(value.HasValue)
+		return BOX(value.value_);//new T.__Boxed_(value);
+	return null;
 }
 
 static BoxedEnum!T BOX(T)(T value)

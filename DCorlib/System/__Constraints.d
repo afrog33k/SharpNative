@@ -53,6 +53,11 @@ template __isInterface(T)
 	enum __isInterface =  is(T==interface);
 }
 
+template __isNullable(T)
+{
+	enum __isNullable = __traits(compiles,T.__nullable==true);
+}
+
 template __isPointer(T:T*) {
 	enum __isPointer = true;
 }

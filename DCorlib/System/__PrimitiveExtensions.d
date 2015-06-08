@@ -19,3 +19,8 @@ int GetHashCode(bool boolean)
 		return 1;
 	return 0;
 }
+
+int GetHashCode(int number)
+{
+	return number;
+}

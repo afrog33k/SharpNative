@@ -115,6 +115,13 @@ namespace SharpNative.Compiler
            // 
             if (@event)
             {
+				string extraAccessorsField = "", extraAccessorsMethod="";;
+				if (modifiers.Any (SyntaxKind.StaticKeyword) || modifiers.Any (SyntaxKind.ConstKeyword))
+				{
+					extraAccessorsField=" ";
+					extraAccessorsMethod="static ";
+				}
+
                 var ename = MemberUtilities.GetMethodName(field, ref isInterface, out iface, out proxies);
                 var fieldName = "__evtfield__" + ename + (iface != null ? TypeProcessor.ConvertType(iface)
                     .Replace("(", "_").Replace("!", "_").Replace(")", "_").Replace(".", "_") : "");
@@ -124,10 +131,10 @@ namespace SharpNative.Compiler
 
                 if (iface != null && !isInterface)
                 {
-                    writer.WriteLine(typeString + " " + fieldName + " = new " + typeString+"();");
+					writer.WriteLine(extraAccessorsField + typeString + " " + fieldName + " = new " + typeString+"();");
 
                     //writer.Write(typeString);
-                    writer.WriteLine((typeString + " " + name + "(" + TypeProcessor.ConvertType(iface) + " __ij=null)" +
+					writer.WriteLine(extraAccessorsMethod+(typeString + " " + name + "(" + TypeProcessor.ConvertType(iface) + " __ij=null)" +
                                       "@property { return " + fieldName + "; }"));
 
                     return;
@@ -141,8 +148,9 @@ namespace SharpNative.Compiler
                 }
                 else
                 {
-                    writer.WriteLine(typeString + " " + fieldName + " = new " + typeString + "();");
-                    writer.WriteLine((typeString + " " + name + "()" +
+
+					writer.WriteLine(extraAccessorsField +typeString + " " + fieldName + " = new " + typeString + "();");
+					writer.WriteLine(extraAccessorsMethod +(typeString + " " + name + "()" +
                                       "@property { return " + fieldName + "; }"));
                     return;
                 }
