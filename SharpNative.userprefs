@@ -1,20 +1,20 @@
-﻿<Properties StartupItem="VisualCompilerMac/VisualCompilerMac.csproj">
+﻿<Properties StartupItem="VisualCompilerMac/VisualCompilerMac.csproj" GitUserInfo="UsingGIT">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Release|AnyCPU" />
   <MonoDevelop.Ide.Workbench ActiveDocument="DCorlib/System/Collections/Generic/List__G.d">
     <Files>
-      <File FileName="VisualCompilerMac/MainWindowViewModel.cs" Line="5" Column="5" />
-      <File FileName="CsNativeVisual/MainWindowViewModel.cs" Line="17" Column="17" />
+      <File FileName="VisualCompilerMac/MainWindowViewModel.cs" Line="1" Column="1" />
+      <File FileName="CsNativeVisual/MainWindowViewModel.cs" Line="1" Column="1" />
       <File FileName="Compiler/Program.cs" Line="1" Column="1" />
-      <File FileName="Compiler/WriteLocalDeclaration.cs" Line="74" Column="74" />
-      <File FileName="Compiler/NativeCompilationUtils.cs" Line="32" Column="32" />
-      <File FileName="DCorlib/System/Threading/Namespace.d" Line="6" Column="6" />
+      <File FileName="Compiler/WriteLocalDeclaration.cs" Line="1" Column="1" />
+      <File FileName="Compiler/NativeCompilationUtils.cs" Line="1" Column="1" />
+      <File FileName="DCorlib/System/Threading/Namespace.d" Line="1" Column="1" />
       <File FileName="DCorlib/System/__SystemExtensions.d" Line="1" Column="1" />
-      <File FileName="VisualCompilerMac/MyDocument.cs" Line="51" Column="51" />
-      <File FileName="DCorlib/System/Boolean.d" Line="5" Column="5" />
-      <File FileName="DCorlib/System/String.d" Line="134" Column="134" />
-      <File FileName="DCorlib/System/DateTime.d" Line="6" Column="6" />
+      <File FileName="VisualCompilerMac/MyDocument.cs" Line="1" Column="1" />
+      <File FileName="DCorlib/System/Boolean.d" Line="1" Column="1" />
+      <File FileName="DCorlib/System/String.d" Line="1" Column="1" />
+      <File FileName="DCorlib/System/DateTime.d" Line="1" Column="1" />
       <File FileName="DCorlib/System/Collections/Generic/List__G.d" Line="6" Column="6" />
-      <File FileName="DCorlib/System/Array_T.d" Line="7" Column="7" />
+      <File FileName="DCorlib/System/Array_T.d" Line="1" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

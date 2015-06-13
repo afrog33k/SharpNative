@@ -113,71 +113,75 @@ namespace SharpNative.Compiler
 
                             addedTypes.Add(properClassName);
                         }
+						var genericMethods = new List<IMethodSymbol> ();
+						using (var writerRef = new OutputWriter (@namespace.Key.GetModuleName () + ".__ReflectionInfo", "__ReflectionInfo") { IsNamespace = true })
+						{
+							//writerRef.WriteLine ("\n//Reflection Imports");
+							//Reflection Info
+							writerRef.WriteLine("module " + @namespace.Key.GetModuleName(false).RemoveFromEndOfString(".Namespace")+ ".__ReflectionInfo" + ";");
+							writerRef.WriteLine ("import System.Namespace;");
+							writerRef.WriteLine ("import System.Reflection.Namespace;");
 
-						writer.WriteLine ("\n//Reflection Imports");
-                        //Reflection Info
-                        writer.WriteLine("import System.Namespace;");
-                        writer.WriteLine("import System.Reflection.Namespace;");
+							//To be on the safe side, import all namespaces except us... this allows us to create correct reflectioninfo
+							//gtest-053.cs
+							foreach (var @name in namespaces.DistinctBy(o=>o.Key)) //Cant work leads to cycles
+							{
+								var nname = @name.Key.GetModuleName (false);
+								if (nname != "System.Namespace")
+									writerRef.WriteLine ("import {0};", nname);
+							}
 
-                        //To be on the safe side, import all namespaces except us... this allows us to create correct reflectioninfo
-                        //gtest-053.cs
-                                                foreach (var @name in namespaces.DistinctBy(o=>o.Key).Except(@namespace)) //Cant work leads to cycles
-                                                {
-							var nname = @name.Key.GetModuleName (false);
-							if(nname!="System.Namespace")
-								writer.WriteLine("import {0};", nname);
-                                                }
 
-                        var genericMethods = new List<IMethodSymbol>();
-                        writer.WriteLine("\npublic class __ReflectionInfo");
-                        writer.OpenBrace();
-                        writer.WriteLine("static this()");
-                        writer.OpenBrace();
-                        foreach (var type in alltypes)
-                        {
-                            if(type.TypeKind==TypeKind.Error)
-                                continue;
+							writerRef.WriteLine ("\npublic class __ReflectionInfo");
+							writerRef.OpenBrace ();
+							writerRef.WriteLine ("static this()");
+							writerRef.OpenBrace ();
+							foreach (var type in alltypes)
+							{
+								if (type.TypeKind == TypeKind.Error)
+									continue;
 
-                            var allgenericVirtualMethods = type.GetMembers().OfType<IMethodSymbol>().Where(k=>k.IsGenericMethod && (k.IsVirtual || k.ContainingType.TypeKind==TypeKind.Interface));
-                            genericMethods.AddRange(allgenericVirtualMethods);
-                            if (((INamedTypeSymbol) type).IsGenericType)
-                            {
+								var allgenericVirtualMethods = type.GetMembers ().OfType<IMethodSymbol> ().Where (k => k.IsGenericMethod && (k.IsVirtual || k.ContainingType.TypeKind == TypeKind.Interface));
+								genericMethods.AddRange (allgenericVirtualMethods);
+								if (((INamedTypeSymbol)type).IsGenericType)
+								{
 
-                                //Get its specializations
-                                foreach (var specialization in GetGenericSpecializations(type).DistinctBy(k=>
+									//Get its specializations
+									foreach (var specialization in GetGenericSpecializations(type).DistinctBy(k=>
                                     k))
-                                {
-                                    //TODO fix nested types
-                                    //if (specialization.ContainingType == null)
-                                    {
+									{
+										//TODO fix nested types
+										//if (specialization.ContainingType == null)
+										{
 
-                                       /* var allNamespaces = GetAllNamespaces(specialization);
+											/* var allNamespaces = GetAllNamespaces(specialization);
                                         foreach (var @name in allNamespaces.DistinctBy(o => o).Where(p=>p!=null).Except(@namespace.Key))
                                         {
                                             writer.WriteLine("import {0};", @name.GetModuleName(false));
                                         }*/
-                                            var genericName = GetGenericMetadataName(specialization);
+											var genericName = GetGenericMetadataName (specialization);
                                       
                                        
-                                        WriteReflectionInfo(writer, specialization, genericName);
-                                    }
-                                }
-                            }
-                            else
-                            {
+											WriteReflectionInfo (writerRef, specialization, genericName);
+										}
+									}
+								}
+								else
+								{
 
-                                /*var allNamespaces = GetAllNamespaces((INamedTypeSymbol) type);
+									/*var allNamespaces = GetAllNamespaces((INamedTypeSymbol) type);
                                 foreach (var @name in allNamespaces.DistinctBy(o => o).Where(p => p != null).Except(@namespace.Key))
                                 {
                                     writer.WriteLine("import {0};", @name.GetModuleName(false));
                                 }*/
                                
-                                var genericName = GetGenericMetadataName((INamedTypeSymbol) type);
-                                WriteReflectionInfo(writer, type, genericName);
-                            }
-                        }
-                        writer.CloseBrace();
-                        writer.CloseBrace();
+									var genericName = GetGenericMetadataName ((INamedTypeSymbol)type);
+									WriteReflectionInfo (writerRef, type, genericName);
+								}
+							}
+							writerRef.CloseBrace ();
+							writerRef.CloseBrace ();
+						}
 
                         genericMethods = genericMethods.DistinctBy(l=>genericMethods.Any(k=>MemberUtilities.CompareMethodsWithReturnType(k,l))).ToList();
 
@@ -195,12 +199,13 @@ namespace SharpNative.Compiler
                         
                        // writer.WriteLine("public final static " + TypeProcessor.ConvertType(genericMethod.ReturnType) + WriteIdentifierName.TransformIdentifier(genericMethod.Name) +  );
                             if((firstImplementations.Contains( genericMethod.ContainingType )))
-                                   WriteMethod.WriteIt(writer,(MethodDeclarationSyntax) genericMethod.DeclaringSyntaxReferences[0].GetSyntax(),true, allClasses.Where(l=>l.TypeKind==TypeKind.Class || l.TypeKind==TypeKind.Struct));
+									WriteMethod.WriteIt(writer,(MethodDeclarationSyntax) genericMethod.DeclaringSyntaxReferences[0].GetSyntax(),true, allClasses.Where(l=>l.TypeKind==TypeKind.Class || l.TypeKind==TypeKind.Struct));
 
                         }
 
-                    }
-                }
+                    
+					}
+				}
             }
         }
 
