@@ -91,6 +91,8 @@ namespace SharpNative.Compiler
         public static INamedTypeSymbol String { get; set; }
 
         public static  INamedTypeSymbol ListT { get; set; }
+		public static  INamedTypeSymbol NullableT { get; set; }
+
 
         public static INamedTypeSymbol Exception { get; set; }
 
@@ -98,6 +100,7 @@ namespace SharpNative.Compiler
 
         public static void Update(Compilation compilation)
         {
+			TypeProcessor.NamespaceMode = false;
             Instance = new Context();
             if (compilation != null)
                 Instance.UpdateContext(compilation);
@@ -106,6 +109,7 @@ namespace SharpNative.Compiler
 
         private void UpdateContext(Compilation compilation)
         {
+
             Object = compilation.FindType("System.Object");
             String = compilation.FindType("System.String");
             Int = compilation.FindType("System.Int32");
@@ -113,7 +117,7 @@ namespace SharpNative.Compiler
             Void = compilation.FindType("System.Void");
             ListT = compilation.FindType("System.Collections.Generic.List`1");
 
-
+			NullableT = compilation.FindType("System.Nullable`1");
             Exception = compilation.FindType("System.Exception");
 
             IEnumeratorT = compilation.FindType("System.Collections.Generic.IEnumerator`1");

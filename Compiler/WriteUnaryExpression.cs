@@ -130,6 +130,7 @@ namespace SharpNative.Compiler
                 //D's unary operators are a bit different from C# .. i.e. not static
                 bool hasOpIncrement = false;
                 bool hasOpDecrement = false;
+				bool hasOpLogicalNot = false;
 
                 var typeSymbol = TypeProcessor.GetTypeInfo(expression.Operand).Type;
                 if (typeSymbol != null)
@@ -137,6 +138,8 @@ namespace SharpNative.Compiler
                     hasOpIncrement = typeSymbol.GetMembers("op_Increment").Any();
 
                     hasOpDecrement = typeSymbol.GetMembers("op_Decrement").Any();
+
+					hasOpLogicalNot = typeSymbol.GetMembers ("op_LogicalNot").Any ();
                 }
 
                 switch (expression.OperatorToken.RawKind)
@@ -170,6 +173,13 @@ namespace SharpNative.Compiler
                             
                         }
                         break;
+				case(int)SyntaxKind.ExclamationToken:
+					if (hasOpLogicalNot || typeSymbol.OriginalDefinition == Context.NullableT)
+					{
+						var texpression = Core.WriteString (expression.Operand);
+						writer.Write (texpression + "." + "op_LogicalNot()");
+					}
+					break;
                     default:
                         writer.Write(expression.OperatorToken.Text);
 

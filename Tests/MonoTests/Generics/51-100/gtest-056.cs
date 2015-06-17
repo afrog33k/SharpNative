@@ -2,7 +2,7 @@
 //-- ex-gen-struct-pair
 //-- ex-gen-logging-pairs
 // 1.2 alpha
-
+//SharpNative modified to be testable via output comparison
 using System;
 
 public class Log<T> {
@@ -43,14 +43,14 @@ class TestLog {
       log1.Add("Coffee");
       Log<DateTime> log2 = new Log<DateTime>();
       log2.Add(DateTime.Now);
-      log2.Add(DateTime.Now.AddHours(1));
+      log2.Add(DateTime.Now.AddDays(1));
       DateTime[] dts = log2.All;
       // Printing both logs:
       foreach (String s in log1.All) 
 	Console.Write("{0}   ", s);
       Console.WriteLine();
       foreach (DateTime dt in dts) 
-	Console.Write("{0}   ", dt);
+	Console.Write("{0}   ", dt.ToString("dd/MM/yyyy"));
       Console.WriteLine();
   }
 }

@@ -56,10 +56,10 @@ struct DateTime
 	/// year 1601 as origin for our HAL, PAL, and CLR.
 
     // static Int64 ticksAtOrigin = 504911232000000000;
-    __gshared long ticksAtOrigin;
+	static __gshared long ticksAtOrigin= 504911232000000000;
 
 	
-    public static int gettimeofday(int* time, int* timezome)
+	public static int gettimeofday(long* time, int* timezome)
     {
 		
 		//Extern (Internal) Method Call
@@ -81,6 +81,11 @@ struct DateTime
     {
 		return Add(val, DateTime.MillisPerDay);
     }
+
+	public DateTime AddYears(double val)
+	{
+		return AddDays(val*DateTime.DaysPerYear);
+	}
 
     public DateTime AddHours(double val)
     {
@@ -267,7 +272,7 @@ struct DateTime
     public int Month() 
     {
 		{
-			return 0;
+			return GetDatePart(DatePartMonth);
         }
 
     }
@@ -280,7 +285,7 @@ struct DateTime
 			{
 				//fixed() Scope
 				{
-					int* p = cast(int*)(&DateTime.timeBuffer[0]);
+					long* p = cast(long*)(&DateTime.timeBuffer[0]);
 					//fixed() Scope
 					{
 						int* p2 = cast(int*)(&DateTime.timeBuffer[2]);
@@ -306,7 +311,7 @@ struct DateTime
 			{
 				//fixed() Scope
 				{
-					int* p = cast(int*)(&DateTime.timeBuffer[0]);
+					long* p = cast(long*)(&DateTime.timeBuffer[0]);
 					{
 						if(gettimeofday(p, null)==0)
 						{
@@ -360,7 +365,7 @@ struct DateTime
     public int Year() 
     {
 		{
-			return 0;
+			return GetDatePart(DateTime.DatePartYear);
         }
 
     }
@@ -440,13 +445,15 @@ struct DateTime
     public String ToString()
     {
 		//return DateTimeFormat.Format(this, null, DateTimeFormatInfo.CurrentInfo);
-		return new String("");
+		return String.Format(_S("{0}/{1}/{2} {3}:{4}:{5} {6}"),  Month >9 ?BOX(Month):_S("0")+BOX(Month), Day>9 ?BOX(Day):_S("0")+BOX(Day).ToString(), BOX(Year), BOX(Hour), BOX(Minute), BOX(Second), Hour>12?_S("PM"):_S("AM"));
     }
 
     public String ToString(String format)
     {
+		//dd/MM/yyyy ... for now
 		//            return DateTimeFormat.Format(this, format, DateTimeFormatInfo.CurrentInfo);
-		return new String("");
+		return String.Format(_S("{0}/{1}/{2}"),Day>9 ?BOX(Day):_S("0")+BOX(Day).ToString(), Month >9 ?BOX(Month):_S("0")+BOX(Month).ToString(), BOX(Year));
+
     }
 
     public String ToString(IFormatProvider provider, IConvertible __j = null)
@@ -797,7 +804,7 @@ struct DateTime
     {
 		if(((ticks&cast(long)(DateTime.TickMask))<DateTime.MinTicks)||((ticks&cast(long)(DateTime.TickMask))>DateTime.MaxTicks))
 		{
-			//throw  new ArgumentOutOfRangeException(String("ticks"), String("Ticks must be between DateTime.MinValue.Ticks and DateTime.MaxValue.Ticks."));
+			//throw  new ArgumentOutOfRangeException(_S("ticks"), _S("Ticks must be between DateTime.MinValue.Ticks and DateTime.MaxValue.Ticks."));
 		}
 		this.m_ticks=cast(ulong)(ticks);
     }

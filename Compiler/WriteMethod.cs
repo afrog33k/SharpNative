@@ -223,7 +223,7 @@ namespace SharpNative.Compiler
             var containingType = iface ?? methodSymbol.ContainingType;
             if (virtualGenericClasses != null)
             {
-                methodName = TypeProcessor.ConvertType(containingType, false, false, false).Replace(".","_").Replace("!","_").Replace("(","_").Replace(")","_") + "_"+methodName;
+				methodName = Utility.GetVirtualGenericMethodName (methodName, containingType);// TypeProcessor.ConvertType(containingType, false, false, false).Replace(".","_").Replace("!","_").Replace("(","_").Replace(")","_").Replace(",","_").Replace(" ","") + "_"+methodName;
                 accessString = "public static final ";
             }
             else if (methodName == "Main" /*&& method.Modifiers.Any(SyntaxKind.PublicKeyword)*/&&

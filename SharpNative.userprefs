@@ -1,27 +1,22 @@
 ﻿<Properties StartupItem="VisualCompilerMac/VisualCompilerMac.csproj" GitUserInfo="UsingGIT">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Release|AnyCPU" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="DCorlib/System/Collections/Generic/List__G.d">
+  <MonoDevelop.Ide.Workbench ActiveDocument="DCorlib/System/String.d">
     <Files>
-      <File FileName="VisualCompilerMac/MainWindowViewModel.cs" Line="1" Column="1" />
-      <File FileName="CsNativeVisual/MainWindowViewModel.cs" Line="1" Column="1" />
-      <File FileName="Compiler/Program.cs" Line="1" Column="1" />
-      <File FileName="Compiler/WriteLocalDeclaration.cs" Line="1" Column="1" />
-      <File FileName="Compiler/NativeCompilationUtils.cs" Line="1" Column="1" />
-      <File FileName="DCorlib/System/Threading/Namespace.d" Line="1" Column="1" />
-      <File FileName="DCorlib/System/__SystemExtensions.d" Line="1" Column="1" />
-      <File FileName="VisualCompilerMac/MyDocument.cs" Line="1" Column="1" />
-      <File FileName="DCorlib/System/Boolean.d" Line="1" Column="1" />
-      <File FileName="DCorlib/System/String.d" Line="1" Column="1" />
-      <File FileName="DCorlib/System/DateTime.d" Line="1" Column="1" />
-      <File FileName="DCorlib/System/Collections/Generic/List__G.d" Line="6" Column="6" />
-      <File FileName="DCorlib/System/Array_T.d" Line="1" Column="1" />
+      <File FileName="DCorlib/System/__SystemExtensions.d" Line="2" Column="2" />
+      <File FileName="DCorlib/System/DateTime.d" Line="17" Column="17" />
+      <File FileName="DCorlib/System/__Boxing.d" Line="9" Column="9" />
+      <File FileName="DCorlib/System/__Constraints.d" Line="2" Column="2" />
+      <File FileName="DCorlib/System/Nullable__G.d" Line="31" Column="31" />
+      <File FileName="Compiler/WriteUnaryExpression.cs" Line="31" Column="31" />
+      <File FileName="VisualCompilerMac/MyDocument.cs" Line="51" Column="51" />
+      <File FileName="Compiler/NativeCompilationUtils.cs" Line="7" Column="7" />
+      <File FileName="DCorlib/System/String.d" Line="26" Column="26" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore>
       <Breakpoint file="/Projects/Experiments/CsNative/SharpNative/Compiler/WriteArrayCreationExpression.cs" line="47" column="1" />
       <Breakpoint file="/Projects/Experiments/CsNative/SharpNative/Compiler/WriteArrayCreationExpression.cs" line="19" column="1" />
-      <Breakpoint file="/Projects/Experiments/CsNative/SharpNative/VisualCompilerMac/MyDocument.cs" line="549" column="1" />
     </BreakpointStore>
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />

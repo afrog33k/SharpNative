@@ -25,6 +25,12 @@ namespace SharpNative.Compiler
     public static class Utility
     {
 
+		public static string GetVirtualGenericMethodName (string methodName, ITypeSymbol containingType)
+		{
+			return TypeProcessor.ConvertType (containingType, false, false, false).Replace (".", "_").Replace ("!", "_").Replace ("(", "_").Replace (")", "_").Replace (",", "_").Replace (" ", "") + "_" + methodName;
+		}
+
+
         public static ISymbol[] GetAllMembers(this ITypeSymbol symbol)
         {
             List<ISymbol> members = new List<ISymbol>();
@@ -50,14 +56,18 @@ namespace SharpNative.Compiler
                 else
                     writer.Write(",");
                 if (iexpression is InitializerExpressionSyntax)
-                    WriteArrayElements(iexpression as InitializerExpressionSyntax, writer, inferred, level, omitbraces);
+					WriteArrayElements(iexpression as InitializerExpressionSyntax, writer, inferred, level, omitbraces,elementType);
                 else
                 {
                     if (elementType != null)
                     {
+						if (elementType.OriginalDefinition  == Context.NullableT)
+							writer.Write (TypeProcessor.ConvertType(elementType)+"(");
                        // var type = TypeProcessor.GetTypeInfo(iexpression);
                         //Need to do this like a binary i.e. compare all
                         WriteBinaryExpression.WriteIt(writer,default(SyntaxToken),null,iexpression);
+						if (elementType.OriginalDefinition  == Context.NullableT)
+							writer.Write (")");
                        // Core.Write(writer, iexpression);
                     }
                     else

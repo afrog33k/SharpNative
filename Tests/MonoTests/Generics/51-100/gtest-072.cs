@@ -2,7 +2,7 @@
 //-- ex-gen-struct-pair
 //-- ex-gen-logging-pairs
 // 1.2 alpha
-
+//SharpNative Fixed to be testable using output
 using System;
 
 public class Log<T> {
@@ -47,22 +47,22 @@ class TestLog {
       DateTime[] dts = log2.All;
       // Printing both logs:
       foreach (String s in log1.All) 
-	Console.Write("{0}   ", s);
+  Console.Write("{0}   ", s);
       Console.WriteLine();
       foreach (DateTime dt in dts) 
-	Console.Write("{0}   ", dt);
+  Console.Write("{0}   ", dt.Minute);
       Console.WriteLine();
       TestPairLog();
     }
     
     public static void TestPairLog() {
       Log<Pair<DateTime,String>> log = new Log<Pair<DateTime,String>>();
-      log.Add(new Pair<DateTime,String>(DateTime.Now, "Tea leaves"));
+      log.Add(new Pair<DateTime,String>(DateTime.Now, "Tea leaves")); 
       log.Add(new Pair<DateTime,String>(DateTime.Now.AddMinutes(2), "Hot water"));
       log.Add(new Pair<DateTime,String>(DateTime.Now.AddMinutes(7), "Ready"));
       Pair<DateTime,String>[] allMsgs = log.All;
       foreach (Pair<DateTime,String> p in allMsgs) 
-	Console.WriteLine("At {0}: {1}", p.Fst, p.Snd);
+  Console.WriteLine("At {0} Minutes: {1}", p.Fst.Minute, p.Snd);
     }
 }
 

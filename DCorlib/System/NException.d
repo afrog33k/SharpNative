@@ -19,7 +19,7 @@ public class NException : Exception
 
 	public this(System.Runtime.Serialization.Namespace.SerializationInfo info, System.Runtime.Serialization.Namespace.StreamingContext context)
 	{
-		super("Exception");
+		super("Exception",__FILE__,__LINE__,null);
 		//super(info, context);
 	}
 
@@ -39,17 +39,17 @@ public class NException : Exception
 
 	public this() @safe
 	{
-    	super("Exception");
+		super("Exception",__FILE__,__LINE__,null);
 	}
 
 	public this(string value) @safe
 	{
-		super(value);
+		super(value,__FILE__,__LINE__,null);
 	}
 
 	public this(String message)
 	{
-		super(cast(string)cast(wstring)message);
+		super(cast(string)cast(wstring)message,__FILE__,__LINE__,null);
 	}
 
 	public String Message() @property

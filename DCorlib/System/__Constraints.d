@@ -40,7 +40,7 @@ template __isCSStruct(T)
 
 template __isClass(T)
 {
-	enum __isClass =  is(T==class) && is(T:NObject);
+	enum __isClass = is(T==class) && is(T:NObject);
 }
 
 template __isNewwable(T)

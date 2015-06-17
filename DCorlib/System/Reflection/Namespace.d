@@ -1474,10 +1474,10 @@ public class Type_T(T):Type
 
 		//Generating reflection info slows down compile considerably ... will use roslyn to generate this info, its much faster
 		*/
-		version(Reflection)
-		{
-			__Meta = createMetadata!(T);
-		}
+//		version(Reflection)
+//		{
+//			__Meta = createMetadata!(T);
+//		}
 
 		
 
@@ -1485,6 +1485,7 @@ public class Type_T(T):Type
 		{
 
 
+			//std.stdio.writeln("Generating Type Info for " ~ T.stringof);
 			static if(is(T==class))
 			{
 
@@ -1517,8 +1518,8 @@ public class Type_T(T):Type
 
 			fullName = fullName.replace("CsRoot.",""); //Make sure to mark this namespace as global
 
-			//	Console.WriteLine("name " ~ name);
-			//Console.WriteLine("fullName "~fullName);
+		//		std.stdio.writeln("name " ~ name);
+		//	std.stdio.writeln("fullName "~fullName);
 
 			if(name.lastIndexOf("Boxed!(")!=-1)
 			{

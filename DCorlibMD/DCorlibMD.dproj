@@ -20,22 +20,23 @@
     <Externalconsole>true</Externalconsole>
     <DebugLevel>0</DebugLevel>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <OutputPath>bin\Release</OutputPath>
-    <ObjectsDirectory>obj/Release</ObjectsDirectory>
-    <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
-    <UnittestMode>false</UnittestMode>
-    <OutputName>DCorlibMD</OutputName>
-    <Target>Executable</Target>
-    <Externalconsole>true</Externalconsole>
-    <DebugLevel>0</DebugLevel>
-  </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Unittest|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\Unittest</OutputPath>
     <ObjectsDirectory>obj/Unittest</ObjectsDirectory>
     <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
     <UnittestMode>true</UnittestMode>
+    <OutputName>DCorlibMD</OutputName>
+    <Target>Executable</Target>
+    <Externalconsole>true</Externalconsole>
+    <DebugLevel>0</DebugLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
+    <OutputPath>bin\Release</OutputPath>
+    <ObjectsDirectory>obj/Release</ObjectsDirectory>
+    <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
+    <ExtraCompilerArguments>-oq</ExtraCompilerArguments>
+    <UnittestMode>false</UnittestMode>
     <OutputName>DCorlibMD</OutputName>
     <Target>Executable</Target>
     <Externalconsole>true</Externalconsole>
@@ -419,6 +420,12 @@
     </Compile>
     <Compile Include="..\DCorlib\System\__Internal\xxhash.d">
       <Link>System\__Internal\xxhash.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\__Internal\hashmap.d">
+      <Link>System\__Internal\hashmap.d</Link>
+    </Compile>
+    <Compile Include="..\DCorlib\System\__Internal\memory.d">
+      <Link>System\__Internal\memory.d</Link>
     </Compile>
   </ItemGroup>
   <ItemGroup>

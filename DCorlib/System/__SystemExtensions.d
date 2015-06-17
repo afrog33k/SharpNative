@@ -137,10 +137,9 @@ public static String String(String text)
 }
 */
 
-public static __IsNull(T)(T value)
-if(__isScalar!(T)&&!__isNullable!(T))
+public static __IsNull(NObject value)
 {
-		return false;
+	return value is null;
 }
 
 public static __IsNull(T)(T value)
@@ -149,6 +148,11 @@ if(__isNullable!(T))
 	return !value.HasValue;
 }
 
+public static __IsNull(T)(T value)
+if(__isScalar!(T)&&!__isNullable!(T))
+{
+		return false;
+}
 
 public static __IsNull(T)(T value)
 if(__isClass!(T)||__isInterface!(T))
@@ -158,7 +162,8 @@ if(__isClass!(T)||__isInterface!(T))
 }
 
 
-struct __UNBOUND // object used to keep unbound generic types, for sharing and reflection
+class __UNBOUND // object used to keep unbound generic types, for sharing and reflection
+	//will switch to using simple NObject parameter and a flag to tell between bound and unbound generics
 {
 	NObject __Value;
 	public this(NObject object)
@@ -172,7 +177,12 @@ struct __UNBOUND // object used to keep unbound generic types, for sharing and r
 		return T.init;
 	}
 
-	alias __Value this;
+	//alias __Value this;
+
+	public int GetHashCode()
+	{
+		return 0;
+	}
 }
 
 template __Tuple(E...)
@@ -738,7 +748,7 @@ if(__isScalar!(T))
 }*/
 
 
-public static string toString(T)(T value) if(!is(T==struct) && !is(T==double) && !is(T==float) && !is(T==int)) 
+public static string toString(T)(T value) if(!is(T==struct) && !is(T==double) && !is(T==float) && !is(T==int) && !is(T==bool)) 
 {
 	return to!string(value);
 }
@@ -848,17 +858,17 @@ static T Cast(T,U)(U object)
 	return cast(T) BOX!U(object);
 }
 
-static T Cast(T,U)(U object)
-if((!is(U==class) &&!is(U==interface))&&(is(T==class) && is(U==struct)))
-{
-	return cast(T)object;
-}
+//static T Cast(T,U)(U object)
+//if(is(T==class) && is(U==struct))
+//{
+//	return cast(T)object;
+//}
 
-static T Cast(T,U)(U object)
-	if((!is(U==class) &&!is(U==interface))&&(!is(T==interface) && is(U==struct)))
-{
-	return cast(T)object;
-}
+//static T Cast(T,U)(U object)
+//	if((!is(U==class) &&!is(U==interface))&&(!is(T==interface) && is(U==struct)))
+//{
+//	return cast(T)object;
+//}
 
 static T Cast(T,U)(U object)
 if(is(U==struct) && is(T==interface))
@@ -922,97 +932,251 @@ if(!is(U:NObject)&&!is(U==interface))
 	return cast(T)(object);
 }
 
-static Type[TypeInfo] CachedTypes;
+import System.Reflection.Namespace;
+
+
+import System.__Internal.hashmap;
+
+static HashMap!(int,Type) CachedTypes;
 
 public static Type __GetCachedType(TypeInfo __info)
 {
-	if(__info in CachedTypes)
+	if(__info.toString.Hash() in CachedTypes)
 	{
-		return CachedTypes[__info];
+		return CachedTypes[__info.toString.Hash()];
 	}
 	return null;
 }
 
-import System.Reflection.Namespace;
-public static Type_T!(T.__Boxed_) __TypeOf(T)(string csName=null)
-if(is(T==struct) && !__traits(compiles, T.__IsEnum==true))
+public static auto __TypeOf(T)(string csName=null)
+	if(is(T==struct) && __isNullable!(T))
 {
-
 	auto info = typeid(T);
-
-	if(info in CachedTypes)
+	
+	//Console.WriteLine(info.toString.Hash());
+	int fullNameHash = fullyQualifiedName!(T).Hash();
+	
+	Type_T!(Boxed!(Composition!(T)[1])) type= null;
+	
+	bool found =false;
+	for(int i =0; i<hashes.length; i++)
 	{
-
-		auto type = CachedTypes[info];
-		if(csName !is null)
+		if(hashes[i]==fullNameHash)
 		{
-			type.FullName = new String(csName);
-			if(csName.lastIndexOf(".")!=-1)
-			{
-				type.Name = new String(csName[csName.lastIndexOf(".")..$]);
-			}
+			//return cast(Type_T!(T)) Infos[i];
+			type = cast(Type_T!(Boxed!(Composition!(T)[1])))Infos[i];
+			found = true;
+			break;
 		}
-		return cast(Type_T!(T.__Boxed_)) type;
 	}
-
-	auto type= new Type_T!(T.__Boxed_)(csName);
-
-	CachedTypes[info] = type;
-
-	return type;
+	
+	if(!found)
+	{
+		type= new Type_T!(Boxed!(Composition!(T)[1]))(csName);
+		
+		hashes.length++;
+		Infos.length++;
+		
+		hashes ~= fullNameHash;
+		Infos ~= type;
+		//CachedTypes[fullName.Hash()]= type;
+		
+		//Console.WriteLine(_S("Added " ~  type.Name.toString));
+	}
+	//	
+	if(csName !is null)
+	{
+		type.FullName = new String(csName);
+		if(csName.lastIndexOf(".")!=-1)
+		{
+			type.Name = new String(csName[csName.lastIndexOf(".")..$]);
+		}
+	}
+	
+	
+	
+	return cast(Type_T!(Boxed!(Composition!(T)[1])))type;
 }
+
+public static Type_T!(__BoxesTo!(T)) __TypeOf(T)(string csName=null)
+if(is(T==struct) && !__traits(compiles, T.__IsEnum==true) &&!__isNullable!(T))
+{
+	auto info = typeid(T);
+	
+	//Console.WriteLine(info.toString.Hash());
+	int fullNameHash = fullyQualifiedName!(T).Hash();
+	
+	Type_T!(__BoxesTo!(T)) type= null;
+	
+	bool found =false;
+	for(int i =0; i<hashes.length; i++)
+	{
+		if(hashes[i]==fullNameHash)
+		{
+			//return cast(Type_T!(T)) Infos[i];
+			type = cast(Type_T!(__BoxesTo!(T)))Infos[i];
+			found = true;
+			break;
+		}
+	}
+	
+	if(!found)
+	{
+		type= new Type_T!(__BoxesTo!(T))(csName);
+		
+		hashes.length++;
+		Infos.length++;
+		
+		hashes ~= fullNameHash;
+		Infos ~= type;
+		//CachedTypes[fullName.Hash()]= type;
+		
+		//Console.WriteLine(_S("Added " ~  type.Name.toString));
+	}
+	//	
+	if(csName !is null)
+	{
+		type.FullName = new String(csName);
+		if(csName.lastIndexOf(".")!=-1)
+		{
+			type.Name = new String(csName[csName.lastIndexOf(".")..$]);
+		}
+	}
+	
+	
+	
+	return cast(Type_T!(__BoxesTo!(T)))type;
+}
+
+
+//Switched to this to allow gtest-53 to pass ... dont know whats happening with the dictionaries
+// But this is now O(n) :(
+static Type[] Infos;
+static int[] hashes;
 
 public static Type_T!(T) __TypeOf(T)(string csName=null)
-if(is(T==struct) && __traits(compiles, T.__IsEnum==true))
+	if(!is(T==struct) ||(is(T==struct) && __traits(compiles, T.__IsEnum==true)))
 {
-
 	auto info = typeid(T);
 
-	if(info in CachedTypes)
-	{
+	//Console.WriteLine(info.toString.Hash());
+	int fullNameHash = fullyQualifiedName!(T).Hash();
 
-		auto type = CachedTypes[info];
-		if(csName !is null)
+	Type_T!(T) type= null;
+
+	bool found =false;
+	for(int i =0; i<hashes.length; i++)
+	{
+		if(hashes[i]==fullNameHash)
 		{
-			type.FullName = new String(csName);
-			if(csName.lastIndexOf(".")!=-1)
-			{
-				type.Name = new String(csName[csName.lastIndexOf(".")..$]);
-			}
+			//return cast(Type_T!(T)) Infos[i];
+			type = cast(Type_T!(T))Infos[i];
+			found = true;
+			break;
 		}
-		return cast(Type_T!(T)) type;
 	}
 
-	auto type= new Type_T!(T)(csName);
-
-	CachedTypes[info] = type;
-
-	return type;
-}
-
-public static Type_T!(T) __TypeOf(T)(string csName=null)
-if(!is(T==struct))
-{
-
-	auto  info = typeid(T);
-
-	if(info in CachedTypes)
+	if(!found)
 	{
-		auto type = CachedTypes[info];
-		if(csName !is null)
-		{
-			type.FullName = new String(csName);
-			if(csName.lastIndexOf(".")!=-1)
+		 type= new Type_T!(T)(csName);
+
+		hashes.length++;
+		Infos.length++;
+		
+		hashes ~= fullNameHash;
+		Infos ~= type;
+		//CachedTypes[fullName.Hash()]= type;
+		
+		//Console.WriteLine(_S("Added " ~  type.Name.toString));
+	}
+		//	
+			if(csName !is null)
 			{
-				type.Name = new String(csName[csName.lastIndexOf(".")..$]);
+				type.FullName = new String(csName);
+				if(csName.lastIndexOf(".")!=-1)
+				{
+					type.Name = new String(csName[csName.lastIndexOf(".")..$]);
+				}
 			}
-		}
-		return cast(Type_T!(T)) type;
+
+
+
+		return cast(Type_T!(T))type;
 	}
 
-	auto type= new Type_T!(T)(csName);
-
-	CachedTypes[info] = type;
-
-	return type;
-}
+//	if(fullName.Hash() in CachedTypes)
+//	{
+//		Console.WriteLine(_S(fullName));
+//		Console.WriteLine(fullName.Hash());
+//		auto type = CachedTypes.get(fullName.Hash(),null);
+//
+//		//Console.WriteLine(_S("Exists"));
+//		//Console.WriteLine(type);
+//		
+//		//return cast(Type_T!(T)) type;
+//	}
+//	
+////	auto type= new Type_T!(T)(csName);
+////	
+////	if(csName !is null)
+////	{
+////		type.FullName = new String(csName);
+////		if(csName.lastIndexOf(".")!=-1)
+////		{
+////			type.Name = new String(csName[csName.lastIndexOf(".")..$]);
+////		}
+////	}
+//	
+//	CachedTypes[fullName.Hash()]= type;
+//
+//	//Console.WriteLine(_S("Added " ~  type.Name.toString));
+//
+//	return cast(Type_T!(T))type;
+//	auto  info = typeid(T);
+//	//std.stdio.writeln("Getting type of " ~ info.toString ~ " = " ~ csName);
+//
+//	Type_T!(T) type = new Type_T!(T)(csName);
+//	return type;
+//	/*if(csName !is null)
+//	{
+//		type.FullName = new String(csName);
+//			if(csName.lastIndexOf(".")!=-1)
+//			{
+//				type.Name = new String(csName[csName.lastIndexOf(".")..$]);
+//			}
+//	}*/
+//	//Looks like D's builtin hashmap is either crashing or has some kind of collision .. causes gtest-053 to hang at runtime
+//	/*if(info.toString in CachedTypes)
+//	{
+//		type = cast(Type_T!(T))CachedTypes[info.toString];
+//	//	std.stdio.writeln("Stage 2... in dic");
+//		if(csName !is null)
+//		{
+//			type.FullName = new String(csName);
+//			if(csName.lastIndexOf(".")!=-1)
+//			{
+//				type.Name = new String(csName[csName.lastIndexOf(".")..$]);
+//			}
+//		}
+//	}
+//	else
+//	{
+//	//std.stdio.writeln("Stage 3... not in dic");
+//	//	try {
+//	type= new Type_T!(T)(csName);
+//			//Console.WriteLine(type);
+//	//	}
+//	//	catch(Exception e)
+//	//	{
+//	//		throw e;
+//	//	}
+//
+//		CachedTypes[info.toString] = type;
+//	}
+//
+//	//std.stdio.writeln("Returning type ... ");
+//
+//	//Console.WriteLine(type);
+//
+//	return type;*/
+//}

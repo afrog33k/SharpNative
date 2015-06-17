@@ -3,11 +3,13 @@ import System.Namespace;
 
 
 public struct Nullable__G(T) //: NObject //where T : struct
+//if(__isScalar!(T)||__isStruct!(T))
+if(!__isClass!(T))
 {
 	private bool hasValue_ =false; 
 	public T value_=T.init; 
 
-	alias value_ this;
+	//alias value_ this;
 
 	public static const bool __nullable = true;
 
@@ -24,70 +26,180 @@ public struct Nullable__G(T) //: NObject //where T : struct
 
 	}*/
 
-	void __init(){}//default xtor
+	void __init(){
+		value_=T.init;
+		hasValue_=false;
+	}//default xtor
 	static Nullable__G!(T) opCall(__U...)(__U args_)
 	{
 		Nullable__G!(T) s;
 		s.__init(args_);
 		return s;
 	}
+
+	void __init(T value)
+	{
+		value_=value;
+		hasValue_=true;
+	}
+
+	void __init(NObject nullvalue)
+	{
+		value_=T.init;
+		hasValue_=false;
+	}
+
+	Nullable__G!(T) op_LogicalNot()
+	{
+		static if(is(T==bool))
+		{
+		if(hasValue_)
+			return Nullable__G!(T)(!value_); 
+		}
+		return  Nullable__G!(T)(); 
+	}
 	
 	public String ToString()
 	{
 		return GetType().FullName;
 	}
-	
-	public static class __Boxed_ : Boxed!(T)
+
+	Nullable__G!(T) opBinary(string op)(Nullable__G!(T) rhs)
 	{
-		import std.traits;
-		
-		this()
+		static if(is(T==bool))
 		{
-			super(Nullable__G!(T).init);
-		}
-		public override String ToString()
-		{
-			return __Value.ToString();
-		}
-		
-		public override bool Equals(NObject other)
-		{
-			if (cast(Boxed!(T)) other)
+			//std.stdio.writeln("is bool");
+			bool hasValL = hasValue_;
+			bool hasValR = rhs.hasValue_;
+
+			static if(op=="&")
 			{
-				auto otherValue = (cast(Boxed!(T)) other).__Value;
-				return otherValue == __Value;
+				if(hasValL&&hasValR)
+				{
+					//std.stdio.writeln("has both");
+					return Nullable__G!(T)(value_ & rhs.value_);
+				}
+
+				if(hasValL || hasValR)
+				{
+				//	std.stdio.writeln("has either");
+					if( (value_ || rhs.value_) == false)
+					return Nullable__G!(T)(false);
+				}
+				
+				return Nullable__G!(T)();
 			}
-			return false;
-		}
-		
-		this(ref Nullable__G!(T) value)
-		{
-			super(value);
+
+			static if(op=="^")
+			{
+				if(hasValL&&hasValR)
+				{
+					return Nullable__G!(T)(value_ ^ rhs.value_);
+				}
+
+				return Nullable__G!(T)();
+			}
+			static if(op=="|")
+			{
+				if(hasValL&&hasValR)
+				{
+					return Nullable__G!(T)(value_ | rhs.value_);
+				}
+
+				if(hasValL || hasValR)
+				{
+					if( (value_ || rhs.value_) == true)
+					return Nullable__G!(T)(value_ | rhs.value_);
+				}
+				
+				return Nullable__G!(T)();
+			}
 		}
 
-		U opCast(U)()
-			if(is(U:T))
+		static if(op=="&")
 		{
-			return __Value;
+			if(hasValue_ && value_==false || rhs.hasValue_)
+				return Nullable__G!(T)(mixin("value_ "~op~" rhs.value_"));
 		}
-		
-		U opCast(U)()
-			if(!is(U:T))
-		{
-			return this;
-		}
-		
-		auto opDispatch(string op, Args...)(Args args)
-		{
-			enum name = op;
-			return __traits(getMember, __Value, name)(args);
-		}
-		
-		public override Type GetType()
-		{
-			return __Value.GetType();
-		}
+		else
+		if(hasValue_)
+			return Nullable__G!(T)(mixin("value_ "~op~" rhs.value_"));
+		return  Nullable__G!(T)();
 	}
+
+
+	Nullable__G!(T) opBinary(string op)(T rhs)
+	{
+		if(hasValue_)
+			return Nullable__G!(T)(mixin("value_ "~op~" rhs"));
+		return  Nullable__G!(T)();
+	}
+
+	Nullable__G!(T) opUnary(string s)()
+	{
+		if(hasValue_)
+			return Nullable__G!(T)(mixin(s~"value_"));
+		return  Nullable__G!(T)();
+	}
+
+	Nullable__G!(T) opUnary(string s)() if (s == "!")
+	{
+		if(hasValue_)
+			return Nullable__G!(T)(!value_); 
+		return  Nullable__G!(T)();
+	}
+
+//	public static class __Boxed_ : Boxed!(T)
+//	{
+//		import std.traits;
+//		
+//		this()
+//		{
+//			super(Nullable__G!(T).init);
+//		}
+//		public override String ToString()
+//		{
+//			return __Value.ToString();
+//		}
+//		
+//		public override bool Equals(NObject other)
+//		{
+//			if (cast(Boxed!(T)) other)
+//			{
+//				auto otherValue = (cast(Boxed!(T)) other).__Value;
+//				return otherValue == __Value;
+//			}
+//			return false;
+//		}
+//		
+//		this(ref Nullable__G!(T) value)
+//		{
+//			super(value);
+//		}
+//
+//		U opCast(U)()
+//			if(is(U:T))
+//		{
+//			return __Value;
+//		}
+//		
+//		U opCast(U)()
+//			if(!is(U:T))
+//		{
+//			return this;
+//		}
+//		
+//		auto opDispatch(string op, Args...)(Args args)
+//		{
+//			enum name = op;
+//			return __traits(getMember, __Value, name)(args);
+//		}
+//		
+//		public override Type GetType()
+//		{
+//			return __Value.GetType();
+//		}
+//	}
 	
 /*	public __Boxed_ __Get_Boxed()
 	{

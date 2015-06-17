@@ -21,6 +21,8 @@ namespace SharpNative.Compiler
 {
     internal static class WriteInvocationExpression
     {
+
+
         public static void Go(OutputWriter writer, InvocationExpressionSyntax invocationExpression)
         {
             var symbolInfo = TypeProcessor.GetSymbolInfo(invocationExpression);
@@ -116,7 +118,9 @@ namespace SharpNative.Compiler
            
 
             if (isVirtualGeneric)
-                methodName = TypeProcessor.ConvertType(containingType, false, false, false).Replace(".", "_").Replace("!", "_").Replace("(", "_").Replace(")", "_") + "_" + methodName;
+				methodName = Utility.GetVirtualGenericMethodName (methodName, containingType);
+
+					//TypeProcessor.ConvertType(containingType, false, false, false).Replace(".", "_").Replace("!", "_").Replace("(", "_").Replace(")", "_") + "_" + methodName;
 
             if (methodSymbol.MethodKind == MethodKind.DelegateInvoke)
                 subExpressionOpt = invocationExpression.Expression;

@@ -69,6 +69,8 @@ namespace SharpNative.Compiler
 
         private static void WriteNamespaces()
         {
+			TypeProcessor.ClearCachedTypes ();
+			TypeProcessor.NamespaceMode = true;
             //We dont need namespace aliases at this point
             Context.Instance.NamespaceAliases = new Dictionary<INamespaceSymbol, string>();
 
@@ -141,6 +143,8 @@ namespace SharpNative.Compiler
 								if (type.TypeKind == TypeKind.Error)
 									continue;
 
+
+
 								var allgenericVirtualMethods = type.GetMembers ().OfType<IMethodSymbol> ().Where (k => k.IsGenericMethod && (k.IsVirtual || k.ContainingType.TypeKind == TypeKind.Interface));
 								genericMethods.AddRange (allgenericVirtualMethods);
 								if (((INamedTypeSymbol)type).IsGenericType)
@@ -161,8 +165,8 @@ namespace SharpNative.Compiler
                                         }*/
 											var genericName = GetGenericMetadataName (specialization);
                                       
-                                       
 											WriteReflectionInfo (writerRef, specialization, genericName);
+
 										}
 									}
 								}
@@ -184,6 +188,24 @@ namespace SharpNative.Compiler
 						}
 
                         genericMethods = genericMethods.DistinctBy(l=>genericMethods.Any(k=>MemberUtilities.CompareMethodsWithReturnType(k,l))).ToList();
+
+						if (genericMethods.Any ())
+						{
+							writer.WriteLine ("\n\n//Generic Virtual Method Support");
+							writer.WriteLine ("import System.Namespace;");
+							writer.WriteLine ("import System.Reflection.Namespace;");
+						}
+
+						//To be on the safe side, import all namespaces except us... this allows us to create correct reflectioninfo
+						//gtest-053.cs
+						foreach (var @name in namespaces.DistinctBy(o=>o.Key)) //Cant work leads to cycles
+						{
+							var nname = @name.Key.GetModuleName (false);
+							if (nname != "System.Namespace")
+								writer.WriteLine ("import {0};", nname);
+						}
+
+
 
                         foreach (var genericMethod in genericMethods)
                         {
@@ -531,17 +553,36 @@ namespace SharpNative.Compiler
 
         public static string GetGenericMetadataName(this INamedTypeSymbol specialization)
         {
-            //Todo Add support for Arrays and Inner classes
-            return specialization.ContainingNamespace.FullNameWithDotCSharp() + (specialization.ContainingType!=null? specialization.ContainingType.MetadataName +"+" : "") + specialization.MetadataName +
-            (specialization.TypeArguments.Any() ? ("[" +
+			var typeName = specialization.ContainingNamespace.FullNameWithDotCSharp ();
+			List<string> genericParameters = new List<string>();
 
-                   
-            specialization.TypeArguments.Select(u =>
-                {
-                    var namedTypeSymbol = u as INamedTypeSymbol;
-                    return u.ContainingNamespace.FullNameWithDotCSharp() + (u.ContainingType != null ? (u.ContainingType.Name + "+") : "") + (namedTypeSymbol != null && namedTypeSymbol.IsGenericType ? (namedTypeSymbol.GetGenericMetadataName()) : (String.IsNullOrEmpty(u.MetadataName) ? u.Name : u.MetadataName));
-                })
-                       .Aggregate((a, b) => a + "," + b) + "]") : "");
+			List<string> symbols = new List<string>();
+
+			var symbol = specialization;
+
+			do
+			{
+				symbols.Add (symbol.MetadataName);
+				if(symbol.TypeArguments.Any())
+					genericParameters.Add (symbol.TypeArguments.Select (u => u is INamedTypeSymbol ?(GetGenericMetadataName ((INamedTypeSymbol)u)):u.MetadataName ).Aggregate((a,b)=>a+","+b));
+				symbol = symbol.ContainingType;
+			} while(symbol!=null);
+
+			symbols.Reverse ();
+			genericParameters.Reverse ();
+			typeName+=symbols.Aggregate((a,b)=>a + "+" + b) + (genericParameters.Any() ?("["+genericParameters.Aggregate((a,b)=>a + "," + b)+"]"):"");
+			return typeName;
+//            //Todo Add support for Arrays and Inner classes
+//            return specialization.ContainingNamespace.FullNameWithDotCSharp() + (specialization.ContainingType!=null? specialization.ContainingType.MetadataName +"+" : "") + specialization.MetadataName +
+//            (specialization.TypeArguments.Any() ? ("[" +
+//
+//                   
+//            specialization.TypeArguments.Select(u =>
+//                {
+//                    var namedTypeSymbol = u as INamedTypeSymbol;
+//                    return u.ContainingNamespace.FullNameWithDotCSharp() + (u.ContainingType != null ? (u.ContainingType.Name + "+") : "") + (namedTypeSymbol != null && namedTypeSymbol.IsGenericType ? (namedTypeSymbol.GetGenericMetadataName()) : (String.IsNullOrEmpty(u.MetadataName) ? u.Name : u.MetadataName));
+//                })
+//                       .Aggregate((a, b) => a + "," + b) + "]") : "");
         }
 
         //http://stackoverflow.com/questions/27105909/get-fully-qualified-metadata-name-in-roslyn
@@ -977,16 +1018,21 @@ namespace SharpNative.Compiler
                 });
         }
 
-        //Only needed for CPP target
+        
         //Resurrected, useful for reflection
         private static List<INamedTypeSymbol> GetGenericSpecializations(ITypeSymbol type)
         {
             return _compilation.SyntaxTrees
-                .SelectMany(o => o.GetRoot().DescendantNodes().OfType<GenericNameSyntax>().Union(o.GetRoot().DescendantNodes().OfType<TypeSyntax>()))
+                .SelectMany(o => o.GetRoot()
+					.DescendantNodes()
+					.OfType<GenericNameSyntax>()
+					.Union(o.GetRoot().DescendantNodes().OfType<TypeSyntax>()))
                 .Select(
                 o =>
-                        (ModelExtensions.GetTypeInfo(GetModel(o), o).Type ??
-                ModelExtensions.GetTypeInfo(GetModel(o), o).ConvertedType) as INamedTypeSymbol)
+                        (GetModel (o)
+						.GetTypeInfo (o).Type ??
+                GetModel (o)
+						.GetTypeInfo (o).ConvertedType) as INamedTypeSymbol)
                 .Where(o => o != null && (IsSpecialized(o) && o.OriginalDefinition == type))
                 .ToList();
         }

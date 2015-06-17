@@ -1,17 +1,27 @@
 module System.__NativeMethods;
 
+import std.stdio;
 
-int System_DateTime_gettimeofday(int *time ,int *tzp)
+struct timeval {
+	long      tv_sec;     /* seconds */
+	long tv_usec;    /* microseconds */
+};
+
+struct timezone {
+	int tz_minuteswest;     /* minutes west of Greenwich */
+	int tz_dsttime;         /* type of DST correction */
+};
+
+version(OSX)
 {
-	struct timeval {
-		long      tv_sec;     /* seconds */
-		long tv_usec;    /* microseconds */
-	};
+	
+	
+	extern (C) int gettimeofday(timeval * tp, timezone * tz);
+}
 
-	struct timezone {
-		int tz_minuteswest;     /* minutes west of Greenwich */
-		int tz_dsttime;         /* type of DST correction */
-	};
+int System_DateTime_gettimeofday(long *time ,int *tzp)
+{
+
 
 	version(Windows)
 	{
@@ -46,11 +56,17 @@ int System_DateTime_gettimeofday(int *time ,int *tzp)
 	//}
 	version(OSX)
 	{
-	
-	
-		//extern (C) int gettimeofday(timeval * tp, timezone * tz);
-		return 24;//gettimeofday(cast(timeval *)time,cast(timezone *)tzp);
+		gettimeofday(cast(timeval *)time,cast(timezone *)tzp);
+		timeval *tval = cast(timeval *)time;
+		timezone *tz = cast(timezone *)tzp;
 
+		if(tzp !is null) // Hack
+		{
+			tval.tv_usec += 6507481062;
+			tval.tv_sec += 62135596800;
+		}
+
+		return 0;
 	}
 	
 	
@@ -59,5 +75,5 @@ int System_DateTime_gettimeofday(int *time ,int *tzp)
 
 int System_DateTime_DaysInMonth(int year , int month)
 {
-	return 0;
+	return 30;
 }

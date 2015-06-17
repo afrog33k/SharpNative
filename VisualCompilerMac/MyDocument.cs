@@ -16,22 +16,6 @@ using SharpNative.Compiler;
 namespace VisualCompiler
 {
 
-	public static class ListExtensions
-	{
-		public static IEnumerable<string> CustomSort(this IEnumerable<string> list)
-		{
-			int maxLen = list.Select(s => s.Length).Max();
-
-			return list.Select(s => new
-			{
-				OrgStr = s,
-				SortStr = Regex.Replace(s, @"(\d+)|(\D+)", m => m.Value.PadLeft(maxLen, char.IsDigit(m.Value[0]) ? ' ' : '\xffff'))
-			})
-				.OrderBy(x => x.SortStr)
-				.Select(x => x.OrgStr);
-		}
-
-	}
 
 
 	public partial class MyDocument : MonoMac.AppKit.NSDocument
@@ -132,6 +116,8 @@ namespace VisualCompiler
 		}
 
 
+		string LastFolder;
+
 
 		void RunAllTests_Click (object sender, EventArgs e)
 		{
@@ -141,15 +127,20 @@ namespace VisualCompiler
 			openPanel.CanChooseFiles = false;
 			openPanel.ReleasedWhenClosed = true;
 			openPanel.Prompt = "Select Folder ... ";
-			openPanel.DirectoryUrl = new NSUrl (TestsDir);
+
+			if (String.IsNullOrEmpty (LastFolder))
+			{
+				openPanel.DirectoryUrl = new NSUrl (TestsDir);
+			}
+			else
+			{
+				openPanel.DirectoryUrl = new NSUrl (LastFolder);
+			}
 			var result = openPanel.RunModal ();
 			if (result == 1) {
 				var filename = openPanel.Filename; // will switch to .Url later
-//				var newText = File.ReadAllText (filename);
-//				CSharpFilename.StringValue = Path.GetFileName (filename);
-//				CSharpTextEditor.Replace (new NSRange (0, CSharpTextEditor.Value.Length), newText);
-//				ViewModel.SourceCode = newText;
-//				ViewModel.RecompileSource ();
+
+				LastFolder = openPanel.Directory;
 
 				Func<string, string> strip = i => Regex.Replace(i??"", "[\r\n \t]+", " ").Trim();
 
@@ -265,12 +256,19 @@ namespace VisualCompiler
 
 			openPanel.ReleasedWhenClosed = true;
 			openPanel.Prompt = "Select File ... ";
-			openPanel.DirectoryUrl = new NSUrl (TestsDir);
+			if (String.IsNullOrEmpty (LastFolder))
+			{
+				openPanel.DirectoryUrl = new NSUrl (TestsDir);
+			}
+			else
+			{
+				openPanel.DirectoryUrl = new NSUrl (LastFolder);
+			}
 			var result = openPanel.RunModal ();
 			if (result == 1) {
-
-
 				var filename = openPanel.Filename; // will switch to .Url later
+
+				LastFolder = openPanel.Directory;// will switch to .Url later
 
 
 				if (Path.GetExtension (filename) == ".cs") {
@@ -374,7 +372,7 @@ namespace VisualCompiler
 
 //				this.Execute(LastCompiledExecutablePath);
 
-				var output = ("/bin/bash").ExecuteCommand(" -c \"/usr/bin/mono  --gc=sgen " + Driver.LastBuildPath +"\"","");
+				var output = ("/bin/bash").ExecuteCommand(" -c \"/usr/bin/mono -O=all --gc=sgen " + Driver.LastBuildPath +"\"","");
 				//Console.WriteLine(output);
 
 				var end = Environment.TickCount - start;
@@ -497,7 +495,7 @@ namespace VisualCompiler
 					.OrderBy(o => o)
 					.ToList();
 
-				NativeCompilationUtils.SetCompilerOptions("dmdmac");
+				NativeCompilationUtils.SetCompilerOptions("ldcmac");
 				NativeCompilationUtils.CompilerOptions.OptimizationFlags += " -I" + MainWindowViewModel.TempDir + " -I" + BCLDir;
 				var fileList = ViewModel.FileList;
 				var executableFiles = fileList.Where (j => j.Name.EndsWith (".d", StringComparison.Ordinal)).Select (k => k.Location);

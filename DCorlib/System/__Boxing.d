@@ -15,6 +15,7 @@ if(__isInterface!(T))
 	alias __BoxesTo = T;
 }
 
+
 template __BoxesTo(T)
 if(__isClass!(T))
 {
@@ -22,10 +23,17 @@ if(__isClass!(T))
 }
 
 template __BoxesTo(T)
-if(__isStruct!(T))
+if(__isStruct!(T) && !__isNullable!(T) && !__isClass!(T))
 {
 	alias __BoxesTo = T.__Boxed_;
 }
+
+template __BoxesTo(T:Nullable__G!(U),U)
+if(__isNullable!(T) && __isStruct!(U))
+{
+	alias __BoxesTo = __BoxesTo!(U);
+}
+
 
 template __BoxesTo(T)
 if(__isScalar!(T))
@@ -92,6 +100,9 @@ if(__isScalar!(T))
 		alias __BoxesTo = System.UInt64.UInt64;
 	}
 
+
+
+
 	static if(__isEnum!(T))
 	{
 		alias __BoxesTo = BoxedEnum!(T);
@@ -104,19 +115,30 @@ if(__isEnum!(T))
 	alias __BoxesTo = BoxedEnum!T;
 }
 
-static Boxed!T BOX(T)(T value)
-if(__isStruct!(T) && !__isNullable!(T))
-{
-	return new T.__Boxed_(value);
-}
-
-static Boxed!(Composition!(T)[1]) BOX(T)(T value)
-if(__isStruct!(T) && __isNullable!(T))
+static auto BOX(T)(T value)
+if(__isNullable!(T) && __isStruct!(T))
 {
 	if(value.HasValue)
 		return BOX(value.value_);//new T.__Boxed_(value);
 	return null;
 }
+
+static auto BOX(T:Nullable__G!(U),U)(U value)
+if(__isNullable!(T))
+{
+	return BOX(value);
+}
+
+
+
+static auto BOX(T)(T value)
+	if(__isStruct!(T) && !__isNullable!(T))
+{
+
+	return new T.__Boxed_(value);
+}
+
+
 
 static BoxedEnum!T BOX(T)(T value)
 if(__isEnum!(T))

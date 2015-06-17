@@ -77,7 +77,10 @@ namespace SharpNative.Compiler
                 CompilerExe = "dmd";
                 //fannkuch(12) -noboundscheck -fPIC--> (25s)
 
-                OptimizationFlags = "  -inline -release -m64  -O  \"-I/usr/local/Cellar/dmd/2.066.0/include/d2\" ";
+                //OptimizationFlags = "  -inline -release -m64  -O  \"-I/usr/local/Cellar/dmd/2.066.0/include/d2\" ";
+
+				OptimizationFlags = " -gc -gs  \"-I/usr/local/Cellar/dmd/2.066.0/include/d2\" ";
+
 
                 LinkerOptions = "";
                 //-release -O -inline -noboundscheck
@@ -146,7 +149,7 @@ namespace SharpNative.Compiler
 				              PathOfCompilerTools = @"/usr/local/bin/";
 				//              CompilerExe = "ldc2-0.15";
 //				PathOfCompilerTools = @"/Projects/Experiments/CsNative/iOS/ldc/build/bin/"; // iOS
-				CompilerExe = "ldc2"; //iOS
+				CompilerExe = "ldmd2"; //iOS
 
 				//              CompilerExe = "ldmd2-0.15"; // lat  est version of ldm2
 				//              CompilerExe = "ldmd2"; //Doesnt work with AsIs Test (sharplang)
@@ -157,7 +160,7 @@ namespace SharpNative.Compiler
 				//              OptimizationFlags = " -noboundscheck -fPIC -m64 -O  -inline -release \"-I/Projects/Experiments/CsNative/ldc2-0.15.0/import\" ";
 
 
-				OptimizationFlags = "  -oq -m64 -O  -inline -release \"-I/usr/local/Cellar/ldc/0.15.0/include/d\" ";
+				OptimizationFlags = " -noboundscheck -fPIC  -oq -m64 -O  -inline -release \"-I/usr/local/Cellar/ldc/0.15.0/include/d\" ";
 				//              OptimizationFlags = "  -inline -release -m64 -noboundscheck -O -fPIC \"-I/usr/local/Cellar/dmd/2.066.0/include/d2\" ";
 				//                              OptimizationFlags = "  -inline -release -m64  -O  \"-I/usr/local/Cellar/dmd/2.066.0/include/d2\" ";
 

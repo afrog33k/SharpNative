@@ -2,6 +2,7 @@ module System.__Internal.Namespace;
 //alias System.__Internal.Reflection Reflection;
 import System.Namespace;
 import System.Reflection.Internal;
+//import System.__Internal.hashmap;
 
 
 //Have to put these here to prevent cycles

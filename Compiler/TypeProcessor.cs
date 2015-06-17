@@ -231,6 +231,11 @@ namespace SharpNative.Compiler
         private static readonly ConcurrentDictionary<ITypeSymbol, string> _cachedTypes =
             new ConcurrentDictionary<ITypeSymbol, string>();
 
+		public static void ClearCachedTypes()
+		{
+			_cachedTypes.Clear ();
+		}
+
 //Special case to avoid conflicts
         private static string[] DoNotLocalize = new []{"System.Reflection.Namespace.MemberInfo"};
 
@@ -458,13 +463,13 @@ namespace SharpNative.Compiler
 
             if (named != null && named.IsGenericType)
             {
-                if(!named.IsUnboundGenericType && TypeArguments(named).Any())
+				//if(!named.IsUnboundGenericType)// && TypeArguments(named).Any())
                 
-                return GetFullGenericName(named);
-                else
-                {
-                    return GetFullGenericName(named.OriginalDefinition);
-                }
+					return GetFullGenericName(named,named.IsUnboundGenericType);
+//                else
+//                {
+//					return GetFullGenericName(named,unbound);
+//                }
             }
 
 
@@ -529,26 +534,29 @@ namespace SharpNative.Compiler
             }
         }
 
-        private static string GetFullGenericName(INamedTypeSymbol named)
+		public static bool NamespaceMode = false;
+
+
+		private static string GetFullGenericName(INamedTypeSymbol named, bool unbound=false)
         {
-            var name =  GetGenericTypeNameWithParameters(named); 
+			var name =  GetGenericTypeNameWithParameters(named,named.IsUnboundGenericType); 
             var type = named.ContainingType;
             while (type != null)
             {
-                name = GetGenericTypeNameWithParameters(type) + "." + name;
+				name = GetGenericTypeNameWithParameters(type,type.IsUnboundGenericType) + "." + name;
                 type = type.ContainingType;
             }
 
             return named.ContainingNamespace.FullNameWithDot() + name;
         }
 
-        private static string GetGenericTypeNameWithParameters(INamedTypeSymbol named)
+		private static string GetGenericTypeNameWithParameters(INamedTypeSymbol named,bool unbound=false)
         {
             if (named.IsGenericType)
             {
                 return  WriteType.TypeName(named,false)  + (named.TypeArguments.Any() ? "!(" +
                 named.TypeArguments.Select(
-                    o => GetGenericParameterType(named.TypeParameters[named.TypeArguments.IndexOf(o)], o))
+						o => GetGenericParameterType(named.TypeParameters[named.TypeArguments.IndexOf(o)], o,unbound))
                            .Aggregate((a, b) => a + ", " + b)
                 + ")" :"");
             }
@@ -558,12 +566,22 @@ namespace SharpNative.Compiler
             }
         }
 
-        public static string GetGenericParameterType(ITypeParameterSymbol o, ITypeSymbol named)
+		public static string GetGenericParameterType(ITypeParameterSymbol o, ITypeSymbol named, bool unbound = false)
         {
-            if (named is IErrorTypeSymbol)
+			if (named is IErrorTypeSymbol || unbound)
             {
                 return "__UNBOUND";
             }
+
+			if (NamespaceMode && named.TypeKind == TypeKind.TypeParameter)
+			{
+				return "__UNBOUND";
+			}
+
+			if (named is INamedTypeSymbol && (named as INamedTypeSymbol).IsGenericType)
+			{
+				return GetFullGenericName ((INamedTypeSymbol)named, unbound);
+			}
 
             return ConvertType(named,false);
         }
