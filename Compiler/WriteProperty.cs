@@ -117,30 +117,27 @@ namespace SharpNative.Compiler
                     var namedTypeSymbol = propertySymbol.Type as INamedTypeSymbol;
                     if (namedTypeSymbol != null)
                     {
-                        //                        var iteratortype = namedTypeSymbol.TypeArguments[0];
-                        //                        getterbody=String.Format("return new __IteratorBlock!({0})(delegate(__IteratorBlock!({0}) __iter){{ {1} }});",
-                        //                            TypeProcessor.ConvertType(iteratortype),getterbody);
+						var iteratortype =namedTypeSymbol.TypeArguments.Any()? namedTypeSymbol.TypeArguments[0]:Context.Object;
+                                                getterbody=String.Format("return new __IteratorBlock!({0})(delegate(__IteratorBlock!({0}) __iter){{ {1} }});",
+                                                    TypeProcessor.ConvertType(iteratortype),getterbody);
 
-                        var className = propertySymbol.GetYieldClassName()+(
-                   (((INamedTypeSymbol)propertySymbol.Type).TypeArguments.Any() && ((INamedTypeSymbol)propertySymbol.Type).TypeArguments[0].TypeKind == TypeKind.TypeParameter) ? "__G" : "");
+//                        var className = propertySymbol.GetYieldClassName()+(
+//                   (((INamedTypeSymbol)propertySymbol.Type).TypeArguments.Any() && ((INamedTypeSymbol)propertySymbol.Type).TypeArguments[0].TypeKind == TypeKind.TypeParameter) ? "__G" : "");
 
-
-
-
-                        // writer.WriteLine(accessString + returnTypeString + methodSignatureString + @params2 + constraints);
+				// writer.WriteLine(accessString + returnTypeString + methodSignatureString + @params2 + constraints);
 
                         //writer.OpenBrace();
 
-                        if (!propertySymbol.IsStatic)
-                        {
-
-                            getterbody = writer.WriteIndentToString() + ("return new " + className + "(this);");
-                        }
-                        else
-                        {
-                            getterbody = writer.WriteIndentToString() + ("return new " + className + "();");
-
-                        }
+//                        if (!propertySymbol.IsStatic)
+//                        {
+//
+//                            getterbody = writer.WriteIndentToString() + ("return new " + className + "(this);");
+//                        }
+//                        else
+//                        {
+//                            getterbody = writer.WriteIndentToString() + ("return new " + className + "();");
+//
+//                        }
                     }
                 }
             }

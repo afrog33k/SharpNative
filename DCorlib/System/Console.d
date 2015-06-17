@@ -203,7 +203,7 @@ public static void WriteLine(wstring value)
 	public static void WriteLine(NObject aString) // All raw string classes should be aware of .Text property
 	{
 		if(aString !is null)
-		writeln(aString.ToString().Text);
+			writeln(aString.ToString().Text);
 		else
 			writeln();
 
@@ -266,9 +266,9 @@ public static void WriteLine(wstring value)
 //		String aString = String.Format(format, objs);
 //		write(aString.Text);
 //	}
-	
 	public static void WriteLine(int value)
 	{
+			
 		writeln(value);
 	}
 }

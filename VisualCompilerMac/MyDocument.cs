@@ -495,7 +495,7 @@ namespace VisualCompiler
 					.OrderBy(o => o)
 					.ToList();
 
-				NativeCompilationUtils.SetCompilerOptions("ldcmac");
+				NativeCompilationUtils.SetCompilerOptions("dmdmac");
 				NativeCompilationUtils.CompilerOptions.OptimizationFlags += " -I" + MainWindowViewModel.TempDir + " -I" + BCLDir;
 				var fileList = ViewModel.FileList;
 				var executableFiles = fileList.Where (j => j.Name.EndsWith (".d", StringComparison.Ordinal)).Select (k => k.Location);

@@ -11,7 +11,7 @@ namespace SharpNative.Compiler
             
             if (yieldStatementSyntax.ReturnOrBreakKeyword.IsKind(SyntaxKind.ReturnKeyword))
             {
-                writer.WriteLine("__iter.yieldReturn({0});", Core.WriteString(yieldStatementSyntax.Expression));
+				writer.WriteLine("__iter.yieldReturn(BOX({0}));", Core.WriteString(yieldStatementSyntax.Expression));
             }
             else
             {

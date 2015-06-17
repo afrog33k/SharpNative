@@ -1,22 +1,25 @@
 ﻿<Properties StartupItem="VisualCompilerMac/VisualCompilerMac.csproj" GitUserInfo="UsingGIT">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Release|AnyCPU" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="DCorlib/System/String.d">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Compiler/WriteProperty.cs">
     <Files>
-      <File FileName="DCorlib/System/__SystemExtensions.d" Line="2" Column="2" />
-      <File FileName="DCorlib/System/DateTime.d" Line="17" Column="17" />
-      <File FileName="DCorlib/System/__Boxing.d" Line="9" Column="9" />
-      <File FileName="DCorlib/System/__Constraints.d" Line="2" Column="2" />
-      <File FileName="DCorlib/System/Nullable__G.d" Line="31" Column="31" />
-      <File FileName="Compiler/WriteUnaryExpression.cs" Line="31" Column="31" />
-      <File FileName="VisualCompilerMac/MyDocument.cs" Line="51" Column="51" />
-      <File FileName="Compiler/NativeCompilationUtils.cs" Line="7" Column="7" />
-      <File FileName="DCorlib/System/String.d" Line="26" Column="26" />
+      <File FileName="Compiler/Program.cs" Line="89" Column="89" />
+      <File FileName="Compiler/YieldAsync/YieldGenerator.cs" Line="54" Column="54" />
+      <File FileName="Compiler/YieldAsync/YieldClassGenerator.cs" Line="9" Column="9" />
+      <File FileName="Compiler/LoopInfo.cs" Line="1" Column="1" />
+      <File FileName="Compiler/LICENSE" Line="1" Column="1" />
+      <File FileName="DCorlib/System/Threading/Namespace.d" Line="38" Column="38" />
+      <File FileName="DCorlib/System/__YieldAsyncSupport.d" Line="23" Column="23" />
+      <File FileName="DCorlib/System/__YieldIterator__G.d" Line="1" Column="1" />
+      <File FileName="Compiler/WriteProperty.cs" Line="30" Column="30" />
+      <File FileName="Compiler/WriteMethod.cs" Line="7" Column="7" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore>
       <Breakpoint file="/Projects/Experiments/CsNative/SharpNative/Compiler/WriteArrayCreationExpression.cs" line="47" column="1" />
       <Breakpoint file="/Projects/Experiments/CsNative/SharpNative/Compiler/WriteArrayCreationExpression.cs" line="19" column="1" />
+      <Breakpoint file="/Projects/Experiments/CsNative/SharpNative/Compiler/Program.cs" line="793" column="1" />
+      <Breakpoint file="/Projects/Experiments/CsNative/SharpNative/Compiler/WriteMethod.cs" line="380" column="1" />
     </BreakpointStore>
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />

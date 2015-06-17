@@ -778,7 +778,7 @@ namespace SharpNative.Compiler
 
         private static void ProcessYield()
         {
-            foreach (var syntaxTree in _compilation.SyntaxTrees)
+           /* foreach (var syntaxTree in _compilation.SyntaxTrees)
             {
                 var compilationUnit = ((CompilationUnitSyntax)syntaxTree.GetRoot());
                 var model = _compilation.GetSemanticModel(syntaxTree);
@@ -786,8 +786,10 @@ namespace SharpNative.Compiler
 
                 compilationUnit = (CompilationUnitSyntax)compilationUnit.Accept(rewriter);
                 _compilation = _compilation.ReplaceSyntaxTree(syntaxTree,
-                    SyntaxFactory.SyntaxTree(compilationUnit, null, syntaxTree.FilePath));
+					SyntaxFactory.SyntaxTree(compilationUnit, null, syntaxTree.FilePath));
             }
+//			var normalized = _compilation.SyntaxTrees.First().GetRoot().NormalizeWhitespace ();
+*/
         }
 
         private static void FixupInvocations()

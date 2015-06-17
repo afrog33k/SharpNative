@@ -3,6 +3,8 @@ module System.__YieldAsyncSupport;
 import core.thread;
 import System.Collections.Generic.Namespace;
 import System.Collections.Namespace;
+import System.Namespace;
+
 class __IteratorBlock(TSource) : Fiber,  
 	IEnumerable__G!(TSource),
 	IEnumerator__G!(TSource) 
@@ -157,15 +159,13 @@ class __IteratorBlock(TSource) : Fiber,
 
 	void yieldReturn(TSource returnValue) 
 	{
-		//	Console.Write("yielding ");
-		//	Console.WriteLine(returnValue);
 		_front = returnValue;
 		try
 		{
 			Fiber.yield();
 		}catch(Exception ex)
 		{
-			Console.WriteLine(ex);
+			Console.WriteLine(_S(ex.toString));
 		}
 	}
 

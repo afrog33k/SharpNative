@@ -79,7 +79,7 @@ namespace SharpNative.Compiler
 
                 //OptimizationFlags = "  -inline -release -m64  -O  \"-I/usr/local/Cellar/dmd/2.066.0/include/d2\" ";
 
-				OptimizationFlags = " -gc -gs  \"-I/usr/local/Cellar/dmd/2.066.0/include/d2\" ";
+				OptimizationFlags = " -gc -gs -m64 -O -inline -release  \"-I/usr/local/Cellar/dmd/2.066.0/include/d2\" ";
 
 
                 LinkerOptions = "";

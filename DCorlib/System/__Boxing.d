@@ -115,15 +115,17 @@ if(__isEnum!(T))
 	alias __BoxesTo = BoxedEnum!T;
 }
 
-static auto BOX(T)(T value)
+static Boxed!U BOX(T:Nullable__G!(U),U)(T value)
 if(__isNullable!(T) && __isStruct!(T))
 {
 	if(value.HasValue)
-		return BOX(value.value_);//new T.__Boxed_(value);
+		return BOX(value.value_);
+
+	//auto boxed= BOX(U.init); //quirk to take care of nullables
 	return null;
 }
 
-static auto BOX(T:Nullable__G!(U),U)(U value)
+static Boxed!U BOX(T:Nullable__G!(U),U)(U value)
 if(__isNullable!(T))
 {
 	return BOX(value);
@@ -150,6 +152,11 @@ static  T BOX(T)( NObject value)
 if(__isClass!(T))
 {
 	return cast(T)value;
+}
+
+static  NObject BOX( NObject value)
+{
+	return value;
 }
 
 static  T BOX(T)( T value)
@@ -406,7 +413,7 @@ class Boxed (T) : NObject
         this.__Value = value;
     }
 
-	alias __Value this;
+	//alias __Value this;
 
 public:
     T __Value;
@@ -430,5 +437,10 @@ public:
 	{
 		return __TypeOf!(typeof(this));
 
+	}
+
+	T opCast()
+	{
+		return __Value;
 	}
 }

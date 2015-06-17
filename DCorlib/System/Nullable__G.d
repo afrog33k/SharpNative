@@ -58,11 +58,6 @@ if(!__isClass!(T))
 		}
 		return  Nullable__G!(T)(); 
 	}
-	
-	public String ToString()
-	{
-		return GetType().FullName;
-	}
 
 	Nullable__G!(T) opBinary(string op)(Nullable__G!(T) rhs)
 	{

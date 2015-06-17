@@ -344,45 +344,47 @@ namespace SharpNative.Compiler
                     {
                        // var iteratortype = namedTypeSymbol.TypeArguments[0];
 
-                        var className =  methodSymbol.GetYieldClassName() +(
-                   ( ((INamedTypeSymbol)methodSymbol.ReturnType).TypeArguments.Any() && ((INamedTypeSymbol)methodSymbol.ReturnType).TypeArguments[0].TypeKind==TypeKind.TypeParameter) ? "__G" : "");
-
-
-                        methodSignatureString = methodName + genericParameters;
-
-                        if (!String.IsNullOrEmpty(genericParameters))
-                        {
-                            className = className + "!" + genericParameters;
-                        }
-                        var @params2 = GetParameterListAsString(method.ParameterList.Parameters, iface: methodSymbol.ContainingType);
-                        var @params3 = GetParameterListAsString(method.ParameterList.Parameters, iface: null,
-                            includeTypes: false,writebraces:false);
-
-                        // writer.WriteLine(accessString + returnTypeString + methodSignatureString + @params2 + constraints);
-
-                        //writer.OpenBrace();
-
-                        if (!methodSymbol.IsStatic)
-                        {
-                            if(method.ParameterList.Parameters.Count >0)
-                            writer.WriteLine("return new " + className + "(this," + @params3  +");");
-                            else
-                            {
-                            writer.WriteLine("return new " + className + "(this);");
-
-                            }
-                        }
-                        else
-                        {
-                            writer.WriteLine("return new " + className + "(" + @params3 + ");");
-
-                        }
-
+//                        var className =  methodSymbol.GetYieldClassName() +(
+//                   ( ((INamedTypeSymbol)methodSymbol.ReturnType).TypeArguments.Any() && ((INamedTypeSymbol)methodSymbol.ReturnType).TypeArguments[0].TypeKind==TypeKind.TypeParameter) ? "__G" : "");
+//
+//
+//                        methodSignatureString = methodName + genericParameters;
+//
+//                        if (!String.IsNullOrEmpty(genericParameters))
+//                        {
+//                            className = className + "!" + genericParameters;
+//                        }
+//                        var @params2 = GetParameterListAsString(method.ParameterList.Parameters, iface: methodSymbol.ContainingType);
+//                        var @params3 = GetParameterListAsString(method.ParameterList.Parameters, iface: null,
+//                            includeTypes: false,writebraces:false);
+//
+//                        // writer.WriteLine(accessString + returnTypeString + methodSignatureString + @params2 + constraints);
+//
+//                        //writer.OpenBrace();
+//
+//                        if (!methodSymbol.IsStatic)
+//                        {
+//                            if(method.ParameterList.Parameters.Count >0)
+//                            writer.WriteLine("return new " + className + "(this," + @params3  +");");
+//                            else
+//                            {
+//                            writer.WriteLine("return new " + className + "(this);");
+//
+//                            }
+//                        }
+//                        else
+//                        {
+//                            writer.WriteLine("return new " + className + "(" + @params3 + ");");
+//
+//                        }
+						var iteratortype =namedTypeSymbol.TypeArguments.Any()? namedTypeSymbol.TypeArguments[0]:Context.Object;
+						writer.WriteLine("return new __IteratorBlock!({0})(delegate(__IteratorBlock!({0}) __iter){{",
+							TypeProcessor.ConvertType(iteratortype));
                        
 
                     }
                 }
-                else if (method.Body != null)
+                 if (method.Body != null)
                 {
                     foreach (var statement in method.Body.Statements)
                     {
@@ -401,7 +403,7 @@ namespace SharpNative.Compiler
 
                 if (!isProxy && isYield)
                 {
-                    //writer.WriteLine("});");
+                    writer.WriteLine("});");
 
                 }
             }

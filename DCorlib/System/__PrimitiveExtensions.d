@@ -24,3 +24,8 @@ int GetHashCode(int number)
 {
 	return number;
 }
+
+int GetHashCode(long number) //TODO: Fix this
+{
+	return cast(int)number;
+}
