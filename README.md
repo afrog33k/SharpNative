@@ -1,6 +1,8 @@
 What is SharpNative ?
 ===================
 
+[![Join the chat at https://gitter.im/afrog33k/SharpNative](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/afrog33k/SharpNative?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 SharpNative is a tool that generates **Native Code** (D, Soon C++11, Java and Swift) from **C#** leveraging Microsoft Roslyn to generate almost hand-written code the the target languages.
 
 The idea is to maximize the cross-platform capabilities of C# without being tied to any vendor or platform. The Emphasis here is on Performance and Readability of the generated D Code. Comments are preserved as well.
